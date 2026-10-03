@@ -1,0 +1,873 @@
+{
+  "publication_status": "BLOCKED",
+  "blockers": [
+    "LICENSE_PENDING_OWNER_CHOICE"
+  ],
+  "git_status": "VALIDATED",
+  "history_status": "VALIDATED",
+  "history_objects_scanned": 239,
+  "public_candidate_files": 249,
+  "ignored_files_seen": 82,
+  "tracked_sensitive_files": [],
+  "ignored_required_source_files": [],
+  "suspected_secrets": 0,
+  "large_files": [],
+  "absolute_local_paths": [
+    {
+      "path": "qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    }
+  ],
+  "findings": [
+    {
+      "path": "qa/f3p_export_probe.py",
+      "line": 27,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "98cdd25bc7c6"
+    },
+    {
+      "path": "qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "qa/research_slice_export_probe.py",
+      "line": 26,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "23c0b291f71b"
+    },
+    {
+      "path": "qa/secret_scan.py",
+      "line": 25,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "db4665d72437"
+    },
+    {
+      "path": "src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 46,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "5f0b167c2532"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 287,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "2393ee179ea1"
+    },
+    {
+      "path": "tests/test_research_slice.py",
+      "line": 323,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "f301da1e7db6"
+    },
+    {
+      "path": "tests/test_verification_repair.py",
+      "line": 303,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "06751fa589fd"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 423,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 442,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 629,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "48e01164acfd"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 650,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "219c6595a0b0"
+    },
+    {
+      "path": "history/qa/f3p_export_probe.py",
+      "line": 27,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "98cdd25bc7c6"
+    },
+    {
+      "path": "history/qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/qa/research_slice_export_probe.py",
+      "line": 26,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "23c0b291f71b"
+    },
+    {
+      "path": "history/qa/secret_scan.py",
+      "line": 25,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "db4665d72437"
+    },
+    {
+      "path": "history/src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 46,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "5f0b167c2532"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 287,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "2393ee179ea1"
+    },
+    {
+      "path": "history/tests/test_research_slice.py",
+      "line": 323,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "f301da1e7db6"
+    },
+    {
+      "path": "history/tests/test_verification_repair.py",
+      "line": 303,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "06751fa589fd"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 423,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 442,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 629,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "48e01164acfd"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 650,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "219c6595a0b0"
+    }
+  ],
+  "large_file_threshold": 10000000,
+  "license_present": false,
+  "github_settings": "NOT_VALIDATED",
+  "dependency_findings": {
+    "tool": "pip-audit 2.10.1",
+    "service": "PyPI",
+    "execution": "실제 로컬 가상환경 검사",
+    "exit_code": 0,
+    "dependencies_checked": 84,
+    "known_vulnerabilities": 0,
+    "limits": [
+      "편집 가능한 htrsa 자체는 취약점 DB 조회 대상에서 제외",
+      "알려지지 않은 취약점이 없음을 보장하지 않음"
+    ]
+  },
+  "code_findings": {
+    "tool": "Bandit 1.9.4",
+    "exit_code": 1,
+    "exit_reason": "도구 경고 발견",
+    "tool_findings": 43,
+    "tool_severity": {
+      "MEDIUM": 18,
+      "LOW": 25
+    },
+    "scanner_errors": 0,
+    "confirmed_new_p0_p1": 0,
+    "reviewed": [
+      {
+        "path": "src/htrsa/agent_policy.py",
+        "line": 52,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 17,
+        "rule": "B404",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 306,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 397,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 402,
+        "rule": "B607",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 402,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 499,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 507,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 536,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/control_plane.py",
+        "line": 538,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/database.py",
+        "line": 75,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/database.py",
+        "line": 75,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/database.py",
+        "line": 76,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/live_api_test.py",
+        "line": 286,
+        "rule": "B105",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
+      },
+      {
+        "path": "src/htrsa/live_api_test.py",
+        "line": 597,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/live_api_test.py",
+        "line": 602,
+        "rule": "B105",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
+      },
+      {
+        "path": "src/htrsa/live_api_test.py",
+        "line": 692,
+        "rule": "B105",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
+      },
+      {
+        "path": "src/htrsa/preflight.py",
+        "line": 11,
+        "rule": "B404",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/preflight.py",
+        "line": 27,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/release.py",
+        "line": 15,
+        "rule": "B404",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/release.py",
+        "line": 81,
+        "rule": "B607",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/release.py",
+        "line": 81,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/research_slice.py",
+        "line": 445,
+        "rule": "B110",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "유효성 검사 실패 후 새 claim 검증 또는 브라우저 실패의 기존 대체 인증 경로로 진행한다. 성공을 임의 확정하지 않는다."
+      },
+      {
+        "path": "src/htrsa/research_slice.py",
+        "line": 462,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/resource_policy.py",
+        "line": 53,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/resource_policy.py",
+        "line": 56,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 8,
+        "rule": "B404",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 34,
+        "rule": "B607",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 34,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 72,
+        "rule": "B108",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "호스트 임시 파일이 아니라 용량 제한·nosuid를 지정한 Docker 컨테이너 tmpfs이다. Docker 격리는 미검증이다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 105,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 109,
+        "rule": "B607",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/sandbox.py",
+        "line": 109,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/schemas.py",
+        "line": 138,
+        "rule": "B105",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
+      },
+      {
+        "path": "src/htrsa/service.py",
+        "line": 273,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/service.py",
+        "line": 582,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/service.py",
+        "line": 625,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/service.py",
+        "line": 1112,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/service.py",
+        "line": 1224,
+        "rule": "B608",
+        "tool_severity": "MEDIUM",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
+      },
+      {
+        "path": "src/htrsa/workbench.py",
+        "line": 16,
+        "rule": "B404",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/workbench.py",
+        "line": 51,
+        "rule": "B105",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
+      },
+      {
+        "path": "src/htrsa/workbench.py",
+        "line": 339,
+        "rule": "B603",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
+      },
+      {
+        "path": "src/htrsa/workbench.py",
+        "line": 926,
+        "rule": "B110",
+        "tool_severity": "LOW",
+        "review": "검토 완료 · 로컬 환경 전제 유지",
+        "reason": "유효성 검사 실패 후 새 claim 검증 또는 브라우저 실패의 기존 대체 인증 경로로 진행한다. 성공을 임의 확정하지 않는다."
+      }
+    ],
+    "fixed": [
+      "runtime의 검증 전 확정 상태 검사를 assert에서 명시적 예외로 변경"
+    ],
+    "codeql": "CONFIGURED_ONLY",
+    "limits": [
+      "Bandit 경고를 삭제하거나 무시하지 않음",
+      "CodeQL·GitHub 서버 측 검사·Docker 실행을 통과로 기록하지 않음"
+    ]
+  },
+  "limits": [
+    "무시된 로컬 자료는 공개 후보 검사에서 제외",
+    "패턴·활성 비밀 검사 외 수동 사용자 자료 검토 필요",
+    "Git 이력이 없으면 공개 준비 완료로 표시하지 않음"
+  ],
+  "workflow_findings": {
+    "execution": "로컬 YAML 파싱·공식 action commit 확인·신규 pytest 검사",
+    "status": "CONFIGURED_ONLY",
+    "github_runs": "NOT_VALIDATED",
+    "unresolved_p0_p1": 0,
+    "files": [
+      ".github/workflows/offline.yml",
+      ".github/workflows/dependency-review.yml",
+      ".github/workflows/codeql.yml",
+      ".github/dependabot.yml"
+    ],
+    "permissions": {
+      "offline": "contents: read",
+      "dependency_review": "contents: read",
+      "codeql": "contents: read · 분석 job만 security-events: write"
+    },
+    "controls": [
+      "모든 action을 공식 저장소 commit SHA로 고정",
+      "checkout persist-credentials: false",
+      "pull_request_target 사용 없음",
+      "PR/branch 문자열을 셸 코드에 삽입하지 않음",
+      "제공사 키 참조와 유료 Live 검사가 없음",
+      "PR 댓글 쓰기 권한 없음"
+    ],
+    "official_pins": {
+      "actions/checkout": {
+        "tag": "v7.0.1",
+        "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+      },
+      "actions/setup-python": {
+        "tag": "v7.0.0",
+        "sha": "5fda3b95a4ea91299a34e894583c3862153e4b97"
+      },
+      "actions/dependency-review-action": {
+        "tag": "v5.0.0",
+        "sha": "a1d282b36b6f3519aa1f3fc636f609c47dddb294"
+      },
+      "github/codeql-action": {
+        "tag": "v4",
+        "sha": "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2"
+      }
+    },
+    "limits": [
+      "GitHub 서버 측 실행·저장소 설정은 실제 미실행",
+      "fork PR의 CodeQL 업로드 권한은 GitHub 정책에 따라 제한될 수 있음"
+    ]
+  },
+  "security_test_results": {
+    "new_tests": {
+      "command": ".venv/Scripts/python.exe -X utf8 -m pytest tests/test_hardening.py -q -p no:cacheprovider --basetemp build/hardening-last-search --junitxml build/hardening-last-search.xml",
+      "passed": 57,
+      "failures": 0,
+      "duration_sec": 23.14,
+      "evidence": "build/hardening-last-search.xml"
+    },
+    "destructive": {
+      "passed": true,
+      "pytest": 116,
+      "scenarios": {
+        "QA-01 Early Fact Recall": "PASS",
+        "QA-02 Evidence Invalidation": "PASS",
+        "QA-03 Dependency Recall": "PASS",
+        "QA-04 Context Distractor": "PASS",
+        "QA-05 Handoff Preservation": "PASS",
+        "QA-06 Rollback / State Recovery": "PASS",
+        "QA-07 Python Failure Recovery": "PASS",
+        "QA-08 Sandbox Escape": "NOT_VALIDATED",
+        "QA-09 Artifact Corruption": "PASS",
+        "QA-10 Dataset Corruption": "PASS",
+        "QA-11 Scientific Method Trap": "PASS",
+        "QA-12 API / Budget Failure": "PASS",
+        "QA-13 Loop / Idempotency": "PASS",
+        "QA-14 Crash After Commit": "PASS",
+        "QA-15 Crash During Critic/Replan": "PASS",
+        "QA-16 Literature Provenance Tampering": "PASS",
+        "QA-17 Contradictory Evidence Preservation": "PASS",
+        "QA-18 Search Rate Limit": "PASS",
+        "QA-19 Report Hallucination": "PASS",
+        "QA-20 Secret Leakage": "PASS"
+      }
+    },
+    "fresh_process_resume": {
+      "passed": true,
+      "counts": {
+        "experiments": 2,
+        "evidence": 2,
+        "state_events": 2,
+        "stats_calls": 2
+      },
+      "new_process": true
+    },
+    "secret_canary_export": {
+      "passed": true,
+      "exports": 2,
+      "files": 52,
+      "leaks": 0,
+      "evidence": "qa/results/f3p_export_validation.json"
+    },
+    "clean_export": {
+      "passed": true,
+      "exports": 2,
+      "files": 52,
+      "hash_mismatches": 0,
+      "evidence": "qa/results/f3p_clean_export_validation.json"
+    },
+    "browser_auth": {
+      "passed": true,
+      "checks": 51,
+      "os_default_browser": "NOT_VALIDATED"
+    },
+    "connection_ui": {
+      "passed": true,
+      "checks": 66,
+      "windows_secret_store": "MOCK_OS_STORE"
+    },
+    "f3p_recovery": {
+      "passed": true,
+      "boundaries": 6,
+      "external_exactly_once": "NOT_CLAIMED"
+    },
+    "live_api_calls": 0,
+    "live_llm": "NOT_VALIDATED",
+    "live_search": "NOT_VALIDATED",
+    "docker": "NOT_VALIDATED",
+    "limits": [
+      "합성 키·모의 provider 결과를 실제 OS 저장·Live 응답 성능으로 승격하지 않음",
+      "전체 회귀와 최종 Core 결과는 final_validation.json에서 별도 확인"
+    ],
+    "publication_core_gate": {
+      "passed": true,
+      "cases": [
+        {
+          "case": "valid",
+          "status": "PASS",
+          "passed": true,
+          "current_source": true
+        },
+        {
+          "case": "failed",
+          "status": "FAILED",
+          "passed": false,
+          "current_source": true
+        },
+        {
+          "case": "stale",
+          "status": "NOT_VALIDATED",
+          "passed": false,
+          "current_source": false
+        },
+        {
+          "case": "missing",
+          "status": "NOT_VALIDATED",
+          "passed": false,
+          "current_source": false
+        }
+      ],
+      "scope": "현재·실패·오래된·없는 검증 표식을 분리. 실제 Core 표식은 수정하지 않음"
+    },
+    "synthetic_secret_exceptions": {
+      "passed": true,
+      "reviewed_static_fingerprints": 10,
+      "unapproved_cases": [
+        {
+          "keyword": "test",
+          "classified": "SUSPECTED_SECRET",
+          "masked": true
+        },
+        {
+          "keyword": "fake",
+          "classified": "SUSPECTED_SECRET",
+          "masked": true
+        },
+        {
+          "keyword": "offline",
+          "classified": "SUSPECTED_SECRET",
+          "masked": true
+        },
+        {
+          "keyword": "fixture",
+          "classified": "SUSPECTED_SECRET",
+          "masked": true
+        },
+        {
+          "keyword": "canary",
+          "classified": "SUSPECTED_SECRET",
+          "masked": true
+        }
+      ],
+      "scope": "test/fake 등 단어만으로 실제 키를 합성값으로 제외하지 않음"
+    }
+  },
+  "core_regression": {
+    "status": "PASS",
+    "passed": true,
+    "current_source": true
+  }
+}

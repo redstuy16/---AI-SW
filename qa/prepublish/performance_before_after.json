@@ -1,0 +1,104 @@
+{
+  "execution": "현재 Windows · 각 항목 1회 실제 관측",
+  "before": {
+    "cold_start_sec": 1.6359043000011297,
+    "idle_process_count": 1,
+    "idle_cpu_percent": 0.0,
+    "idle_ram_mb": 128.2109375,
+    "api_load_ms": {
+      "list": 7.110799997462891,
+      "detail": 36.574300000211224,
+      "activity": 95.20699999848148,
+      "large_activity": 1372.2282999988238
+    },
+    "large_activity_rows": 3109,
+    "peak_demo_ram_mb": 165.1953125,
+    "peak_demo_cpu_percent": 112.2,
+    "demo_sec": 6.3341084999992745,
+    "sqlite_bytes": 831488,
+    "trace_bytes": 25582,
+    "workspace_bytes": 99314,
+    "gpu": "NOT_APPLICABLE",
+    "simple_view_heavy_modules": [
+      "numpy",
+      "scipy"
+    ],
+    "browser_ready": "NOT_YET_MEASURED",
+    "sqlite_query_plan": [
+      [
+        4,
+        0,
+        216,
+        "SCAN runtime_events"
+      ]
+    ]
+  },
+  "after": {
+    "cold_start_sec": 0.5329529999980878,
+    "idle_process_count": 1,
+    "idle_cpu_percent": 0.0,
+    "idle_ram_mb": 56.83203125,
+    "simple_view_heavy_modules": [],
+    "gpu": "NOT_APPLICABLE",
+    "api_load_ms": {
+      "list": 1.317,
+      "detail": 5.541,
+      "activity": 14.938,
+      "large_activity": 12.244,
+      "large_activity_legacy": 1235.84
+    },
+    "demo_sec": 4.589112900001055,
+    "demo_passed": true,
+    "peak_demo_ram_mb": 164.20703125,
+    "peak_demo_cpu_percent": 102.3,
+    "large_activity_rows": 25,
+    "large_activity_legacy_rows": 3109,
+    "canonical_runtime_events": 3058,
+    "sqlite_query_plan": [
+      [
+        5,
+        0,
+        62,
+        "SEARCH runtime_events USING INDEX idx_runtime_research_seq (research_id=?)"
+      ]
+    ],
+    "sqlite_bytes": 974848,
+    "trace_bytes": 25582,
+    "workspace_bytes": 99314,
+    "limits": [
+      "각 항목 1회 관측 · 통계적 성능 개선 주장 없음",
+      "활동 화면은 전체 3109행에서 페이지 25행으로 변경 · 원본 기록 유지",
+      "CPU는 프로세스 기준이며 한 코어 100% · GPU 측정 대상 없음",
+      "기준 측정 당시 전체 테스트도 실행 중이었으므로 시간·CPU 비교에 간섭 가능"
+    ]
+  },
+  "browser_ready": {
+    "before": {
+      "time_to_browser_ready_sec": 1.9422187000000002,
+      "execution": "Chrome headless + actual loopback auth; OS default browser not tested"
+    },
+    "after": {
+      "time_to_browser_ready_sec": 0.854143,
+      "execution": "Chrome headless + actual loopback auth; OS default browser not tested"
+    }
+  },
+  "evidence": {
+    "before": "build/hardening-resource-baseline/measurements.json",
+    "after": "build/hardening-resource-after/measurements.json",
+    "probe": "qa/resource_probe.py"
+  },
+  "scope": {
+    "memory": "관측한 Python 본체 프로세스 · 브라우저/별도 worker 합산 아님",
+    "cpu": "프로세스 한 코어 100% 기준",
+    "activity": "기준 전체 3109행 · 수정 후 페이지 25행 · 기존 전체 조회 API와 원본 기록 유지",
+    "browser": "실제 Chrome headless + 루프백 인증 · OS 기본 브라우저 미검증",
+    "demo": "고정 Demo A · 오프라인 실행"
+  },
+  "limitations": [
+    "단회 관측이므로 통계적 성능 개선이나 Live Agent 성능을 주장하지 않음",
+    "기준선 측정과 pytest가 겹쳐 시간·CPU 간섭 가능",
+    "브라우저·별도 worker를 포함한 전체 앱 최대 메모리는 측정하지 않음",
+    "SQLite 인덱스로 DB 크기가 증가했으며 trace·workspace 바이트는 동일",
+    "Windows 런처 shim은 Python 본체 프로세스 수에서 제외"
+  ]
+}

@@ -1,0 +1,277 @@
+{
+  "checked_at": "2026-10-02T13:43:38.632627+00:00",
+  "expires_at": "2026-11-01T13:43:38.632641+00:00",
+  "models": [
+    {
+      "provider": "openai",
+      "model_id": "gpt-6.1-sol",
+      "display_name": "GPT-6.1 Sol",
+      "purpose": "일반 연구",
+      "reasoning_levels": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "MAX"
+      ],
+      "cost_class": "STANDARD",
+      "context_class": "1050000",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+      "price_candidate": {
+        "input_per_million": "2",
+        "output_per_million": "10"
+      },
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "reasoning",
+        "usage_reporting"
+      ],
+      "featured_order": 1
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-6-luna",
+      "display_name": "GPT-6 Luna",
+      "purpose": "비용을 제한한 연구",
+      "reasoning_levels": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "MAX"
+      ],
+      "cost_class": "LOW",
+      "context_class": "1050000",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6-luna",
+      "price_candidate": {
+        "input_per_million": "0.1",
+        "output_per_million": "0.5"
+      },
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "reasoning",
+        "usage_reporting"
+      ]
+    },
+    {
+      "provider": "openai",
+      "model_id": "gpt-6-astra",
+      "display_name": "GPT-6 Astra",
+      "purpose": "복잡한 연구",
+      "reasoning_levels": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "MAX"
+      ],
+      "cost_class": "HIGH",
+      "context_class": "1050000",
+      "source": "https://developers.openai.com/api/docs/models/gpt-6-astra",
+      "price_candidate": {
+        "input_per_million": "10",
+        "output_per_million": "50"
+      },
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "reasoning",
+        "usage_reporting"
+      ]
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-sonnet-5-5",
+      "display_name": "Claude Sonnet 5.5",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://platform.claude.com/docs/en/models/overview",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "2",
+        "output_per_million": "10"
+      },
+      "featured_order": 2
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-opus-5-5",
+      "display_name": "Claude Opus 5.5",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://platform.claude.com/docs/en/models/overview",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "4",
+        "output_per_million": "20"
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-fable-5-1",
+      "display_name": "Claude Fable 5.1",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://platform.claude.com/docs/en/models/overview",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "10",
+        "output_per_million": "50"
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model_id": "claude-haiku-4-5-20251001",
+      "display_name": "Claude Haiku 4.5",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://platform.claude.com/docs/en/models/overview",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "1",
+        "output_per_million": "5"
+      }
+    },
+    {
+      "provider": "google_gemini",
+      "model_id": "gemini-3.8-flash",
+      "display_name": "Gemini 3.8 Flash",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "featured_order": 3,
+      "price_source": "https://ai.google.dev/gemini-api/docs/pricing"
+    },
+    {
+      "provider": "google_gemini",
+      "model_id": "gemini-3.5-flash-lite",
+      "display_name": "Gemini 3.5 Flash-Lite",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "0.30",
+        "output_per_million": "2.50"
+      },
+      "price_source": "https://ai.google.dev/gemini-api/docs/pricing"
+    },
+    {
+      "provider": "xai",
+      "model_id": "grok-4.7",
+      "display_name": "Grok 4.7",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://docs.x.ai/developers/models/grok-4.7",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "4",
+        "output_per_million": "12"
+      },
+      "featured_order": 4,
+      "price_source": "https://docs.x.ai/developers/release-notes"
+    },
+    {
+      "provider": "deepseek",
+      "model_id": "deepseek-flash",
+      "display_name": "DeepSeek V4.1 Flash",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "documented_capabilities": [
+        "text",
+        "json_mode",
+        "tool_calling",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "0.3",
+        "output_per_million": "1.2"
+      },
+      "featured_order": 5
+    },
+    {
+      "provider": "deepseek",
+      "model_id": "deepseek-v4-pro",
+      "display_name": "DeepSeek V4 Pro",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "documented_capabilities": [
+        "text",
+        "json_mode",
+        "tool_calling",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "1.32",
+        "output_per_million": "3.96"
+      }
+    },
+    {
+      "provider": "mistral",
+      "model_id": "mistral-medium-3-5",
+      "display_name": "Mistral Medium 3.5",
+      "purpose": "연구",
+      "reasoning_levels": [],
+      "cost_class": "UNKNOWN",
+      "context_class": "문서 참조",
+      "source": "https://docs.mistral.ai/models/mistral-medium-3-5-26-04",
+      "documented_capabilities": [
+        "text",
+        "structured_output",
+        "usage_reporting"
+      ],
+      "price_candidate": {
+        "input_per_million": "1.5",
+        "output_per_million": "7.5"
+      }
+    }
+  ]
+}

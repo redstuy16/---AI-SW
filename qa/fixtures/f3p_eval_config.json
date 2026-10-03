@@ -1,0 +1,20 @@
+{
+  "version": "0.3.0",
+  "dataset_seed": 3911,
+  "cases": [
+    {"id": "single_repairable", "expected": "PASS", "initially_correct": false},
+    {"id": "compound_defect", "expected": "REPAIR_INCOMPLETE", "initially_correct": false},
+    {"id": "faulty_checker", "expected": "CHECKER_QUALIFICATION_FAILED", "initially_correct": true},
+    {"id": "shared_wrong", "expected": "REPAIR_INCOMPLETE", "initially_correct": false},
+    {"id": "semantic_mutation", "expected": "REPAIR_CONTRACT_MUTATION_BLOCKED", "initially_correct": false},
+    {"id": "insufficient_budget", "expected": "REPAIR_NOT_STARTED_BUDGET", "initially_correct": false},
+    {"id": "unsupported_repair", "expected": "REPAIR_UNRESOLVED", "initially_correct": false},
+    {"id": "successful_legacy_repair", "expected": "PASS", "initially_correct": false}
+  ],
+  "live_ablation": {
+    "status": "NOT_VALIDATED",
+    "arms": ["skills_on_f3p_off", "skills_on_f3p_on"],
+    "fixed": ["dataset snapshots", "questions", "provider/model", "reasoning", "budget", "time limit", "seed/repeats", "search access"],
+    "metrics": ["correct_supported_completion", "wrong_to_right", "right_to_wrong", "unnecessary_abstention", "unfinished_recovery_budget", "api_cost", "api_tokens", "tool_executions", "repair_calls", "wall_time"]
+  }
+}

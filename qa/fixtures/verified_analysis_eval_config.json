@@ -1,0 +1,21 @@
+{
+  "version": "1",
+  "primary_metrics": ["supported_task_correct_completion", "correct_abstention_or_rejection"],
+  "guardrails": ["unsafe_acceptance", "unnecessary_rejection", "provenance_failure", "export_failure", "recovery_failure"],
+  "live_metrics": ["code_generation_calls", "repair_calls", "tool_failures", "api_usage", "api_cost_usd_or_unknown", "local_compute_ms", "wall_clock_ms", "verification_ms"],
+  "live_policy": "NOT_VALIDATED until real paired OFF/ON attempts with fixed snapshots, provider/models, budgets, timeouts and seeds; no remote calls in offline mode",
+  "cases": [
+    {"id": "A01", "skill": "tabular_association_v1", "expected": "succeeded"},
+    {"id": "A02", "skill": "tabular_association_v1", "expected": "succeeded"},
+    {"id": "A03", "skill": "tabular_association_v1", "expected": "needs_review"},
+    {"id": "A04", "skill": "tabular_association_v1", "expected": "unsupported"},
+    {"id": "B01", "skill": "tabular_regression_evaluation_v1", "expected": "succeeded"},
+    {"id": "B02", "skill": "tabular_regression_evaluation_v1", "expected": "succeeded"},
+    {"id": "B03", "skill": "tabular_regression_evaluation_v1", "expected": "needs_review"},
+    {"id": "B04", "skill": "tabular_regression_evaluation_v1", "expected": "unsupported"},
+    {"id": "C01", "skill": "timeseries_backtest_v1", "expected": "succeeded"},
+    {"id": "C02", "skill": "timeseries_backtest_v1", "expected": "succeeded"},
+    {"id": "C03", "skill": "timeseries_backtest_v1", "expected": "unsupported"},
+    {"id": "C04", "skill": "timeseries_backtest_v1", "expected": "unsupported"}
+  ]
+}

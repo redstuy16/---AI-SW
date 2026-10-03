@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "seed": 3911,
+  "required_claims_per_answer": 1,
+  "required_numeric_names": ["n", "metrics.estimate", "metrics.p_value", "uncertainty.level", "uncertainty.bounds.0", "uncertainty.bounds.1"],
+  "fixed": ["dataset bytes", "question", "semantic Contract", "AnalysisPlan", "Skill version", "tools", "budget", "seed", "FakeProvider models"],
+  "provenance": [
+    {"id": "wrong_numeric_locator", "gold": "Reject an unresolved result-field locator", "allowed": "BLOCKED"},
+    {"id": "wrong_unit", "gold": "Reject a correlation estimate labeled kilograms", "allowed": "BLOCKED"},
+    {"id": "url_without_support", "gold": "A valid URL cannot support absent text", "allowed": "BLOCKED"},
+    {"id": "parent_revision", "gold": "Changed dataset cannot supply current support", "allowed": "NEEDS_REVALIDATION"},
+    {"id": "stale_pass", "gold": "Old verification PASS cannot support invalidated artifact", "allowed": "NEEDS_REVALIDATION"},
+    {"id": "missing_required_claim", "gold": "Missing material numeric slots cannot commit", "allowed": "BLOCKED"},
+    {"id": "multiple_supports", "gold": "One withdrawn support leaves another valid support after revalidation", "allowed": "SUPPORTED"},
+    {"id": "legitimate_rounding", "gold": "Named three-decimal half-even rounding remains supported", "allowed": "SUPPORTED"},
+    {"id": "contradiction", "gold": "Support and scoped verified contradiction must remain conflicted", "allowed": "CONFLICTED"},
+    {"id": "abstract_as_full_text", "gold": "Reject full-text access claim for an abstract snapshot", "allowed": "BLOCKED"}
+  ],
+  "meaning_preserving": ["identical_repeat", "source_order", "prompt_paraphrase", "irrelevant_distractor", "response_format"],
+  "evidence_changing": ["dataset_revision", "source_withdrawal", "artifact_hash", "leakage_discovery", "result_invalidation"],
+  "scope": "Offline deterministic tools and FakeProvider; no live performance or production prevalence inference. P0 does not examine new metadata: absence of typed support is counted as missing trace coverage, not fabricated faulty scientific output."
+}

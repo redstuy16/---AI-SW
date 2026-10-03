@@ -1,0 +1,71 @@
+# 로컬 환경과 비밀
+.venv/
+.env
+.env.*
+!.env.example
+secrets.env
+
+# 생성 파일과 개인 자료
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+output/
+.codex-remote-attachments/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# 추가 캐시와 개발 환경
+venv/
+env/
+dist/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+.vite/
+.next/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 비밀 파일과 실행 상태
+*.secret
+*.secrets
+*.key
+*.pem
+*.p12
+*.pfx
+*.sqlite3
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+workspace/
+workspaces/
+research_workspace/
+research_workspaces/
+*.log
+logs/
+diagnostics/private/
+
+# 사용자 자료와 로컬 검증 산출물
+qa/output/
+qa/results/*
+!qa/results/README.md
+qa/live_api_test/*/
+exports/local/
+artifacts/local/
+reports/local/
+screenshots/local/
+
+# 모델 가중치
+*.gguf
+*.safetensors
+models/
+weights/

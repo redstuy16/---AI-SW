@@ -1,0 +1,47 @@
+{
+  "execution": "로컬 YAML 파싱·공식 action commit 확인·신규 pytest 검사",
+  "status": "CONFIGURED_ONLY",
+  "github_runs": "NOT_VALIDATED",
+  "unresolved_p0_p1": 0,
+  "files": [
+    ".github/workflows/offline.yml",
+    ".github/workflows/dependency-review.yml",
+    ".github/workflows/codeql.yml",
+    ".github/dependabot.yml"
+  ],
+  "permissions": {
+    "offline": "contents: read",
+    "dependency_review": "contents: read",
+    "codeql": "contents: read · 분석 job만 security-events: write"
+  },
+  "controls": [
+    "모든 action을 공식 저장소 commit SHA로 고정",
+    "checkout persist-credentials: false",
+    "pull_request_target 사용 없음",
+    "PR/branch 문자열을 셸 코드에 삽입하지 않음",
+    "제공사 키 참조와 유료 Live 검사가 없음",
+    "PR 댓글 쓰기 권한 없음"
+  ],
+  "official_pins": {
+    "actions/checkout": {
+      "tag": "v7.0.1",
+      "sha": "3d3c42e5aac5ba805825da76410c181273ba90b1"
+    },
+    "actions/setup-python": {
+      "tag": "v7.0.0",
+      "sha": "5fda3b95a4ea91299a34e894583c3862153e4b97"
+    },
+    "actions/dependency-review-action": {
+      "tag": "v5.0.0",
+      "sha": "a1d282b36b6f3519aa1f3fc636f609c47dddb294"
+    },
+    "github/codeql-action": {
+      "tag": "v4",
+      "sha": "2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2"
+    }
+  },
+  "limits": [
+    "GitHub 서버 측 실행·저장소 설정은 실제 미실행",
+    "fork PR의 CodeQL 업로드 권한은 GitHub 정책에 따라 제한될 수 있음"
+  ]
+}

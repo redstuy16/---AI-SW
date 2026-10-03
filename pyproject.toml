@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=70"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "htrsa"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["pydantic==2.13.5", "numpy==2.5.3", "scipy==1.18.1", "matplotlib==3.11.2", "httpx>=0.27,<1"]
+
+[project.optional-dependencies]
+test = ["pytest==9.1.1", "pathspec==1.1.1", "PyYAML==6.0.3"]
+openai = ["openai-agents>=0.4,<1"]
+security = ["pathspec==1.1.1", "pip-audit==2.10.1", "bandit==1.9.4", "psutil==7.2.2", "PyYAML==6.0.3"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"htrsa.prompts" = ["*.md"]
+"htrsa" = ["workbench_static/*.html", "workbench_static/*.css", "workbench_static/*.js", "product_catalog.json"]
+
+[tool.setuptools.data-files]
+"share/htrsa/migrations" = ["db/migrations/001_initial.sql", "db/migrations/002_real_tools.sql", "db/migrations/003_agent_runtime.sql", "db/migrations/004_research_loop.sql", "db/migrations/005_runtime_recovery.sql", "db/migrations/006_literature.sql"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = ["live_api: opt-in OpenAI API smoke test", "docker_integration: requires Docker daemon and built sandbox image", "live_search: opt-in OpenAlex and Crossref search smoke test", "os_secret_integration: 실제 OS 자격 증명 저장 세션 필요"]
+addopts = "-m 'not live_api and not live_search'"

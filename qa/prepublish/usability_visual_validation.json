@@ -1,0 +1,192 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "API 설정 전용 탭",
+      "passed": true
+    },
+    {
+      "name": "일반 설정에 중복 모델 선택 없음",
+      "passed": true
+    },
+    {
+      "name": "예산 설정 한 곳",
+      "passed": true
+    },
+    {
+      "name": "저사양 설정 저장 성공 초록 알림",
+      "passed": true
+    },
+    {
+      "name": "상단 모델 5개",
+      "passed": true
+    },
+    {
+      "name": "더보기 기본 접힘",
+      "passed": true
+    },
+    {
+      "name": "고급 설정 기본 접힘",
+      "passed": true
+    },
+    {
+      "name": "추천·속도·성능 배지 없음",
+      "passed": true
+    },
+    {
+      "name": "CSV 찾아보기",
+      "passed": true
+    },
+    {
+      "name": "실험 기능 기본 꺼짐",
+      "passed": true
+    },
+    {
+      "name": "성능 이름 low·medium·high·max",
+      "passed": true
+    },
+    {
+      "name": "성능 슬라이더 높이 52px 이상",
+      "passed": true,
+      "measured": {
+        "height": 52
+      }
+    },
+    {
+      "name": "추론 단계만 표시 0",
+      "passed": true
+    },
+    {
+      "name": "추론 단계만 표시 1",
+      "passed": true
+    },
+    {
+      "name": "추론 단계만 표시 2",
+      "passed": true
+    },
+    {
+      "name": "추론 단계만 표시 3",
+      "passed": true
+    },
+    {
+      "name": "CSV 누락 원인과 바로 수정 버튼",
+      "passed": true
+    },
+    {
+      "name": "실패 뒤 질문 유지",
+      "passed": true
+    },
+    {
+      "name": "양식 다시 열어도 질문 유지",
+      "passed": true
+    },
+    {
+      "name": "검증 가벼운 순서와 각각 설명",
+      "passed": true
+    },
+    {
+      "name": "Ridge는 F3-P 없이 선택 불가",
+      "passed": true
+    },
+    {
+      "name": "F3-P 해제 시 Ridge 해제",
+      "passed": true
+    },
+    {
+      "name": "역할 최상위·중간·하위 고정 묶음",
+      "passed": true
+    },
+    {
+      "name": "실제 역할 4개 보존",
+      "passed": true
+    },
+    {
+      "name": "보고서 두 형식 설명",
+      "passed": true
+    },
+    {
+      "name": "연구 설정 비용 영향 표시",
+      "passed": true
+    },
+    {
+      "name": "research-advanced-desktop 가로 넘침 없음",
+      "passed": true
+    },
+    {
+      "name": "research-slider-desktop 가로 넘침 없음",
+      "passed": true
+    },
+    {
+      "name": "research-slider-mobile 가로 넘침 없음",
+      "passed": true
+    },
+    {
+      "name": "도움말 한 주제만 표시",
+      "passed": true
+    },
+    {
+      "name": "help-mobile 가로 넘침 없음",
+      "passed": true
+    },
+    {
+      "name": "준비 확인은 유료 전송 0",
+      "passed": true
+    },
+    {
+      "name": "준비 확인만으로 연구 생성 안 됨",
+      "passed": true
+    },
+    {
+      "name": "연구 시작부터 오프라인 완료",
+      "passed": true,
+      "status": "COMPLETED"
+    },
+    {
+      "name": "검색 불필요한 CSV 계산 검색 전송 0",
+      "passed": true
+    },
+    {
+      "name": "저사양 활동 기록 페이지 25개 이하",
+      "passed": true
+    },
+    {
+      "name": "offline-report 가로 넘침 없음",
+      "passed": true
+    },
+    {
+      "name": "완료 후 자동 새로고침 중지",
+      "passed": true
+    },
+    {
+      "name": "브라우저 영구 저장소 없음",
+      "passed": true
+    },
+    {
+      "name": "인증 비밀이 화면·콘솔에 없음",
+      "passed": true
+    },
+    {
+      "name": "JS 오류·외부 요청 0",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "output/playwright/hardening/research-advanced-desktop.png",
+    "output/playwright/hardening/research-slider-desktop.png",
+    "output/playwright/hardening/research-slider-mobile.png",
+    "output/playwright/hardening/help-mobile.png",
+    "output/playwright/hardening/offline-report.png"
+  ],
+  "storage": {
+    "local": 0,
+    "session": 0,
+    "indexedDB": 0,
+    "workers": 0
+  },
+  "errors": [],
+  "unexpected_network": [],
+  "worker": "기존 FakeProvider · HTTP 스레드 내 실행",
+  "credential_backend": "MOCK_OS_STORE",
+  "live_api_calls": 0,
+  "live_validation": "NOT_VALIDATED"
+}

@@ -1,0 +1,11 @@
+{
+  "version": "1",
+  "scope": "고정 합성 자료의 제한된 오프라인 변환 정합성. 실제 기후 자료나 Live Agent 평가가 아니다.",
+  "gold_origin": "EXTERNAL_FIXTURE",
+  "parent_rows": [{"year": "2019", "value": 1, "other": "a"}, {"year": "2020", "value": 2, "other": "b"}, {"year": "2021", "value": 3, "other": "c"}],
+  "anomaly_and_difference_gold": [{"year": "2019", "value": 1.8, "other": "a"}, {"year": "2020", "value": 3.6, "other": "b"}, {"year": "2021", "value": 5.4, "other": "c"}],
+  "absolute_gold": [{"year": "2019", "value": 33.8, "other": "a"}, {"year": "2020", "value": 35.6, "other": "b"}, {"year": "2021", "value": 37.4, "other": "c"}],
+  "repeats": 3,
+  "cases": ["healthy_anomaly", "healthy_difference", "healthy_absolute", "wrong_offset", "wrong_scale", "year_swap", "duplicate", "missing", "fabricated", "other_column", "missing_value"],
+  "repair_cases": ["wrong_offset", "wrong_scale", "year_swap"]
+}

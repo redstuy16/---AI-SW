@@ -5,7 +5,10 @@ import argparse
 import ctypes
 import os
 from pathlib import Path
+import sqlite3
 import webbrowser
+
+from .storage_errors import storage_error_code
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -38,8 +41,22 @@ def fallback_link(url, *, opener=None, dialog=None):
     return opened
 
 
+def startup_error_message(error):
+    if isinstance(error, ImportError):
+        return "앱 실행에 필요한 패키지가 없습니다. 가상환경 설치를 확인해 주세요."
+    if isinstance(error, ValueError):
+        return "앱 자료 경로와 설정을 확인해 주세요."
+    messages = {
+        "STORAGE_FULL": "저장 공간이 부족합니다. 공간을 확보한 뒤 앱을 다시 실행해 주세요.",
+        "STORAGE_ACCESS_DENIED": "앱 자료 폴더에 접근할 수 없습니다. 접근 권한을 확인해 주세요.",
+        "DATABASE_BUSY": "다른 작업이 연구 자료를 사용 중입니다. 잠시 후 다시 실행해 주세요.",
+        "DATABASE_INVALID": "연구 자료 DB를 읽을 수 없습니다. 백업과 DB 상태를 확인해 주세요.",
+        "DATABASE_UNAVAILABLE": "연구 자료 DB를 열 수 없습니다. 자료 경로와 접근 권한을 확인해 주세요.",
+    }
+    return messages.get(storage_error_code(error), "앱을 시작하지 못했습니다. 자료 경로와 실행 환경을 확인해 주세요.")
+
+
 def main(argv=None, *, runner=None, dialog=None):
-    from .workbench import main as workbench_main
     parser = argparse.ArgumentParser(description="H-TRSA 콘솔 없는 실행")
     parser.add_argument("--data-dir", type=Path, default=ROOT / "build/workbench")
     args = parser.parse_args(argv)
@@ -47,11 +64,13 @@ def main(argv=None, *, runner=None, dialog=None):
     try:
         database, workspace = launch_paths(args.data_dir)
         database.parent.mkdir(parents=True, exist_ok=True)
-        (runner or workbench_main)([str(database), str(workspace)],
-                                  fallback=lambda url: fallback_link(url, dialog=dialog), quiet=True)
+        if runner is None:
+            from .workbench import main as runner
+        runner([str(database), str(workspace)],
+               fallback=lambda url: fallback_link(url, dialog=dialog), quiet=True)
         return 0
-    except (OSError, ValueError):
-        dialog("H-TRSA를 시작하지 못했습니다. 가상환경 설치와 자료 경로 접근 권한을 확인해 주세요. 연구 자료는 삭제하지 않았습니다.")
+    except (OSError, ValueError, sqlite3.Error, ImportError) as error:
+        dialog(startup_error_message(error))
         return 1
 
 

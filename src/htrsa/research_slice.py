@@ -96,6 +96,8 @@ def unit_for(field: str, scope: dict) -> str:
     name = field.rsplit("/", 1)[-1]
     if name in {"n", "sample_size"}:
         return "observations"
+    if scope.get("method") == "two_period_comparison":
+        return "year" if name in {"start", "end"} else scope.get("units", {}).get("value", "UNKNOWN")
     if scope.get("method") in {"pearson_correlation", "spearman_correlation"}:
         return "dimensionless"
     target = scope.get("variables", {}).get("target")
@@ -220,7 +222,11 @@ class ResearchSlice:
                 mutation = self.db.execute("SELECT mutation_id,payload_json FROM staged_mutations WHERE research_id=? AND status='COMMITTED' AND json_extract(payload_json,'$.scientific.stats_artifact_id')=?", (claim.research_id, b.target_id)).fetchone()
                 if not mutation or mutation["mutation_id"] not in b.verification_record_ids:
                     raise ValueError("NUMERIC_VERIFICATION_MISSING")
-                expected_claim, _ = self.science_records(StagedResult.model_validate_json(mutation["payload_json"]), mutation["mutation_id"])
+                verified_payload = StagedResult.model_validate_json(mutation["payload_json"])
+                from .qualified_profiles import verify_profile
+                if any(not c["passed"] for c in verify_profile(self.state, verified_payload)):
+                    raise ValueError("QUALIFIED_PROFILE_REVALIDATION_REQUIRED")
+                expected_claim, _ = self.science_records(verified_payload, mutation["mutation_id"])
                 obligations = self.obligation_records(claim.research_id, mutation["mutation_id"])
                 if self.config(claim.research_id).verifier_dependency_catalog and (not obligations or any(r.outcome != "PASS" or r.qualification_status == "FAILED" or r.check_version != digest(implementation_dependencies(r.check_id)) for r in obligations)):
                     raise ValueError("OBLIGATION_SUPPORT_REVOKED")
@@ -314,24 +320,31 @@ class ResearchSlice:
                  "assumptions": plan.get("assumption_evidence", "UNKNOWN"),
                  "limitations": result.get("limitations", ["observational association is not causal"])}
         scope["analysis_plan"] = plan
+        if payload.agent_result.provenance.get("qualified_profile"):
+            scope["qualified_profile"] = payload.agent_result.provenance.get("qualified_scope", {})
+            scope["units"] = {"value": scope["qualified_profile"].get("transform", {}).get("unit", "UNKNOWN")}
         if self.state.cycle5.enabled(rid):
             scope["cycle5_binding"] = payload.agent_result.provenance.get("cycle5_binding", {})
-        claim_id = identity("CL", science.evidence_id)
+        claim_id = payload.agent_result.provenance.get("qualified_claim_id") if payload.agent_result.provenance.get("qualified_profile") else identity("CL", science.evidence_id)
         estimand = digest({k: scope[k] for k in ("method", "dataset_id", "variables")})
         revision = str(payload.agent_result.provenance.get("analysis_revision", 0))
         from .scientific_verifier import numeric_fields
         material = {"n": result.get("n")}
         material.update({k: v for k, v in result.items() if k in {"estimate", "p_value", "metrics", "uncertainty"}})
+        if science.method == "two_period_comparison":
+            material.update({k: result[k] for k in ("periods", "difference")})
         slots = [NumericSlot(name=name, locator="/result/" + name.replace(".", "/"), value=value,
                              unit=unit_for(name.replace(".", "/"), scope), method=science.method,
                              estimand_id=estimand, artifact_id=science.stats_artifact_id,
                              artifact_revision=revision, artifact_hash=artifact["sha256"])
                  for name, value in numeric_fields(material).items()]
         claim = Claim(claim_id=claim_id, research_id=rid, text=science.claim,
-                      claim_type="prediction" if science.method.startswith("ridge_") else "association",
+                      claim_type="comparison" if science.method == "two_period_comparison" else "prediction" if science.method.startswith("ridge_") else "association",
                       scope=scope, estimand_id=estimand, numeric_slots=slots, created_from=mutation_id)
+        if payload.agent_result.provenance.get("qualified_profile"):
+            claim.revision = payload.agent_result.provenance["qualified_claim_revision"]
         binding = EvidenceBinding(binding_id=identity("EB", mutation_id), claim_id=claim_id,
-            claim_revision=1, evidence_kind="artifact", target_id=science.stats_artifact_id,
+            claim_revision=claim.revision, evidence_kind="artifact", target_id=science.stats_artifact_id,
             target_revision=revision, target_hash=artifact["sha256"], relation="SUPPORTS",
             usage_type="NUMERIC_RESULT", locator={"experiment_id": science.experiment_id, "dataset_id": science.dataset_id},
             scope=scope, assumptions=scope["limitations"], verification_record_ids=[mutation_id])

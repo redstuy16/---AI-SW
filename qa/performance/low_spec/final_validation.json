@@ -1,0 +1,280 @@
+{
+  "recorded_at": "2026-10-03T11:05:31.728945+09:00",
+  "source_fingerprint": "fda080d1c695e2bc574a853f1d1c76f30b60381a665ab8436141d72187930b18",
+  "source_fingerprint_status": "현재 소스와 CORE·오프라인 검증·마지막 성능 측정 일치",
+  "baseline": {
+    "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/flow-opt-baseline-tests --junitxml build/flow-opt-baseline.xml",
+    "passed": 788,
+    "skipped": 5,
+    "deselected": 2,
+    "seconds": 502.28
+  },
+  "focused": {
+    "passed": 209,
+    "seconds": 44.42,
+    "command": ".venv\\Scripts\\python.exe -X utf8 -m pytest -q tests/test_multi_provider.py tests/test_execution_flow.py -p no:cacheprovider --basetemp build/flow-local-limit-tests --junitxml build/flow-local-limit-tests.xml"
+  },
+  "final_regression": {
+    "status": "PASS",
+    "passed": 845,
+    "skipped": 5,
+    "deselected": 2,
+    "seconds": 807.97,
+    "result_path": "build/flow-final-regression-v3.xml",
+    "scope": "전역 로컬 한도 추가 전 전체; 추가 후 전체 오프라인 CORE 결과는 core_gate에 기록"
+  },
+  "core_gate": {
+    "status": "PASS",
+    "passed": 847,
+    "skipped": false,
+    "command": ".venv\\Scripts\\python.exe -X utf8 -m htrsa.preflight validate-core",
+    "marker": "not live_api and not live_search and not docker_integration and not os_secret_integration"
+  },
+  "intermediate_regression": {
+    "failed": 7,
+    "passed": 838,
+    "skipped": 5,
+    "deselected": 2,
+    "seconds": 813.84,
+    "issue": "provider replay 마지막 감사 이벤트의 resolved_model_id 누락",
+    "repair": "완료된 실행 자원 기록에 실제 모델 ID 저장; 기존 테스트 유지"
+  },
+  "destructive": {
+    "passed": 116,
+    "seconds": 190.962,
+    "scenarios_passed": 19,
+    "docker_scenario": "NOT_VALIDATED"
+  },
+  "demos": {
+    "a_repetitions": 5,
+    "a_pass": true,
+    "b_repetitions": 5,
+    "b_pass": true
+  },
+  "crash_resume": {
+    "pass": true,
+    "f3p_boundaries": 6,
+    "f3p_pass": true,
+    "external_exactly_once": "NOT_VALIDATED"
+  },
+  "export": {
+    "release_files": 17,
+    "release_pass": true,
+    "f3p_canary_and_clean_files": 104,
+    "f3p_pass": true,
+    "live_api_calls": 0,
+    "details": {
+      "canary": {
+        "all_passed": true,
+        "canary_present_in_environment": true,
+        "cases": [
+          {
+            "absolute_paths": [],
+            "case": "single_repairable",
+            "dashboard_canary_leaks": [],
+            "db_canary_leaks": [],
+            "file_count": 28,
+            "hash_mismatches": [],
+            "manifest": "build/flow-final-f3p-v3/6aecb8bb54db4437a5eb412c9273b96d/single_repairable/release-canary-5d940db1/manifests/release_manifest.json",
+            "missing_artifacts": [],
+            "passed": true,
+            "secrets": [],
+            "unresolved_refs": []
+          },
+          {
+            "absolute_paths": [],
+            "case": "successful_legacy_repair",
+            "dashboard_canary_leaks": [],
+            "db_canary_leaks": [],
+            "file_count": 24,
+            "hash_mismatches": [],
+            "manifest": "build/flow-final-f3p-v3/6aecb8bb54db4437a5eb412c9273b96d/successful_legacy_repair/release-canary-e9f40bf4/manifests/release_manifest.json",
+            "missing_artifacts": [],
+            "passed": true,
+            "secrets": [],
+            "unresolved_refs": []
+          }
+        ],
+        "live_api_calls": 0
+      },
+      "clean": {
+        "all_passed": true,
+        "canary_present_in_environment": false,
+        "cases": [
+          {
+            "absolute_paths": [],
+            "case": "single_repairable",
+            "dashboard_canary_leaks": [],
+            "db_canary_leaks": [],
+            "file_count": 28,
+            "hash_mismatches": [],
+            "manifest": "build/flow-final-f3p-v3/6aecb8bb54db4437a5eb412c9273b96d/single_repairable/release-clean-1d822f48/manifests/release_manifest.json",
+            "missing_artifacts": [],
+            "passed": true,
+            "secrets": [],
+            "unresolved_refs": []
+          },
+          {
+            "absolute_paths": [],
+            "case": "successful_legacy_repair",
+            "dashboard_canary_leaks": [],
+            "db_canary_leaks": [],
+            "file_count": 24,
+            "hash_mismatches": [],
+            "manifest": "build/flow-final-f3p-v3/6aecb8bb54db4437a5eb412c9273b96d/successful_legacy_repair/release-clean-616e47ae/manifests/release_manifest.json",
+            "missing_artifacts": [],
+            "passed": true,
+            "secrets": [],
+            "unresolved_refs": []
+          }
+        ],
+        "live_api_calls": 0
+      }
+    }
+  },
+  "browsers": {
+    "existing_scripts": 10,
+    "existing_checks_passed": 363,
+    "flow_checks_passed": 31,
+    "large_flow_checks_passed": 10,
+    "js_errors": 0,
+    "csp_errors": 0,
+    "external_requests": 0,
+    "paid_calls": 0,
+    "os_default_browser": "NOT_VALIDATED"
+  },
+  "f3p_offline": {
+    "fixtures": 8,
+    "passed": 8,
+    "wrong_to_right": 2,
+    "right_to_wrong": 0,
+    "correctly_blocked": 6,
+    "incorrectly_blocked": 0,
+    "budget_incomplete": 1,
+    "checker_fault": 1,
+    "semantic_mutation_blocked": 1,
+    "unresolved": 1,
+    "repair_success_rate": 0.5,
+    "incompletion_rate": 0.25,
+    "live_efficacy": "NOT_VALIDATED"
+  },
+  "measured": {
+    "cold_median_before_ms": 523.4904,
+    "cold_median_after_ms": 488.54230000142707,
+    "cold_candidate": "NO_MEANINGFUL_GAIN",
+    "list_median_before_ms": 73.1887,
+    "list_median_after_ms": 68.77739999617916,
+    "large_flow_nodes": 939,
+    "large_flow_edges_lower_bound": 596,
+    "initial_ms": 92.882,
+    "all_first_page_ms": 110.9914,
+    "real_status_update_ms": 92.7842,
+    "idle_seconds": 60.014382,
+    "renderer_cpu_percent": 0.045119,
+    "renderer_js_heap_mib": 2.459991,
+    "after_encoded_transfer_bytes": 165869,
+    "comparable_before_transfer": "NOT_VALIDATED",
+    "low_hardware": "NOT_VALIDATED",
+    "sample_interference": "마지막 cold 첫 표본 일부는 관련 테스트 끝부분과 겹침; 시작 시간 개선을 단정하지 않음"
+  },
+  "readiness": {
+    "demo_ready": true,
+    "release_ready": false,
+    "product_release_ready": false
+  },
+  "implementation_limits": [
+    "같은 앱 DB의 모든 로컬 서버에서 추론 1개. 다른 DB·외부 프로그램은 제어하지 않음.",
+    "계획 버전 필드가 없는 기존 구조에 맞춰 plan_version은 null.",
+    "작업 참조가 없는 예산 이벤트는 연구 범위에 연결.",
+    "대형 그래프 메타데이터 전체를 O(N+E)로 읽음; 검증 규모 939개 노드.",
+    "실제 로컬 GPU 처리량, Live Agent 효능과 실제 저사양 장치는 NOT_VALIDATED."
+  ],
+  "transient_execution_error": {
+    "code": 1909,
+    "status": "RECOVERED",
+    "note": "실행 환경 복구 뒤 전역 로컬 한도·209개 관련 검사·CORE·export·보안 검사를 실행"
+  },
+  "environment": {
+    "docker": {
+      "cli_present": false,
+      "daemon_reachable": false,
+      "image_present": false,
+      "image": "htrsa-sandbox:3.13",
+      "image_id": null,
+      "isolation_probe_passed": false,
+      "available": false,
+      "isolation_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "provider": {
+      "api_key_present": false,
+      "manager_model_configured": false,
+      "provider_importable": true,
+      "structured_output_available": true,
+      "configured": false,
+      "live_smoke_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "search": {
+      "status": "UNCONFIGURED",
+      "validated": false,
+      "provider": null,
+      "error_code": null
+    },
+    "sandbox": {
+      "fail_closed": true
+    },
+    "gates": {
+      "CORE_TESTS_PASS": true,
+      "STRESS_TESTS_PASS": true,
+      "ARTIFACT_VALIDATION_PASS": true,
+      "DOCKER_ISOLATION_PASS": false,
+      "LIVE_API_SMOKE_PASS": false,
+      "LIVE_SEARCH_PASS": false,
+      "DEMO_A_PASS": true,
+      "DEMO_B_PASS": true
+    },
+    "demo_ready": true,
+    "release_ready": false,
+    "productization": {
+      "windows_key": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:06:34.146634+00:00",
+        "error_code": "WINDOWS_ERROR_1312"
+      },
+      "default_browser": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:07:01.150073+00:00",
+        "error_code": null
+      }
+    },
+    "product_release_ready": false
+  },
+  "security": {
+    "publication_status": "BLOCKED",
+    "blockers": [
+      "LICENSE_PENDING_OWNER_CHOICE"
+    ],
+    "public_candidate_files": 281,
+    "suspected_secrets": 0,
+    "git_status": "VALIDATED",
+    "history_status": "VALIDATED",
+    "history_objects_scanned": 239,
+    "core_regression": {
+      "status": "PASS",
+      "passed": true,
+      "current_source": true
+    }
+  },
+  "final_checks": {
+    "utf8_files": 47,
+    "diff_check_exit": 0,
+    "report_sections": [
+      12,
+      12
+    ],
+    "source_fingerprint": "fda080d1c695e2bc574a853f1d1c76f30b60381a665ab8436141d72187930b18"
+  }
+}

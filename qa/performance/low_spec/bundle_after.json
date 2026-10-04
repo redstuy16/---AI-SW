@@ -1,0 +1,56 @@
+{
+  "scope": "초기 화면 · Chrome CDP loadingFinished encodedDataLength · HTTP 헤더 포함, 캐시 비활성",
+  "requests": [
+    {
+      "path": "/",
+      "encoded_bytes": 2764
+    },
+    {
+      "path": "/assets/workbench.css",
+      "encoded_bytes": 21440
+    },
+    {
+      "path": "/assets/bootstrap.js",
+      "encoded_bytes": 2911
+    },
+    {
+      "path": "/assets/workbench.js",
+      "encoded_bytes": 38954
+    },
+    {
+      "path": "/assets/cycle5_ui.js",
+      "encoded_bytes": 2701
+    },
+    {
+      "path": "/assets/live_api_test.js",
+      "encoded_bytes": 8232
+    },
+    {
+      "path": "/assets/product_ux.js",
+      "encoded_bytes": 36528
+    },
+    {
+      "path": "/assets/provider_settings.js",
+      "encoded_bytes": 20814
+    },
+    {
+      "path": "/auth/bootstrap",
+      "encoded_bytes": 661
+    },
+    {
+      "path": "/favicon.ico",
+      "encoded_bytes": 437
+    },
+    {
+      "path": "/api/control/settings",
+      "encoded_bytes": 17256
+    },
+    {
+      "path": "/api/control/research",
+      "encoded_bytes": 13171
+    }
+  ],
+  "total_encoded_bytes": 165869,
+  "before": "NOT_VALIDATED",
+  "paid_live_calls": 0
+}

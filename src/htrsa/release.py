@@ -91,7 +91,7 @@ def _migration_version(state: StateService) -> str | None:
     return row["version"] if row and row["version"] else None
 
 
-def _copy_research_output(state: StateService, research_id: str, output: Path) -> list[dict[str, Any]]:
+def validate_report_snapshot(state: StateService, research_id: str) -> dict[str, Any]:
     if state.workspace is None:
         raise ReleaseExportError("research workspace is required")
     source = state.workspace.path(research_id, "research_output")
@@ -123,6 +123,18 @@ def _copy_research_output(state: StateService, research_id: str, output: Path) -
         if report.read_text(encoding="utf-8", errors="strict") != _render_report(state, research_id, conclusion):
             raise ReleaseExportError("final report differs from canonical state")
         slice_snapshot = state.research_slice.snapshot(research_id)
+        from .qualified_profiles import export_bundle
+        from .research_design import current_design, summary
+        design = current_design(state, research_id)
+        if design:
+            saved_design = state.workspace.path(research_id, "research_output/research_design.json")
+            if from_json(saved_design.read_text(encoding="utf-8", errors="strict")) != {"current": design, "summary": summary(state, research_id)}:
+                raise ReleaseExportError("연구 설계가 현재 검증된 수정본과 다릅니다.")
+        qualified = export_bundle(state, research_id)
+        if qualified:
+            saved_profile = state.workspace.path(research_id, "research_output/qualified_profile.json")
+            if from_json(saved_profile.read_text(encoding="utf-8", errors="strict")) != qualified:
+                raise ReleaseExportError("qualified profile differs from current verified state")
         if slice_snapshot:
             if any(not item["verification"]["passed"] for item in slice_snapshot.get("cycle5", {}).get("lineages", [])):
                 raise ReleaseExportError("declared transformation lineage is not validated")
@@ -133,6 +145,12 @@ def _copy_research_output(state: StateService, research_id: str, output: Path) -
         if isinstance(exc, ReleaseExportError):
             raise
         raise ReleaseExportError("release source integrity validation failed") from exc
+    return manifest
+
+
+def _copy_research_output(state: StateService, research_id: str, output: Path) -> list[dict[str, Any]]:
+    manifest = validate_report_snapshot(state, research_id)
+    source = state.workspace.path(research_id, "research_output")
     target = (output / "research_output").resolve()
     output = output.resolve()
     if not target.is_relative_to(output):
@@ -327,6 +345,11 @@ def _export_release(state: StateService, research_id: str, output: str | Path) -
         controlled = state._db.execute("SELECT snapshot FROM control_runs WHERE research_id=?", (research_id,)).fetchone()
         if controlled:
             snapshot = from_json(controlled[0])
+            if snapshot.get("settings_version", 1) >= 2:
+                from .report_pdf import render_pdf
+                rendered = render_pdf(state, research_id, protected_values=_PROTECTED_VALUES.get())
+                (output / "report.pdf").write_bytes(rendered["data"])
+                files.append({"path":"report.pdf", "sha256":rendered["sha256"], "size_bytes":len(rendered["data"])})
             configuration = {k:snapshot.get(k) for k in ("models", "profile_revisions", "routing", "routing_revision", "adapter_versions", "fallback_policy")}
             traces = []
             for event in state._db.execute("SELECT kind,payload,created_at FROM control_audit WHERE research_id=? AND kind LIKE 'NORMALIZED_%' ORDER BY seq", (research_id,)):

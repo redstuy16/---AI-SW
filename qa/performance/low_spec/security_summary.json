@@ -1,0 +1,306 @@
+{
+  "publication_status": "BLOCKED",
+  "blockers": [
+    "LICENSE_PENDING_OWNER_CHOICE"
+  ],
+  "git_status": "VALIDATED",
+  "history_status": "VALIDATED",
+  "history_objects_scanned": 239,
+  "public_candidate_files": 281,
+  "ignored_files_seen": 82,
+  "tracked_sensitive_files": [],
+  "ignored_required_source_files": [],
+  "suspected_secrets": 0,
+  "large_files": [],
+  "absolute_local_paths": [
+    {
+      "path": "qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    }
+  ],
+  "findings": [
+    {
+      "path": "qa/f3p_export_probe.py",
+      "line": 27,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "98cdd25bc7c6"
+    },
+    {
+      "path": "qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "qa/research_slice_export_probe.py",
+      "line": 26,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "23c0b291f71b"
+    },
+    {
+      "path": "qa/secret_scan.py",
+      "line": 25,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "db4665d72437"
+    },
+    {
+      "path": "src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 46,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "5f0b167c2532"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "tests/test_hardening.py",
+      "line": 287,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "2393ee179ea1"
+    },
+    {
+      "path": "tests/test_research_slice.py",
+      "line": 323,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "f301da1e7db6"
+    },
+    {
+      "path": "tests/test_verification_repair.py",
+      "line": 303,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "06751fa589fd"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 423,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 442,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 629,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "48e01164acfd"
+    },
+    {
+      "path": "tests/test_workbench.py",
+      "line": 650,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "219c6595a0b0"
+    },
+    {
+      "path": "history/qa/f3p_export_probe.py",
+      "line": 27,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "98cdd25bc7c6"
+    },
+    {
+      "path": "history/qa/prepublish_check.py",
+      "line": 16,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/qa/research_slice_export_probe.py",
+      "line": 26,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "23c0b291f71b"
+    },
+    {
+      "path": "history/qa/secret_scan.py",
+      "line": 25,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "db4665d72437"
+    },
+    {
+      "path": "history/src/htrsa/search_policy.py",
+      "line": 29,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 46,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "5f0b167c2532"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 70,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 192,
+      "kind": "ABSOLUTE_LOCAL_PATH",
+      "severity": "P3"
+    },
+    {
+      "path": "history/tests/test_hardening.py",
+      "line": 287,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "2393ee179ea1"
+    },
+    {
+      "path": "history/tests/test_research_slice.py",
+      "line": 323,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "f301da1e7db6"
+    },
+    {
+      "path": "history/tests/test_verification_repair.py",
+      "line": 303,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "06751fa589fd"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 423,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 442,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "552b9e1a936c"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 629,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "48e01164acfd"
+    },
+    {
+      "path": "history/tests/test_workbench.py",
+      "line": 650,
+      "kind": "EXPECTED_SYNTHETIC",
+      "severity": "INFO",
+      "value": "[MASKED]",
+      "fingerprint": "219c6595a0b0"
+    }
+  ],
+  "large_file_threshold": 10000000,
+  "license_present": false,
+  "github_settings": "NOT_VALIDATED",
+  "dependency_findings": "RUN_SEPARATELY",
+  "code_findings": "RUN_SEPARATELY",
+  "limits": [
+    "무시된 로컬 자료는 공개 후보 검사에서 제외",
+    "패턴·활성 비밀 검사 외 수동 사용자 자료 검토 필요",
+    "Git 이력이 없으면 공개 준비 완료로 표시하지 않음"
+  ],
+  "core_regression": {
+    "status": "PASS",
+    "passed": true,
+    "current_source": true
+  }
+}

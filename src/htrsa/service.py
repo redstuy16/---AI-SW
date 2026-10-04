@@ -109,10 +109,16 @@ class StateService:
             self._db.execute("UPDATE datasets SET status='INVALID' WHERE research_id=? AND dataset_id=?", (research_id, dataset_id))
         return self._planning_commit(research_id, "DATASET_INVALIDATED", "dataset", dataset_id, {"reason": reason}, write)
 
-    def create_research(self, goal: str) -> str:
+    def create_research(self, goal: str, *, research_id: str | None = None) -> str:
         if not goal.strip():
             raise ValueError("goal is required")
-        research_id = new_id("R")
+        if research_id is not None:
+            prior = self._db.execute("SELECT goal FROM research_runs WHERE research_id=?", (research_id,)).fetchone()
+            if prior:
+                if prior["goal"] != goal:
+                    raise StateConflictError("research creation identity conflict")
+                return research_id
+        research_id = research_id or new_id("R")
         with self._db:
             self._db.execute(
                 "INSERT INTO research_runs(research_id,goal,state_version,created_at) VALUES (?,?,0,?)",
@@ -130,6 +136,8 @@ class StateService:
                 raise ContractViolationError("parent task belongs to another research")
         task_id = new_id("TASK")
         with self._db:
+            from .research_design import bind_contract
+            bind_contract(self, contract)
             self._db.execute(
                 "INSERT INTO tasks VALUES (?,?,?,?,?)",
                 (task_id, contract.research_id, contract.parent_task_id, contract.assigned_role, "ISSUED"),
@@ -716,7 +724,7 @@ class StateService:
         self._db.execute("BEGIN IMMEDIATE")
         try:
             row = self._one("SELECT state_version,run_status FROM research_runs WHERE research_id=?", (research_id,))
-            if row["run_status"] != "ACTIVE" and event_type not in {"EXPERIMENT_INVALIDATED", "SOURCE_INVALIDATED", "CLAIM_INVALIDATED", "CLAIM_REVALIDATED", "VERIFIER_QUALIFICATION_CHANGED", "DATASET_INVALIDATED", "CYCLE5_REVISION"}:
+            if row["run_status"] != "ACTIVE" and event_type not in {"EXPERIMENT_INVALIDATED", "SOURCE_INVALIDATED", "CLAIM_INVALIDATED", "CLAIM_REVALIDATED", "VERIFIER_QUALIFICATION_CHANGED", "DATASET_INVALIDATED", "CYCLE5_REVISION", "QUALIFIED_SOURCE_REVIEWED", "QUALIFIED_QUESTION_AMENDED", "RESEARCH_DESIGN_AMENDED"}:
                 raise InvalidStateTransitionError("research is stopped")
             write()
             version = row["state_version"] + 1
@@ -735,10 +743,60 @@ class StateService:
     def set_research_question(self, research_id: str, question: str) -> int:
         if not question.strip():
             raise ValueError("research question is required")
+        def write():
+            self._db.execute("UPDATE research_runs SET research_question=? WHERE research_id=?", (question, research_id))
+            self._invalidate_qualified_result(research_id, "QUESTION_INTERPRETATION_CHANGED")
         return self._planning_commit(research_id, "QUESTION_REFINED", "research", research_id,
-                                     {"question": question},
-                                     lambda: self._db.execute("UPDATE research_runs SET research_question=? WHERE research_id=?",
-                                                              (question, research_id)))
+                                     {"question": question}, write)
+
+    def _invalidate_qualified_result(self, research_id, reason):
+        from .qualified_profiles import current_record
+        record = current_record(self, research_id)
+        if not record:
+            return
+        saved = self._one("SELECT payload_json FROM staged_mutations WHERE research_id=? AND mutation_id=?", (research_id, record["mutation_id"]))
+        science = StagedResult.model_validate_json(saved[0]).scientific
+        self.research_slice.invalidate(research_id, "artifact", science.stats_artifact_id, reason, within_transaction=True)
+        self._db.execute("UPDATE experiments SET status='INVALIDATED' WHERE research_id=? AND experiment_id=?", (research_id, science.experiment_id))
+        self._db.execute("UPDATE evidence SET status='INVALIDATED' WHERE research_id=? AND experiment_id=?", (research_id, science.experiment_id))
+        self._db.execute("UPDATE artifacts SET status='INVALIDATED' WHERE research_id=? AND artifact_id IN (?,?)",
+                         (research_id, science.stats_artifact_id, science.figure_artifact_id))
+        self._db.execute("UPDATE artifacts SET status='INVALIDATED' WHERE research_id=? AND artifact_id=?",
+                         (research_id, StagedResult.model_validate_json(saved[0]).agent_result.result_id))
+
+    def record_qualified_revision(self, research_id, event_type, step_key, document, *,
+                                  expected_version, question=None, affected=False, qualified_authority=None):
+        """소유자 절차에서 호출하며 자료·질문 수정과 의존 무효화를 한 트랜잭션에 저장한다."""
+        if event_type not in {"QUALIFIED_SOURCE_REVIEWED", "QUALIFIED_QUESTION_AMENDED", "RESEARCH_DESIGN_AMENDED"}:
+            raise ContractViolationError("qualified revision authority is required")
+        if question is not None and event_type not in {"QUALIFIED_QUESTION_AMENDED", "RESEARCH_DESIGN_AMENDED"}:
+            raise ContractViolationError("question amendment authority is required")
+        if qualified_authority and event_type != "RESEARCH_DESIGN_AMENDED":
+            raise ContractViolationError("design amendment authority is required")
+        encoded = to_json(document)
+        encoded.encode("utf-8", errors="strict")
+        def write():
+            if self.state_version(research_id) != expected_version:
+                raise StateConflictError("qualified revision is stale")
+            if self.runtime_step(research_id, step_key):
+                raise StateConflictError("qualified revision already exists")
+            self._db.execute("INSERT INTO runtime_steps(research_id,step_key,status,output_json,attempt,updated_at) VALUES (?,?,'COMPLETED',?,1,?)",
+                             (research_id, step_key, encoded, utc_now().isoformat()))
+            if question is not None:
+                self._db.execute("UPDATE research_runs SET research_question=? WHERE research_id=?", (question, research_id))
+            if qualified_authority:
+                key = "qualified_authority:" + str(qualified_authority["plan"]["question_revision"])
+                self._db.execute("INSERT INTO runtime_steps(research_id,step_key,status,output_json,attempt,updated_at) VALUES (?,?,'COMPLETED',?,1,?)",
+                                 (research_id, key, to_json(qualified_authority), utc_now().isoformat()))
+            if affected:
+                self._invalidate_qualified_result(research_id, event_type)
+                if event_type == "RESEARCH_DESIGN_AMENDED":
+                    for row in self._db.execute("SELECT experiment_id FROM experiments WHERE research_id=? AND status='VERIFIED'", (research_id,)).fetchall():
+                        self.research_slice.invalidate(research_id, "experiment", row[0], event_type, within_transaction=True)
+                    self._db.execute("UPDATE experiments SET status='INVALIDATED' WHERE research_id=? AND status='VERIFIED'", (research_id,))
+                    self._db.execute("UPDATE evidence SET status='INVALIDATED' WHERE research_id=? AND experiment_id IS NOT NULL AND status='VERIFIED'", (research_id,))
+        return self._planning_commit(research_id, event_type, "research", research_id,
+                                     {"step_key": step_key, "affected": affected, "question": question}, write)
 
     def search_cache_get(self, research_id: str, cache_key: str) -> dict | None:
         row = self._db.execute("SELECT result_json FROM scholarly_search_cache WHERE research_id=? AND cache_key=?",
@@ -1250,6 +1308,11 @@ class StateService:
             row = self._one("SELECT run_status FROM research_runs WHERE research_id=?", (research_id,))
             if row["run_status"] != "ACTIVE":
                 raise InvalidStateTransitionError("research already stopped")
+            if reason == StopReason.QUALIFIED_PROCEDURE_COMPLETED:
+                from .qualified_profiles import conclusion_card
+                card = conclusion_card(self, research_id)
+                if not card["available"] or not card["current"]:
+                    raise ContractViolationError("qualified procedure requires a current verified claim")
             if reason == StopReason.GOAL_ANSWERED:
                 if candidate is None or not candidate.evidence_refs or candidate.support_level == "NONE":
                     raise ContractViolationError("answered goal requires supported conclusion")
@@ -1270,7 +1333,7 @@ class StateService:
                         for evidence_id in evidence_ids) for row in supported):
                     raise ContractViolationError("conclusion lacks a supported hypothesis")
             self._db.execute("UPDATE research_runs SET run_status=?,stop_reason=?,conclusion_json=? WHERE research_id=?",
-                             ("COMPLETED" if reason == StopReason.GOAL_ANSWERED else "STOPPED",
+                             ("COMPLETED" if reason in {StopReason.GOAL_ANSWERED, StopReason.QUALIFIED_PROCEDURE_COMPLETED} else "STOPPED",
                               reason.value, to_json(candidate) if candidate is not None else None, research_id))
             self._db.execute("UPDATE tasks SET status='CANCELLED' WHERE research_id=? AND status IN ('ISSUED','RUNNING','WAITING_RETRY','WAITING_ESCALATION')",
                              (research_id,))

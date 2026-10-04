@@ -66,6 +66,15 @@ async def check_model(app, profile_id, body, *, client_factory=None, scope=None)
         profile.capabilities = dict(profile.capabilities)
         profile.capabilities.pop(capability)
     defaults = app.store.defaults()
+    if body.get("budget_cap_usd") is not None and scope is None:
+        from decimal import Decimal
+        try:
+            cap = Decimal(str(body["budget_cap_usd"]))
+            if not cap.is_finite() or not 0 < cap <= defaults.request_limit_usd:
+                raise ValueError()
+        except (ValueError, ArithmeticError):
+            raise ControlError("BUDGET_CAP_REQUIRED") from None
+        scope = {"rid":new_id("SMOKE"), "limit":str(cap)}
     snapshot = {"models":{"manager":profile.model_dump(mode="json")},"connections":{connection.connection_id:connection.model_dump(mode="json")},
         "egress":"selected","run_limit_usd":scope["limit"] if scope else str(defaults.request_limit_usd), **defaults.model_dump(mode="json"), "depth_limits":{"attempts":6 if scope else 2 if mode == "tools" else 1}}
     gateway = RoutedGateway(app.store, app.credentials, scope["rid"] if scope else new_id("SMOKE"), snapshot, purpose="settings_smoke", client_factory=client_factory)

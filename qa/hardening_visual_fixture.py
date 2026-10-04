@@ -51,6 +51,7 @@ def main():
     api.store.put('connection', 'offline', Connection(connection_id='offline', display_name='오프라인 검증 서버', adapter_id='openai_compatible', base_url='http://127.0.0.1:1234/v1', endpoint_class='loopback', destination_approved=True, auth_strategy='none', credential_env_name=None))
     api.store.put('model', 'offline', ModelProfile(profile_id='offline', connection_id='offline', model_id='offline-fixed', display_name='오프라인 검증 모델', protocol='chat', capability_status='supported', local_api_unmetered=True))
     save_preferences(api.store, {'model_profile_id': 'offline'})
+    api.request("POST","/api/control/preferences",{"explanation_prompt_dismissed":True})
     session = OwnerSession()
     server = create_server(api, session=session)
     print('http://' + server.RequestHandlerClass.authority + '/#bootstrap=' + session.issue_bootstrap(), flush=True)

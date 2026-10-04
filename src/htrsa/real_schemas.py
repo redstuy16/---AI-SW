@@ -37,7 +37,7 @@ class DatasetRefArgs(StrictModel):
 
 class StatsArgs(StrictModel):
     dataset_id: str
-    method: Literal["descriptive", "pearson_correlation", "spearman_correlation", "independent_t_test", "mann_whitney_u", "linear_regression"]
+    method: Literal["descriptive", "pearson_correlation", "spearman_correlation", "independent_t_test", "mann_whitney_u", "linear_regression", "two_period_comparison"]
     variables: dict[str, str]
     parameters: dict[str, Any] = Field(default_factory=dict)
 

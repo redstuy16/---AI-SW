@@ -28,12 +28,13 @@ async function main(){
  await settings();await models();
  check('상단 모델 5개',await page.locator('#featured-models .model-option').count()===5);
  check('추천·속도·성능 표시 없음',!(await page.locator('#featured-models').innerText()).match(/추천|권장|고성능|빠른/));
- check('더보기 기본 접힘',!await page.locator('#more-models').evaluate(e=>e.open));
- check('추가 모델 8개',await page.locator('#more-models .model-option').count()===8);
- await page.locator('#more-models>summary').click();
- check('제공사별 추가 모델 묶음',await page.locator('#more-models legend').count()===5);
+ check('더보기 기본 접힘',await page.locator('#more-models').getAttribute('aria-expanded')==='false');
+ check('접힌 목록은 상단 5개만',await page.locator('#research-model-picker .model-option').count()===5);
+ await page.locator('#more-models').click();
+ check('제공사별 추가 모델 묶음',await page.locator('#research-model-picker .provider-group legend').count()===6);
+ check('확장 시 모든 미선택 모델을 제공사별 이동',await page.locator('#featured-models').count()===0&&await page.locator('#research-model-picker .model-option').count()===13);
  await capture('models-more-1440');
- await page.locator('#more-models>summary').click();
+ await page.locator('#more-models').click();
  await pane('advanced');check('고급 설정에 API 관리 없음',await page.locator('#settings-pane-advanced #settings-1').count()===0);
  await pane('connections');check('API 연결 전용 탭',await page.locator('#settings-pane-connections #settings-1').isVisible());
  check('연결 목록에서 주소 숨김',!(await page.locator('#settings-1').innerText()).includes('https://'));
@@ -70,14 +71,13 @@ async function main(){
  config=await page.evaluate(async()=>await(await fetch('/api/control/settings')).json());
  check('연결별 키 참조 분리',new Set(config.connections.map(c=>c.credential_env_name)).size===2);
  check('설정 응답에 키 원문 없음',!privateValues.some(v=>JSON.stringify(config).includes(v)));
- await pane('model');await page.locator('#featured-models [name="catalog-model"]').nth(1).check();await page.locator('#prepare-selected-model>summary').click();
- check('제공사별 연결 필터',await page.locator('#research-model-connection option').count()===2&&await page.locator('#research-model-connection').inputValue()===ids[1]);
- await page.locator('#research-model-consent').check();await page.locator('#research-model-save').click();
- await page.waitForFunction(()=>document.querySelector('#notice')?.textContent.includes('모델을 등록했습니다.'));
+ await pane('model');await page.locator('#featured-models [name="catalog-model"]').nth(1).check();
+ await page.waitForFunction(()=>document.querySelector('#research-form [name="model_profile_id"]')?.value.startsWith('AUTO-'));
+ check('제공사 연결 자동 해석·등록 버튼 없음',await page.getByRole('button',{name:'선택한 모델 등록',exact:true}).count()===0);
  config=await page.evaluate(async()=>await(await fetch('/api/control/settings')).json());
  check('Claude 모델이 선택한 연결 사용·미검증 유지',config.models.length===1&&config.models[0].connection_id===ids[1]&&config.models[0].capability_status==='unknown');
  await page.keyboard.press('Escape');await page.locator('[data-view="research"]').click();await page.locator('#new-research').click();await page.locator('#research-form').waitFor();
- check('성능 이름 low·medium·high·max와 기본 medium',JSON.stringify(await page.locator('#research-form .performance-labels span').allTextContents())===JSON.stringify(['low','medium','high','max'])&&await page.locator('#research-form [name="performance"]').getAttribute('aria-valuetext')==='medium');
+ check('선택 단계만 표시·기본 균형',await page.locator('.performance-labels').count()===0&&await page.locator('#research-form [name="performance"]').getAttribute('aria-valuetext')==='균형');
  check('새 연구에 다른 제공사 모델도 표시',(await page.locator('#research-model-picker').innerText()).includes('Claude Sonnet')&&await page.locator('#research-form [name="model_profile_id"]').inputValue()===config.models[0].profile_id);
  await page.keyboard.press('Escape');await settings();await pane('connections');
  await page.locator(`#saved-key-list [data-key="${ids[0]}"]`).click();await page.locator('#key-delete').click();await page.locator('#editor[open]').waitFor({state:'hidden'});
@@ -93,12 +93,12 @@ async function main(){
  await capture('keys-deleted-1440');
  const denied=await page.evaluate(async()=> (await fetch('/api/control/connections/register',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).status);
  check('동시 등록에도 CSRF 필수',denied===403);
- for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.locator('#connection-new').click();await capture('connection-form-'+width);await page.keyboard.press('Escape');await pane('model');await page.locator('#more-models>summary').click();await capture('model-selection-'+width);await page.locator('#more-models>summary').click();await pane('connections');}
+ for(const width of [1440,390]){await page.setViewportSize({width,height:900});await page.locator('#connection-new').click();await capture('connection-form-'+width);await page.keyboard.press('Escape');await pane('model');await page.locator('#more-models').click();await capture('model-selection-'+width);await page.locator('#more-models').click();await pane('connections');}
  await page.setViewportSize({width:1280,height:900});await page.evaluate(()=>document.documentElement.style.zoom='2');await page.locator('#connection-new').click();await capture('connection-css-200');await page.keyboard.press('Escape');await page.evaluate(()=>document.documentElement.style.zoom='');
  await page.setViewportSize({width:1440,height:900});
  await page.route('**/api/control/settings',async route=>{const response=await route.fetch(),value=await response.json(),row=value.catalog.models.find(m=>m.featured_order===1);value.catalog.models.unshift({...row,profile_id:'qa-duplicate-profile'});await route.fulfill({response,json:value});});
  await settings();await models();
- check('동일 모델의 저장 프로필이 중복돼도 상단 5종 유지',await page.locator('#featured-models .model-option').count()===5&&new Set(await page.locator('#featured-models .model-option span').allTextContents()).size===5);
+ check('동일 모델의 저장 프로필이 중복돼도 상단 5종 유지',await page.locator('#featured-models .model-option').count()<=5&&new Set(await page.locator('#selected-models .model-option span,#featured-models .model-option span').allTextContents()).size===5&&await page.locator('[value="qa-duplicate-profile"]').count()===0);
  await capture('models-duplicate-profile-1440');
  await page.evaluate(()=>message('키 저장 실패'));
  check('성공 뒤 오류 알림은 빨강으로 복귀',await page.locator('#notice').evaluate(e=>e.dataset.status==='error'&&getComputedStyle(e).color==='rgb(142, 50, 50)'&&e.getAttribute('role')==='alert'));

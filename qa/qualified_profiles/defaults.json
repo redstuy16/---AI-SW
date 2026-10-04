@@ -1,0 +1,397 @@
+{
+  "fields": [
+    {
+      "field": "beginner_mode",
+      "classification": "내부 관리",
+      "value": true,
+      "source": "main",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "research_profile_mode",
+      "classification": "내부 관리",
+      "value": "AUTO",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "title",
+      "classification": "내부 관리",
+      "value": "기본값 검사",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "question",
+      "classification": "기본 화면",
+      "value": "기본값 검사",
+      "source": "main",
+      "required_user_input": true,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": true,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "source_relative",
+      "classification": "호환 유지",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "settings_version",
+      "classification": "내부 관리",
+      "value": 2,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "draft_id",
+      "classification": "내부 관리",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "draft_revision",
+      "classification": "내부 관리",
+      "value": 0,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "submission_key",
+      "classification": "내부 관리",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "selected_model_pool",
+      "classification": "내부 관리",
+      "value": [
+        "m"
+      ],
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "attachments",
+      "classification": "기본 화면",
+      "value": [],
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "analysis_attachment_id",
+      "classification": "내부 관리",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "advanced_performance_profile",
+      "classification": "선택적 고급 설정",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "model_reasoning",
+      "classification": "선택적 고급 설정",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "sampling_mode",
+      "classification": "내부 관리",
+      "value": "provider_default",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "report_format",
+      "classification": "내부 관리",
+      "value": "pdf",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "research_depth",
+      "classification": "호환 유지",
+      "value": "standard",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "routing",
+      "classification": "선택적 고급 설정",
+      "value": {
+        "manager": "m",
+        "experiment_coordinator": "m",
+        "analysis_planner_worker": "m",
+        "verification_coordinator": "m"
+      },
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "routing_profile_id",
+      "classification": "호환 유지",
+      "value": null,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "run_limit_usd",
+      "classification": "선택적 고급 설정",
+      "value": "0.10",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "max_elapsed_sec",
+      "classification": "선택적 고급 설정",
+      "value": 300,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "egress",
+      "classification": "선택적 고급 설정",
+      "value": "none",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "question_only",
+      "classification": "내부 관리",
+      "value": false,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "verified_analysis_skills",
+      "classification": "선택적 고급 설정",
+      "value": false,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "verification_repair",
+      "classification": "선택적 고급 설정",
+      "value": false,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "ridge_arithmetic_check",
+      "classification": "선택적 고급 설정",
+      "value": false,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "performance_profile",
+      "classification": "기본 화면",
+      "value": "BALANCED",
+      "source": "owner",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "adaptive_budget",
+      "classification": "선택적 고급 설정",
+      "value": true,
+      "source": "owner",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "model_profile_id",
+      "classification": "기본 화면",
+      "value": "m",
+      "source": "main",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "manual_role_override",
+      "classification": "선택적 고급 설정",
+      "value": false,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "role_reasoning",
+      "classification": "선택적 고급 설정",
+      "value": {},
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "approved_worker_profiles",
+      "classification": "선택적 고급 설정",
+      "value": [],
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "report_style",
+      "classification": "내부 관리",
+      "value": "friendly",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "max_followups",
+      "classification": "선택적 고급 설정",
+      "value": 1,
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "search_policy",
+      "classification": "선택적 고급 설정",
+      "value": "AUTO",
+      "source": "owner",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "public_search_query",
+      "classification": "선택적 고급 설정",
+      "value": "",
+      "source": "application",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "search_required",
+      "classification": "선택적 고급 설정",
+      "value": true,
+      "source": "owner",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    },
+    {
+      "field": "search_attempt_limit",
+      "classification": "선택적 고급 설정",
+      "value": 5,
+      "source": "owner",
+      "required_user_input": false,
+      "security_requirement": "모델·키·승인된 목적지·단가·유한 예산은 실제 전송 전에 필수",
+      "schema_required": false,
+      "precedence": "명시 고급 값 > 명시 주 설정 > 소유자 값 > 앱 기본값. false와 0을 값으로 보존."
+    }
+  ],
+  "count": 38,
+  "paid_calls": 0,
+  "profile_default": {
+    "new_beginner": "AUTO",
+    "legacy_api": "DISABLED"
+  }
+}

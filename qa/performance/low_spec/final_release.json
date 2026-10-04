@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "file_count": 17,
+  "hash_mismatches": [],
+  "missing_artifacts": [],
+  "secret_files": [],
+  "unresolved_refs": 0,
+  "manifest": "build/flow-final-release/9192c006a68a4499905036a7e31de069/clean-release/manifests/release_manifest.json",
+  "manifest_sha256": "cc9cc34dd8bc20ee4916e52f3637fc71788de6782512a5004c5b6c407c1487b7",
+  "clean_database": "build/qa-day1/run-0c9c43960513/demo-a-1/state.sqlite"
+}

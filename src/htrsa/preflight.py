@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import importlib.util
 import json
+import locale
 import os
 import re
 import shutil
@@ -15,6 +16,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from .sandbox import PythonSandboxTool, clean_environment
+from .storage_errors import storage_error_code
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,13 +24,31 @@ VALIDATION_DIR = ROOT / "build" / "validation"
 SEARCH_STATUSES = {"AVAILABLE", "RATE_LIMITED", "UNCONFIGURED", "FAILED", "VALIDATED"}
 
 
+def _decode_output(value: bytes | str | None) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    for encoding in ("utf-8", locale.getpreferredencoding(False)):
+        try:
+            return value.decode(encoding, errors="strict")
+        except UnicodeError:
+            pass
+    return value.decode("utf-8", errors="replace")
+
+
 def _run(command: list[str], *, timeout: int = 20) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run(command, capture_output=True, text=True,
-                              timeout=timeout, check=False, cwd=ROOT,
-                              **({"env": clean_environment()} if command and Path(command[0]).stem.casefold() == "docker" else {}))
-    except (OSError, subprocess.TimeoutExpired):
-        return subprocess.CompletedProcess(command, 1, "", "")
+        result = subprocess.run(command, capture_output=True,
+                                timeout=timeout, check=False, cwd=ROOT,
+                                **({"env": clean_environment()} if command and Path(command[0]).stem.casefold() == "docker" else {}))
+        return subprocess.CompletedProcess(getattr(result, "args", command), result.returncode,
+                                           _decode_output(getattr(result, "stdout", None)),
+                                           _decode_output(getattr(result, "stderr", None)))
+    except OSError as error:
+        return subprocess.CompletedProcess(command, 1, "", storage_error_code(error))
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(command, 1, "", "VALIDATION_TIMEOUT")
 
 
 def _docker_identity() -> str | None:
@@ -266,16 +286,21 @@ def _pytest_validation(name: str, marker: str, expected: int) -> dict:
     if name == "search" and os.environ.get("HTRSA_LIVE_SEARCH") != "1":
         return {"passed": False, "skipped": True, "reason": "SEARCH_UNCONFIGURED"}
     build_dir = ROOT / "build"
-    build_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        build_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as error:
+        return {"passed": False, "passed_count": 0, "skipped": False,
+                "exit_code": 1, "error_code": storage_error_code(error)}
     # 병행 검증에서 다른 실행의 자료를 삭제하지 않는다.
     base = (build_dir / f"pytest-validation-{name}-{uuid4().hex}").resolve()
     if not base.is_relative_to(ROOT.resolve()):
         raise ValueError("pytest temporary directory escaped workspace")
     result = _run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider",
                    "--basetemp", str(base), "-m", marker], timeout=1200 if name == "core" else 600)
-    match = re.search(r"(\d+) passed", result.stdout)
+    output = _decode_output(result.stdout)
+    match = re.search(r"(\d+) passed", output)
     passed_count = int(match.group(1)) if match else 0
-    skipped = bool(re.search(r"\d+ skipped", result.stdout))
+    skipped = bool(re.search(r"\d+ skipped", output))
     passed = result.returncode == 0 and passed_count >= expected and not skipped
     marker_data = {"passed": passed, "passed_count": passed_count,
                    "source_fingerprint": _source_fingerprint(),
@@ -284,10 +309,14 @@ def _pytest_validation(name: str, marker: str, expected: int) -> dict:
                    "status": "VALIDATED" if name == "search" and passed else ("FAILED" if name == "search" else None),
                    "provider": "scholarly.openalex" if name == "search" and passed else None,
                    "error_code": None}
-    VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
     serialized = json.dumps(marker_data, ensure_ascii=False, sort_keys=True)
     serialized.encode("utf-8", errors="strict")
-    (VALIDATION_DIR / f"{name}.json").write_text(serialized, encoding="utf-8")
+    try:
+        VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
+        (VALIDATION_DIR / f"{name}.json").write_text(serialized, encoding="utf-8")
+    except OSError as error:
+        return {"passed": False, "passed_count": passed_count, "skipped": skipped,
+                "exit_code": result.returncode, "error_code": storage_error_code(error)}
     return {"passed": passed, "passed_count": passed_count, "skipped": skipped,
             "exit_code": result.returncode}
 

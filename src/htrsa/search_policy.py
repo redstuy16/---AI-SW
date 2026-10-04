@@ -34,9 +34,11 @@ def decision(snapshot, *, question=None, budget_ok=True, protected=()):
     required = snapshot.get('search_required', False)
     if policy == SearchPolicy.DISABLED:
         return 'SEARCH_REQUIRED_BUT_DISABLED' if required else 'SEARCH_DISABLED'
+    if snapshot.get("search_attempt_limit", 5) == 0:
+        return 'SEARCH_ATTEMPT_LIMIT'
     if not required and not useful(question or snapshot['question']):
         return 'SEARCH_NOT_NEEDED'
-    if snapshot.get('egress') != 'research':
+    if snapshot.get('egress') != 'research' and not (snapshot.get('egress') == 'selected' and snapshot.get('public_search_consent') is True):
         return 'SEARCH_EGRESS_DENIED'
     query = snapshot.get('public_search_query', '').strip()
     if not query:
@@ -46,6 +48,51 @@ def decision(snapshot, *, question=None, budget_ok=True, protected=()):
     if not required and snapshot.get('adaptive_budget', True) and not budget_ok:
         return 'SEARCH_OPTIONAL_REDUCED'
     return 'SEARCH_ALLOWED'
+
+
+def search_allocation(store, rid, snapshot, *, price, price_source, view=None):
+    """모델 완료 예산을 보존하고 별도 검색 단가로 남은 전송 횟수를 제한한다."""
+    from .control_plane import micro
+    from .product_policy import completion_budget
+    view = view or completion_budget(store, rid, snapshot)
+    limit = min(snapshot.get('search_attempt_limit', 5), store.defaults().search_attempt_limit)
+    for kind in ('research_effective', 'research_settings'):
+        try:
+            value = store.config(kind, rid)['settings'].get('search_attempt_limit')
+            if value is not None:
+                limit = min(limit, value)
+        except ControlError:
+            pass
+    try:
+        used = store.config('search_attempts', rid)['used']
+    except ControlError:
+        used = 0
+    if type(used) is not int or used < 0:
+        raise ControlError('SEARCH_COUNTER_INVALID')
+    remaining = max(0, limit - used)
+    record = {'configured_limit': limit, 'used': used, 'remaining_attempts': remaining,
+              'automatic': snapshot.get('adaptive_budget', True),
+              'model_completion_reserve_usd': view['completion_reserve_usd'],
+              'available_usd': view['available_usd'], 'search_unit_price_usd': str(price) if price is not None else None,
+              'price_source': price_source, 'allowed_attempts': 0, 'status': 'PRICE_UNKNOWN'}
+    if price is None or not price_source:
+        return record
+    unit = micro(price)
+    if not remaining:
+        return record | {'status': 'SEARCH_ATTEMPT_LIMIT'}
+    if not snapshot.get('adaptive_budget', True):
+        return record | {'allowed_attempts': remaining, 'status': 'MANUAL_LIMIT'}
+    if not view['can_complete']:
+        return record | {'status': 'COMPLETION_RESERVE_BLOCKED'}
+    available = max(Decimal(0), Decimal(view['available_usd']) - Decimal(view['completion_reserve_usd'] or '0'))
+    # 원장은 요청마다 올림한다. 같은 단위로 나누어 작은 유료 요청도 공짜로 계산하지 않는다.
+    funds = int(available * 1000000)
+    request_cap = min(store.defaults().request_limit_usd, Decimal(snapshot['request_limit_usd']))
+    count = remaining if unit == 0 else min(remaining, funds // unit)
+    if unit > micro(request_cap):
+        count = 0
+    return record | {'allowed_attempts': count, 'search_budget_usd': str(available),
+                     'status': 'AUTOMATIC_LIMIT' if count else 'COMPLETION_RESERVE_BLOCKED'}
 
 
 class PolicyProvider:
@@ -99,11 +146,16 @@ class PolicyProvider:
             status = 'SEARCH_PRIVATE_QUERY_BLOCKED'
         if status == 'SEARCH_ALLOWED' and (self.price is None or not self.price_source):
             status = 'PRICE_UNKNOWN'
+        allocation = search_allocation(self.store, request.research_id, task,
+            price=self.price, price_source=self.price_source, view=view)
+        if status == 'SEARCH_ALLOWED' and not allocation['allowed_attempts']:
+            status = allocation['status']
         record = {'search_request_id': new_id('SRCH'), 'provider': self.name,
                   'query_hash': sha256(request.query.encode('utf-8', errors='strict')).hexdigest(),
                   'query_reference': 'owner-approved public query' if status == 'SEARCH_ALLOWED' else 'redacted',
                   'started_at': utc_now().isoformat(), 'result_count': 0, 'selected_result_ids': [],
                   'search_cost': None, 'latency_ms': 0, 'status': status}
+        self.store.audit(request.research_id, 'SEARCH_BUDGET_ALLOCATION', allocation)
         if status != 'SEARCH_ALLOWED':
             self.store.audit(request.research_id, 'SEARCH_POLICY_DECISION', record)
             if task.get('search_required'):
@@ -117,10 +169,28 @@ class PolicyProvider:
             monthly_limit=min(self.store.defaults().monthly_limit_usd, Decimal(self.snapshot['monthly_limit_usd'])),
             request_limit=min(self.store.defaults().request_limit_usd, Decimal(self.snapshot['request_limit_usd'])),
             attempts=self.snapshot['depth_limits']['attempts'], revision=self.price_source, completion_reserve=reserve)
-        self.store.transition(reservation, 'DISPATCHED')
         started = perf_counter()
-        self.store.audit(request.research_id, 'SEARCH_DISPATCHED', record | {'reservation_id': reservation})
+        dispatched = 0
+        client = getattr(self.provider, "client", None)
+        previous_guard = getattr(client, "dispatch_guard", None)
+        def guard():
+            nonlocal dispatched
+            if self.before_dispatch:
+                self.before_dispatch()
+            self.store.dispatch_search(reservation, request.research_id,
+                min(task.get("search_attempt_limit", 5), allocation['used'] + allocation['allowed_attempts']), self.name,
+                snapshot=self.snapshot, completion_reserve=reserve)
+            dispatched += 1
+            self.store.audit(request.research_id, 'SEARCH_DISPATCHED', record | {'reservation_id': reservation, 'transport_attempt':dispatched})
         try:
+            if client is not None and hasattr(client, "dispatch_guard"):
+                if previous_guard is not None:
+                    raise ControlError("SEARCH_CLIENT_BUSY")
+                if self.price != 0 and client.retries:
+                    raise ControlError("SEARCH_RETRY_BOUND_UNAVAILABLE")
+                client.dispatch_guard = guard
+            else:
+                guard()
             result = await self.provider.search(request)
             if result.request != request or result.provider != self.name or len(result.sources) > request.limit:
                 raise ControlError('SEARCH_RESULT_CONTRACT')
@@ -135,9 +205,14 @@ class PolicyProvider:
             record['status'] = 'FAILED'
             raise
         finally:
-            record.update(completed_at=utc_now().isoformat(), latency_ms=round((perf_counter()-started)*1000, 3))
+            if client is not None and hasattr(client, "dispatch_guard"):
+                client.dispatch_guard = previous_guard
+            record.update(completed_at=utc_now().isoformat(), latency_ms=round((perf_counter()-started)*1000, 3), actual_dispatch_attempts=dispatched)
             # 무료 메타데이터만 실패 비용을 0으로 확정한다. 유료 전송의 모호한 비용은 유지한다.
-            if self.price == 0 or record['status'] == 'COMPLETED':
+            if not dispatched:
+                self.store.transition(reservation, 'RELEASED')
+                record.update(status="BLOCKED_BEFORE_DISPATCH", search_cost="0")
+            elif self.price == 0 or record['status'] == 'COMPLETED':
                 self.store.transition(reservation, 'SETTLED', settled=self.price, response_id=record['search_request_id'])
                 record['search_cost'] = str(self.price)
             else:
@@ -148,7 +223,19 @@ class PolicyProvider:
         raise ControlError('SEARCH_FETCH_NOT_APPROVED')
 
 
+def qualified_literature(state, rid):
+    from .final_report import _validate_literature_provenance
+    for row in state._db.execute("SELECT * FROM evidence WHERE research_id=? AND source_type='LITERATURE' AND status='VERIFIED'", (rid,)):
+        source = state._db.execute("SELECT * FROM sources WHERE research_id=? AND source_id=?", (rid, row["source_id"])).fetchone()
+        if source is not None:
+            _validate_literature_provenance(dict(source), dict(row))
+            return True
+    return False
+
+
 async def run_search(state, store, credentials, rid, snapshot, *, provider=None, price=None, price_source=None, before_dispatch=None):
+    if qualified_literature(state, rid):
+        return
     from .product_policy import completion_budget
     status = decision(snapshot, budget_ok=completion_budget(store, rid, snapshot)['can_complete'],
                       protected=credentials.active_secrets(c.get('credential_env_name') for c in store.configs('connection')))
@@ -168,6 +255,11 @@ async def run_search(state, store, credentials, rid, snapshot, *, provider=None,
     limit = 3 if snapshot.get('performance_profile') in {'DEEP', 'MAX'} else 2
     intents = default_intents(snapshot['public_search_query'])
     plan = [intents[0], intents[2]] if limit == 2 else intents
-    await LiteratureCoordinator(state, policy, config=LiteratureConfig(max_queries=limit, max_results_per_query=5)).run(rid, snapshot['public_search_query'], plan)
-    if snapshot.get('search_required') and not state._db.execute("SELECT 1 FROM sources WHERE research_id=? AND status='VERIFIED'", (rid,)).fetchone():
+    try:
+        await LiteratureCoordinator(state, policy, config=LiteratureConfig(max_queries=limit, max_results_per_query=5)).run(rid, snapshot['public_search_query'], plan)
+    except ControlError as exc:
+        if exc.code not in {"SEARCH_ATTEMPT_LIMIT", "COMPLETION_RESERVE_BLOCKED"}:
+            raise
+        store.audit(rid, "SEARCH_ATTEMPT_LIMIT_REACHED", {"limit":snapshot.get("search_attempt_limit", 5), "reason": exc.code})
+    if snapshot.get('search_required') and not qualified_literature(state, rid):
         raise ControlError('SEARCH_REQUIRED_EVIDENCE_MISSING')

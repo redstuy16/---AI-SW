@@ -15,6 +15,7 @@ SUPPORT = {"SUPPORTED": "정해진 범위에서 근거가 지지합니다. 인�
            "NOT_SUPPORTED": "검증된 근거는 제안한 관계를 지지하지 않습니다.",
            "INCONCLUSIVE": "현재 검증된 근거만으로 종합 결론을 확정할 수 없습니다."}
 METRICS = {"n": "분석 표본 수", "sample_size": "분석 표본 수", "estimate": "관계 추정값", "r": "상관계수",
+           "periods.0.mean": "앞 기간 편차 평균", "periods.1.mean": "뒤 기간 편차 평균", "difference": "뒤 기간 − 앞 기간",
            "metrics.estimate": "관계 추정값", "metrics.p_value": "p-value (계산된 값)",
            "counts.total": "입력 표본 수", "counts.used": "사용한 표본 수", "counts.missing_excluded": "결측 제외 수",
            "uncertainty.bounds.0": "추정 구간 하한", "uncertainty.bounds.1": "추정 구간 상한"}
@@ -32,6 +33,10 @@ def friendly_report(state, rid):
                 snapshot.update(json.loads(applied[0])["settings"])
             style = snapshot.get("report_style", "friendly")
     conclusion = build_final_conclusion(state, rid)
+    from .qualified_profiles import conclusion_card
+    card = conclusion_card(state, rid)
+    if card["available"] and not card["current"]:
+        raise ReportValidationError("QUALIFIED_PROFILE_REVALIDATION_REQUIRED")
     validate_final_conclusion(state, rid, conclusion)
     experiments, numbers, methods = _verified_experiments(state, rid), [], []
     for exp in experiments:
@@ -67,9 +72,10 @@ def friendly_report(state, rid):
             display.append({"label": ("기준 모델 " if "baseline" in field else "분석 모델 ") + name, **number})
     return {"available": True, "mode": "DETERMINISTIC_LOCAL", "ai_narrative": "NOT_RUN", "titles": TITLES, "report_style": style,
             "source_semantics": state.cycle5.snapshot(rid) if state.cycle5.enabled(rid) else {"enabled": False},
+            "research_design": __import__("htrsa.research_design", fromlist=["summary"]).summary(state, rid),
             "question": conclusion.research_question, "status": run["run_status"], "stop_reason": run["stop_reason"],
-            "complete": run["stop_reason"] == "GOAL_ANSWERED", "conclusion": SUPPORT[conclusion.support_level],
-            "support_level": conclusion.support_level, "numbers": numbers, "display_numbers": display, "analyses": methods, "images": images,
+            "complete": run["stop_reason"] in {"GOAL_ANSWERED", "QUALIFIED_PROCEDURE_COMPLETED"}, "conclusion": card["calculation"] if card["available"] else SUPPORT[conclusion.support_level],
+            "support_level": conclusion.support_level, "numbers": numbers, "display_numbers": display, "analyses": methods, "images": images, "conclusion_card":card,
             "evidence_refs": conclusion.evidence_refs, "contradictions": conclusion.contradiction_refs,
             "limitations": limitations, "comparison": "추가 분석은 별도 승인된 방법별 결과로 비교합니다. 분석 간 차이를 새 유의성이나 인과 효과로 해석하지 않습니다.",
             "reproduction": "검증 후 내보내기의 manifest, 입력 hash, 고정 분석 계획과 재현 안내를 사용하세요."}

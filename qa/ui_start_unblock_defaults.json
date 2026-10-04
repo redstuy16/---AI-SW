@@ -1,0 +1,1173 @@
+{
+  "settings_version": 2,
+  "precedence": [
+    "단계별 명시 값",
+    "고급 연구 설정",
+    "주 설정",
+    "소유자 기본값",
+    "앱 기본값"
+  ],
+  "fields": [
+    {
+      "field": "title",
+      "value": "기본 설정 검사",
+      "source": "application",
+      "optional": true,
+      "input_kind": "사용자·상황 값",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 질문에서 제목 생성",
+      "genuinely_required": false,
+      "requirement": "연구 질문은 연구 실행에만 필요. 모델과 유한 예산은 실제 전송에 필요.",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "",
+        "maxLength": 200,
+        "title": "Title",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "question",
+      "value": "기본 설정 검사",
+      "source": "main",
+      "optional": false,
+      "input_kind": "사용자·상황 값",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 연구 질문",
+      "genuinely_required": true,
+      "requirement": "연구 질문은 연구 실행에만 필요. 모델과 유한 예산은 실제 전송에 필요.",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "maxLength": 4000,
+        "minLength": 1,
+        "title": "Question",
+        "type": "string"
+      },
+      "requested_value": "기본 설정 검사",
+      "user_overridden": true,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "source_relative",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Source Relative"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "settings_version",
+      "value": 2,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "int",
+      "constraints": {
+        "default": 1,
+        "enum": [
+          1,
+          2
+        ],
+        "title": "Settings Version",
+        "type": "integer"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "draft_id",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9_-]{8,100}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Draft Id"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "draft_revision",
+      "value": 0,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "int",
+      "constraints": {
+        "default": 0,
+        "minimum": 0,
+        "title": "Draft Revision",
+        "type": "integer"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "submission_key",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "pattern": "^[A-Za-z0-9_-]{8,100}$",
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Submission Key"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "selected_model_pool",
+      "value": [
+        "m"
+      ],
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 모델 체크박스",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "list",
+      "constraints": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 30,
+        "title": "Selected Model Pool",
+        "type": "array"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "attachments",
+      "value": [],
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 자료 첨부",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "list",
+      "constraints": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 10,
+        "title": "Attachments",
+        "type": "array"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "analysis_attachment_id",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Analysis Attachment Id"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "advanced_performance_profile",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "고급 · 연구 범위",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "enum": [
+              "FAST",
+              "BALANCED",
+              "DEEP",
+              "MAX"
+            ],
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Advanced Performance Profile"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "model_reasoning",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "고급 · 추론 수준",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ReasoningPolicy"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "sampling_mode",
+      "value": "provider_default",
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "provider_default",
+        "enum": [
+          "provider_default",
+          "profile"
+        ],
+        "title": "Sampling Mode",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "report_format",
+      "value": "pdf",
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "const": "pdf",
+        "default": "pdf",
+        "title": "Report Format",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "research_depth",
+      "value": "standard",
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "standard",
+        "enum": [
+          "explore",
+          "standard",
+          "deep",
+          "focused"
+        ],
+        "title": "Research Depth",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "routing",
+      "value": {
+        "manager": "m",
+        "experiment_coordinator": "m",
+        "analysis_planner_worker": "m",
+        "verification_coordinator": "m"
+      },
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 최상위/중간/하위 모델",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "dict",
+      "constraints": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "title": "Routing",
+        "type": "object"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사",
+      "sub_controls": [
+        {
+          "control": "manager",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "m",
+          "constraint": "승인된 호환 모델만"
+        },
+        {
+          "control": "experiment_coordinator",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "m",
+          "constraint": "승인된 호환 모델만"
+        },
+        {
+          "control": "analysis_planner_worker",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "m",
+          "constraint": "승인된 호환 모델만"
+        },
+        {
+          "control": "verification_coordinator",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "m",
+          "constraint": "승인된 호환 모델만"
+        }
+      ]
+    },
+    {
+      "field": "routing_profile_id",
+      "value": null,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Routing Profile Id"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "run_limit_usd",
+      "value": "0.10",
+      "source": "main",
+      "optional": true,
+      "input_kind": "사용자·상황 값",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 작업 예산 / 연결 확인",
+      "genuinely_required": true,
+      "requirement": "연구 질문은 연구 실행에만 필요. 모델과 유한 예산은 실제 전송에 필요.",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "anyOf": [
+          {
+            "exclusiveMinimum": 0.0,
+            "maximum": 100.0,
+            "type": "number"
+          },
+          {
+            "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$",
+            "type": "string"
+          }
+        ],
+        "default": "1",
+        "title": "Run Limit Usd"
+      },
+      "requested_value": ".10",
+      "user_overridden": true,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "max_elapsed_sec",
+      "value": 300,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 최대 실행 시간",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "int",
+      "constraints": {
+        "default": 300,
+        "maximum": 3600,
+        "minimum": 10,
+        "title": "Max Elapsed Sec",
+        "type": "integer"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "egress",
+      "value": "none",
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 모델에 보낼 자료",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "none",
+        "enum": [
+          "none",
+          "selected",
+          "research"
+        ],
+        "title": "Egress",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "question_only",
+      "value": false,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": false,
+        "title": "Question Only",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "verified_analysis_skills",
+      "value": false,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 분석 도구 검사",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": false,
+        "title": "Verified Analysis Skills",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "verification_repair",
+      "value": false,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · F3-P 오류 복구",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": false,
+        "title": "Verification Repair",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "ridge_arithmetic_check",
+      "value": false,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · Ridge 수치 검사",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": false,
+        "title": "Ridge Arithmetic Check",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "performance_profile",
+      "value": "BALANCED",
+      "source": "owner",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 연구 성능",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "anyOf": [
+          {
+            "enum": [
+              "FAST",
+              "BALANCED",
+              "DEEP",
+              "MAX"
+            ],
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Performance Profile"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "adaptive_budget",
+      "value": true,
+      "source": "owner",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 예산에 맞춰 자동 조정",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": true,
+        "title": "Adaptive Budget",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "model_profile_id",
+      "value": "m",
+      "source": "main",
+      "optional": true,
+      "input_kind": "사용자·상황 값",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 모델",
+      "genuinely_required": true,
+      "requirement": "연구 질문은 연구 실행에만 필요. 모델과 유한 예산은 실제 전송에 필요.",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Model Profile Id"
+      },
+      "requested_value": "m",
+      "user_overridden": true,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "manual_role_override",
+      "value": false,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 단계별 모델 지정",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": false,
+        "title": "Manual Role Override",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "role_reasoning",
+      "value": {},
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 단계별 추론",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "dict",
+      "constraints": {
+        "additionalProperties": {
+          "$ref": "#/$defs/ReasoningPolicy"
+        },
+        "title": "Role Reasoning",
+        "type": "object"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사",
+      "sub_controls": [
+        {
+          "control": "reasoning_manager",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "AUTO",
+          "constraint": "역할별 명시 값 > 전역 명시 값 > 해당 모델의 지원 기본값"
+        },
+        {
+          "control": "reasoning_experiment_coordinator",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "AUTO",
+          "constraint": "역할별 명시 값 > 전역 명시 값 > 해당 모델의 지원 기본값"
+        },
+        {
+          "control": "reasoning_analysis_planner_worker",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "AUTO",
+          "constraint": "역할별 명시 값 > 전역 명시 값 > 해당 모델의 지원 기본값"
+        },
+        {
+          "control": "reasoning_verification_coordinator",
+          "inherit": true,
+          "user_overridden": false,
+          "effective": "AUTO",
+          "constraint": "역할별 명시 값 > 전역 명시 값 > 해당 모델의 지원 기본값"
+        }
+      ]
+    },
+    {
+      "field": "approved_worker_profiles",
+      "value": [],
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 분석 모델 자동 변경",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "list",
+      "constraints": {
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 8,
+        "title": "Approved Worker Profiles",
+        "type": "array"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "report_style",
+      "value": "friendly",
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "내부 · 호환 설정 / 현재 제어 없음",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "friendly",
+        "enum": [
+          "friendly",
+          "technical"
+        ],
+        "title": "Report Style",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "max_followups",
+      "value": 1,
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 추가 분석 횟수",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "int",
+      "constraints": {
+        "anyOf": [
+          {
+            "maximum": 2,
+            "minimum": 0,
+            "type": "integer"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Max Followups"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "search_policy",
+      "value": "AUTO",
+      "source": "owner",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "주 화면 · 웹 검색",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "DISABLED",
+        "enum": [
+          "AUTO",
+          "DISABLED",
+          "ALLOWED"
+        ],
+        "title": "Search Policy",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "public_search_query",
+      "value": "",
+      "source": "application",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 공개 문헌 검색어",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "str",
+      "constraints": {
+        "default": "",
+        "maxLength": 500,
+        "title": "Public Search Query",
+        "type": "string"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "search_required",
+      "value": true,
+      "source": "owner",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 문헌 근거가 없으면 연구 중단",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "bool",
+      "constraints": {
+        "default": false,
+        "title": "Search Required",
+        "type": "boolean"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "search_attempt_limit",
+      "value": 5,
+      "source": "owner",
+      "optional": true,
+      "input_kind": "선택 설정",
+      "resolved": true,
+      "valid_null": false,
+      "ui_location": "고급 · 웹 검색 시도 상한",
+      "genuinely_required": false,
+      "requirement": "기본값 또는 상속으로 진행",
+      "default_rule": "명시 값 > 고급 역할 > 고급 연구 > 주 설정 > 소유자 > 앱. 보안·예산·기능 한도 적용",
+      "resolved_type": "int",
+      "constraints": {
+        "default": 5,
+        "maximum": 20,
+        "minimum": 0,
+        "title": "Search Attempt Limit",
+        "type": "integer"
+      },
+      "requested_value": null,
+      "user_overridden": false,
+      "apply_when": "이번 제출 시 해석·저장. 실행 중 변경은 기존 설정 적용 경계. 전송 직전 권한·예산 재검사"
+    },
+    {
+      "field": "reviewer_profile_id",
+      "value": null,
+      "source": "선택적 RoutingProfile",
+      "optional": true,
+      "input_kind": "사용 안 함",
+      "resolved": true,
+      "valid_null": true,
+      "ui_location": "내부 · 기존 RoutingProfile",
+      "genuinely_required": false,
+      "default_rule": "기존 프로필이 사용하는 경우에만 적용",
+      "resolved_type": "NoneType",
+      "constraints": "승인된 호환 모델 또는 null",
+      "user_overridden": false,
+      "apply_when": "이번 제출"
+    },
+    {
+      "field": "model.output_limit",
+      "value": 2048,
+      "source": "기존 ModelProfile",
+      "optional": true,
+      "genuinely_required": false,
+      "ui_location": "고급 · 모델 상세 설정",
+      "default_rule": "기존 유효 프로필 유지. 자동 생성 시 출력 1024·시간 120초·모호한 과금 재시도 0",
+      "resolved_type": "int",
+      "constraints": {
+        "default": 2048,
+        "maximum": 32768,
+        "minimum": 32,
+        "title": "Output Limit",
+        "type": "integer"
+      },
+      "user_overridden": false,
+      "resolved": true,
+      "valid_null": false,
+      "apply_when": "전송 직전 어댑터 호환성 재검사"
+    },
+    {
+      "field": "model.timeout_sec",
+      "value": 60,
+      "source": "기존 ModelProfile",
+      "optional": true,
+      "genuinely_required": false,
+      "ui_location": "고급 · 모델 상세 설정",
+      "default_rule": "기존 유효 프로필 유지. 자동 생성 시 출력 1024·시간 120초·모호한 과금 재시도 0",
+      "resolved_type": "int",
+      "constraints": {
+        "default": 60,
+        "maximum": 120,
+        "minimum": 1,
+        "title": "Timeout Sec",
+        "type": "integer"
+      },
+      "user_overridden": false,
+      "resolved": true,
+      "valid_null": false,
+      "apply_when": "전송 직전 어댑터 호환성 재검사"
+    },
+    {
+      "field": "model.max_retries",
+      "value": 0,
+      "source": "기존 ModelProfile",
+      "optional": true,
+      "genuinely_required": false,
+      "ui_location": "고급 · 모델 상세 설정",
+      "default_rule": "기존 유효 프로필 유지. 자동 생성 시 출력 1024·시간 120초·모호한 과금 재시도 0",
+      "resolved_type": "int",
+      "constraints": {
+        "const": 0,
+        "default": 0,
+        "title": "Max Retries",
+        "type": "integer"
+      },
+      "user_overridden": false,
+      "resolved": true,
+      "valid_null": false,
+      "apply_when": "전송 직전 어댑터 호환성 재검사"
+    },
+    {
+      "field": "model.reasoning_policy",
+      "value": "AUTO",
+      "source": "기존 ModelProfile",
+      "optional": true,
+      "genuinely_required": false,
+      "ui_location": "고급 · 모델 상세 설정",
+      "default_rule": "기존 유효 프로필 유지. 자동 생성 시 출력 1024·시간 120초·모호한 과금 재시도 0",
+      "resolved_type": "str",
+      "constraints": {
+        "$ref": "#/$defs/ReasoningPolicy",
+        "default": "AUTO"
+      },
+      "user_overridden": false,
+      "resolved": true,
+      "valid_null": false,
+      "apply_when": "전송 직전 어댑터 호환성 재검사"
+    },
+    {
+      "field": "model.temperature",
+      "value": null,
+      "source": "기존 ModelProfile",
+      "optional": true,
+      "genuinely_required": false,
+      "ui_location": "고급 · 모델 상세 설정",
+      "default_rule": "기존 유효 프로필 유지. 자동 생성 시 출력 1024·시간 120초·모호한 과금 재시도 0",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "maximum": 2,
+            "minimum": 0,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Temperature"
+      },
+      "user_overridden": false,
+      "resolved": true,
+      "valid_null": true,
+      "apply_when": "전송 직전 어댑터 호환성 재검사"
+    },
+    {
+      "field": "model.top_p",
+      "value": null,
+      "source": "기존 ModelProfile",
+      "optional": true,
+      "genuinely_required": false,
+      "ui_location": "고급 · 모델 상세 설정",
+      "default_rule": "기존 유효 프로필 유지. 자동 생성 시 출력 1024·시간 120초·모호한 과금 재시도 0",
+      "resolved_type": "NoneType",
+      "constraints": {
+        "anyOf": [
+          {
+            "exclusiveMinimum": 0,
+            "maximum": 1,
+            "type": "number"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Top P"
+      },
+      "user_overridden": false,
+      "resolved": true,
+      "valid_null": true,
+      "apply_when": "전송 직전 어댑터 호환성 재검사"
+    }
+  ],
+  "paid_calls": 0,
+  "egress_note": "서버 기본값 none. UI의 질문 전송 시작으로 관리자 질문에만 selected 허용. 파일 전송은 별도 선택.",
+  "legacy_note": "기존 CSV 요청은 설정 버전 1의 검색·추론 정책을 유지. 새 UI와 파일 없는 요청은 버전 2. 출력은 PDF로 정규화."
+}

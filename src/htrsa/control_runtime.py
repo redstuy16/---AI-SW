@@ -55,6 +55,19 @@ class RoutedGateway:
             latency_ms=result.latency_ms, provider_run_id=result.response_id)
 
     async def generate(self, request, *, output_type=None):
+        from .resource_policy import low_spec
+        from .resource_queue import ResourcePool, resource_key
+        profile = ModelProfile.model_validate(self.snapshot['models'][request.role])
+        connection = Connection.model_validate(self.snapshot['connections'][profile.connection_id])
+        network_limit = 1 if low_spec(self.store) else 4
+        shared_limits = {'remote-network':network_limit} if connection.endpoint_class!='loopback' else {'local-inference':1}
+        async with ResourcePool(self.store).lease(self.rid, request.role, resource_key(connection),
+                capacity=1, purpose=self.purpose, timeout=min(request.timeout, profile.timeout_sec),shared_limits=shared_limits) as job:
+            result = await self._generate(request, output_type=output_type)
+            job['resolved_model_id'] = result[0].model_id
+            return result
+
+    async def _generate(self, request, *, output_type=None):
         from decimal import Decimal
         from .providers.native import REGISTRY, compact
         from .providers.normalized import GenerationError, GenerationResult, GenerationUsage
@@ -62,7 +75,11 @@ class RoutedGateway:
         connection = Connection.model_validate(self.snapshot["connections"][profile.connection_id])
         if not connection.enabled or not connection.destination_approved or self.snapshot["egress"] == "none":
             raise ControlError("EGRESS_BLOCKED")
-        if profile.capability_status != "supported" and self.purpose != "settings_smoke":
+        if self.snapshot.get("question_only") and request.role != "manager":
+            raise ControlError("DATA_EGRESS_APPROVAL_REQUIRED")
+        from .product_policy import workflow_compatible
+        compatible = workflow_compatible(profile) if self.snapshot.get("settings_version", 1) >= 2 else profile.capability_status == "supported"
+        if not compatible and self.purpose != "settings_smoke":
             raise ControlError("CAPABILITY_NOT_VALIDATED")
         current = Connection.model_validate(self.store.config("connection", connection.connection_id))
         if current != connection:
@@ -254,15 +271,18 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
             cycle5_config = state.research_slice.config(rid)
         else:
             cycle5_config = None
-        source = safe_source(workspace / "inputs", snapshot["source_relative"])
-        if sha256_file(source) != snapshot["source"]["sha256"]:
+        source = safe_source(workspace / "inputs", snapshot["source_relative"]) if snapshot.get("source_relative") else None
+        from .input_upload import Attachments
+        Attachments(store, workspace).validate(snapshot.get("attachments", []), snapshot.get("draft_id"), snapshot.get("analysis_attachment_id"))
+        if source is not None and sha256_file(source) != snapshot["source"]["sha256"]:
             raise ControlError("SOURCE_HASH_MISMATCH")
         provider = provider_factory(store, rid, snapshot) if provider_factory else RoutedGateway(
             store, Credentials(Path(__file__).resolve().parents[2], workspace, credential_file), rid, snapshot)
         from .search_policy import run_search
         boundary(store, state, rid, snapshot=snapshot)
-        await run_search(state, store, Credentials(Path(__file__).resolve().parents[2], workspace, credential_file), rid, snapshot,
-                         before_dispatch=lambda: boundary(store, state, rid, snapshot=snapshot))
+        if snapshot.get("settings_version", 1) < 2:
+            await run_search(state, store, Credentials(Path(__file__).resolve().parents[2], workspace, credential_file), rid, snapshot,
+                             before_dispatch=lambda: boundary(store, state, rid, snapshot=snapshot))
         limits = snapshot["depth_limits"]
         runtime = AutonomousResearchLoop(
             state, provider, models={role: value["model_id"] for role, value in snapshot["models"].items()},
@@ -277,12 +297,48 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
             runtime.research_slice_config = cycle5_config
         runtime.control_boundary = lambda: boundary(store, state, rid, runtime, snapshot)
         runtime.optional_admission = lambda kind: optional_admission(store, rid, snapshot, kind=kind)
+        if snapshot.get("research_profile_mode") == "AUTO":
+            from .qualified_profiles import registry
+            from .research_design import current_design
+            design = current_design(state, rid)
+            candidate = registry().choose(design["effective_question"] if design else snapshot["question"])
+            if candidate["status"] == "SUPPORTED":
+                from .qualified_workflow import execute_profile
+                runtime.context_budget = min(4096, min(m["input_byte_limit"] for m in snapshot["models"].values()) // 4)
+                await execute_profile(runtime, rid, snapshot)
+                if state._one("SELECT run_status FROM research_runs WHERE research_id=?", (rid,))[0] == "ACTIVE":
+                    state.stop_research(rid, "QUALIFIED_PROCEDURE_COMPLETED")
+                export_final_report(state, rid)
+                store.db.execute("UPDATE control_runs SET status='COMPLETED',pid=NULL,version=version+1,error=NULL WHERE research_id=?", (rid,))
+                return
+            if candidate["status"] != "GENERAL":
+                raise ControlError("PROFILE_" + candidate["status"])
+        if snapshot.get("settings_version", 1) >= 2:
+            from .search_policy import qualified_literature
+            async def acquire_and_assess():
+                if snapshot.get("question_only") and source is not None:
+                    state.runtime_event(rid, "DATA_EGRESS_APPROVAL_REQUIRED", {"question_only":True})
+                    runtime.input_limitation = "DATA_EGRESS_APPROVAL_REQUIRED"
+                    return False
+                if not qualified_literature(state, rid):
+                    try:
+                        await run_search(state, store, Credentials(Path(__file__).resolve().parents[2], workspace, credential_file), rid, snapshot,
+                            before_dispatch=lambda: boundary(store, state, rid, snapshot=snapshot))
+                    except ControlError as exc:
+                        if not exc.code.startswith("SEARCH_"):
+                            raise
+                        state.runtime_event(rid, "LITERATURE_ACQUISITION_LIMITATION", {"code": exc.code})
+                if snapshot["search_required"] and not qualified_literature(state, rid):
+                    state.runtime_event(rid, "LITERATURE_EVIDENCE_MISSING", {"stop_policy": True})
+                    return False
+                return True
+            runtime.evidence_acquisition = acquire_and_assess
         runtime.context_budget = min(4096, min(m["input_byte_limit"] for m in snapshot["models"].values()) // 4)
         if state.load_runtime_cursor(rid) is None:
             state.configure_budget(rid, float(snapshot["run_limit_usd"]) * 0.25, float(snapshot["run_limit_usd"]) * 0.75, float(snapshot["run_limit_usd"]))
             state.finish_runtime_step(rid, "verified_analysis_skills_config", runtime._skill_config())
             state.finish_runtime_step(rid, "verification_repair_config", runtime._repair_config())
-            state.finish_runtime_step(rid, "source", {"csv_source": str(source), "goal": snapshot["question"]})
+            state.finish_runtime_step(rid, "source", {"csv_source": str(source) if source is not None else None, "goal": snapshot["question"]})
             runtime._save_cursor(rid, "START")
             result = await runtime._run_with_stops(rid, source, snapshot["question"])
         else:

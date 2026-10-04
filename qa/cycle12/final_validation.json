@@ -1,0 +1,1337 @@
+{
+  "observed_at": "2026-10-03T23:23:17+09:00",
+  "source_fingerprint": "ddbcbbc768ed990d88e1b96f70e7aa999ebaa1026c82845985926dc74f248fce",
+  "baseline": {
+    "xml": "build/cycle12/observed_baseline.xml",
+    "passed_count": 1010,
+    "failed_count": 0,
+    "errors": 0,
+    "skipped_count": 5,
+    "deselected_count": 2,
+    "junit_duration_seconds": 686.008,
+    "started_at": "2026-10-03T22:12:45.341596+09:00",
+    "skips": [
+      {
+        "test": "test_real_windows_store_isolated_canary_roundtrip",
+        "reason": "현재 Windows 실행 토큰에 자격 증명 저장 세션 없음 · NOT_VALIDATED"
+      },
+      {
+        "test": "test_docker_normal_execution_and_structured_output",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      },
+      {
+        "test": "test_docker_timeout",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      },
+      {
+        "test": "test_docker_network_is_blocked",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      },
+      {
+        "test": "test_docker_host_path_is_hidden",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      }
+    ]
+  },
+  "final_full_regression": {
+    "xml": "build/cycle12/final_compatible_full.xml",
+    "passed_count": 1077,
+    "failed_count": 0,
+    "errors": 0,
+    "skipped_count": 5,
+    "deselected_count": 2,
+    "junit_duration_seconds": 1003.558,
+    "started_at": "2026-10-03T23:05:17.625231+09:00",
+    "skips": [
+      {
+        "test": "test_real_windows_store_isolated_canary_roundtrip",
+        "reason": "현재 Windows 실행 토큰에 자격 증명 저장 세션 없음 · NOT_VALIDATED"
+      },
+      {
+        "test": "test_docker_normal_execution_and_structured_output",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      },
+      {
+        "test": "test_docker_timeout",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      },
+      {
+        "test": "test_docker_network_is_blocked",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      },
+      {
+        "test": "test_docker_host_path_is_hidden",
+        "reason": "Docker daemon or built sandbox image unavailable"
+      }
+    ]
+  },
+  "official_core": {
+    "error_code": null,
+    "image_id": null,
+    "manager_model": null,
+    "passed": true,
+    "passed_count": 1077,
+    "provider": null,
+    "source_fingerprint": "ddbcbbc768ed990d88e1b96f70e7aa999ebaa1026c82845985926dc74f248fce",
+    "status": null
+  },
+  "final_targeted": {
+    "xml": "build/cycle12/final_boundary.xml",
+    "passed_count": 140,
+    "failed_count": 0,
+    "errors": 0,
+    "skipped_count": 0,
+    "deselected_count": 0,
+    "junit_duration_seconds": 150.634,
+    "started_at": "2026-10-03T23:04:12.125710+09:00",
+    "skips": []
+  },
+  "new_cycle12_pytest_count": 67,
+  "stress": {
+    "pytest": {
+      "passed": true,
+      "exit_code": 0,
+      "passed_count": 116,
+      "skipped_count": 0,
+      "deselected_count": 0,
+      "duration_sec": 222.669,
+      "xml": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/qa-day1/stress.xml",
+      "log": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/qa-day1/stress.log"
+    },
+    "scenarios": {
+      "QA-01 Early Fact Recall": {
+        "status": "PASS",
+        "tests": {
+          "test_mandatory_early_fact_and_recent_events": 1
+        }
+      },
+      "QA-02 Evidence Invalidation": {
+        "status": "PASS",
+        "tests": {
+          "test_invalidated_committed_experiment_cannot_be_reused": 1,
+          "test_qa_invalidation_and_dashboard_match_canonical_state": 1
+        }
+      },
+      "QA-03 Dependency Recall": {
+        "status": "PASS",
+        "tests": {
+          "test_direct_dependency_survives_low_semantic_similarity": 1
+        }
+      },
+      "QA-04 Context Distractor": {
+        "status": "PASS",
+        "tests": {
+          "test_context_budget_drops_semantic_but_preserves_mandatory": 1
+        }
+      },
+      "QA-05 Handoff Preservation": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_handoff_must_preserve_survives_fresh_database_open": 1
+        }
+      },
+      "QA-06 Rollback / State Recovery": {
+        "status": "PASS",
+        "tests": {
+          "test_checkpoint_and_rollback": 1,
+          "test_forged_numeric_output_blocks_commit": 1
+        }
+      },
+      "QA-07 Python Failure Recovery": {
+        "status": "PASS",
+        "tests": {
+          "test_transient_stats_tool_failure_retries_without_manager_recall": 1,
+          "test_retry_exhaustion_reaches_coordinator_without_manager_recall": 1
+        }
+      },
+      "QA-09 Artifact Corruption": {
+        "status": "PASS",
+        "tests": {
+          "test_corrupted_stats_artifact_blocks_commit": 1,
+          "test_qa_release_rejects_post_commit_artifact_corruption": 1
+        }
+      },
+      "QA-10 Dataset Corruption": {
+        "status": "PASS",
+        "tests": {
+          "test_dataset_tamper_after_stage_blocks_commit": 1,
+          "test_qa_release_rejects_post_import_dataset_corruption": 1
+        }
+      },
+      "QA-11 Scientific Method Trap": {
+        "status": "PASS",
+        "tests": {
+          "test_constant_pearson_rejected": 1,
+          "test_high_severity_final_critic_blocks_answered_conclusion": 1
+        }
+      },
+      "QA-12 API / Budget Failure": {
+        "status": "PASS",
+        "tests": {
+          "test_fake_provider_failures_are_bounded_and_noncanonical": 5,
+          "test_soft_budget_warns_and_hard_budget_blocks": 1,
+          "test_unknown_price_call_and_token_caps_block_new_invocation": 3
+        }
+      },
+      "QA-13 Loop / Idempotency": {
+        "status": "PASS",
+        "tests": {
+          "test_action_fingerprint_count_survives_restart": 1,
+          "test_resume_replays_completed_tool_without_side_effect": 1
+        }
+      },
+      "QA-14 Crash After Commit": {
+        "status": "PASS",
+        "tests": {
+          "test_resume_recovers_commit_before_completion_checkpoint": 1
+        }
+      },
+      "QA-15 Crash During Critic/Replan": {
+        "status": "PASS",
+        "tests": {
+          "test_each_crash_boundary_resumes_without_duplicate_effects": 11
+        }
+      },
+      "QA-16 Literature Provenance Tampering": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_literature_metadata_and_abstract_tampering_blocks_report": 1
+        }
+      },
+      "QA-17 Contradictory Evidence Preservation": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_contradiction_survives_synthesis_and_report": 1
+        }
+      },
+      "QA-18 Search Rate Limit": {
+        "status": "PASS",
+        "tests": {
+          "test_429_is_mapped_to_rate_limited_and_bounded": 1
+        }
+      },
+      "QA-19 Report Hallucination": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_report_hallucinated_ids_doi_and_numbers_are_rejected": 1,
+          "test_qa_release_rejects_stale_or_forged_report": 1
+        }
+      },
+      "QA-20 Secret Leakage": {
+        "status": "PASS",
+        "tests": {
+          "test_release_secret_exclusion": 1,
+          "test_qa_release_omits_local_absolute_paths": 1
+        }
+      },
+      "QA-08 Sandbox Escape": {
+        "status": "NOT_VALIDATED",
+        "reason": "DOCKER_UNAVAILABLE"
+      }
+    },
+    "all_executable_passed": true
+  },
+  "demo_repeatability": {
+    "runs": {
+      "A": [
+        {
+          "iteration": 1,
+          "research_id": "R-333475853b0441f2bfce04deb66359ba",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.032
+        },
+        {
+          "iteration": 2,
+          "research_id": "R-3a0a459829184c80a50ab404cd893f61",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.787
+        },
+        {
+          "iteration": 3,
+          "research_id": "R-1d85cb7087ab4c798da509802d0984c3",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.067
+        },
+        {
+          "iteration": 4,
+          "research_id": "R-aa09179fd84a408ba346210322b9bf85",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.742
+        },
+        {
+          "iteration": 5,
+          "research_id": "R-c4b617484f8d473f94f13bcc5886b61b",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.515
+        }
+      ],
+      "B": [
+        {
+          "iteration": 1,
+          "research_id": "R-28febae9f25d49628402cb467add0712",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.668
+        },
+        {
+          "iteration": 2,
+          "research_id": "R-089e203530a946679c9d3e365d59baee",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.712
+        },
+        {
+          "iteration": 3,
+          "research_id": "R-a98bcbbfa0d843f589c3d6b8e1c6fa4b",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 8.072
+        },
+        {
+          "iteration": 4,
+          "research_id": "R-797f73f19fa34238b7d4713860dc5129",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.919
+        },
+        {
+          "iteration": 5,
+          "research_id": "R-4567fa71913247c6bfb6cfe974c4d0fd",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.73
+        }
+      ]
+    },
+    "passed": {
+      "A": true,
+      "B": true
+    },
+    "failures": 0,
+    "random_seed": null
+  },
+  "fresh_process_resume": {
+    "passed": true,
+    "counts": {
+      "experiments": 2,
+      "evidence": 2,
+      "state_events": 2,
+      "stats_calls": 2
+    },
+    "new_process": true
+  },
+  "f3p_faults": [
+    {
+      "id": "single_repairable",
+      "expected": "PASS",
+      "observed": "PASS",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": true,
+      "committed": 1,
+      "repair_attempts": 1,
+      "analysis_executions": 2,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 4,
+      "local_execution_ms": 796.875,
+      "wall_clock_ms": 3454.288,
+      "release_file_count": 28
+    },
+    {
+      "id": "compound_defect",
+      "expected": "REPAIR_INCOMPLETE",
+      "observed": "REPAIR_INCOMPLETE",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 2,
+      "analysis_executions": 3,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 5,
+      "local_execution_ms": 718.75,
+      "wall_clock_ms": 4319.65,
+      "release_file_count": null
+    },
+    {
+      "id": "faulty_checker",
+      "expected": "CHECKER_QUALIFICATION_FAILED",
+      "observed": "CHECKER_QUALIFICATION_FAILED",
+      "fixture_correct": true,
+      "initially_correct": true,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 3,
+      "local_execution_ms": 343.75,
+      "wall_clock_ms": 1882.284,
+      "release_file_count": null
+    },
+    {
+      "id": "shared_wrong",
+      "expected": "REPAIR_INCOMPLETE",
+      "observed": "REPAIR_INCOMPLETE",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 2,
+      "analysis_executions": 3,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 5,
+      "local_execution_ms": 687.5,
+      "wall_clock_ms": 4188.633,
+      "release_file_count": null
+    },
+    {
+      "id": "semantic_mutation",
+      "expected": "REPAIR_CONTRACT_MUTATION_BLOCKED",
+      "observed": "REPAIR_CONTRACT_MUTATION_BLOCKED",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 4,
+      "local_execution_ms": 359.375,
+      "wall_clock_ms": 2120.732,
+      "release_file_count": null
+    },
+    {
+      "id": "insufficient_budget",
+      "expected": "REPAIR_NOT_STARTED_BUDGET",
+      "observed": "REPAIR_NOT_STARTED_BUDGET",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 3,
+      "local_execution_ms": 281.25,
+      "wall_clock_ms": 2019.431,
+      "release_file_count": null
+    },
+    {
+      "id": "unsupported_repair",
+      "expected": "REPAIR_UNRESOLVED",
+      "observed": "REPAIR_UNRESOLVED",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 3,
+      "local_execution_ms": 250.0,
+      "wall_clock_ms": 1797.056,
+      "release_file_count": null
+    },
+    {
+      "id": "successful_legacy_repair",
+      "expected": "PASS",
+      "observed": "PASS",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": true,
+      "committed": 1,
+      "repair_attempts": 1,
+      "analysis_executions": 2,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 4,
+      "local_execution_ms": 734.375,
+      "wall_clock_ms": 3276.273,
+      "release_file_count": 24
+    }
+  ],
+  "f3p_recovery": [
+    {
+      "boundary": "AFTER_FAILURE_EVIDENCE",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 1,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "AFTER_REPAIR_DECISION",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "AFTER_REPAIRED_EXECUTION",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "DURING_REVALIDATION",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "BEFORE_REPAIR_COMMIT",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "AFTER_REPAIR_COMMIT",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    }
+  ],
+  "qualified_recovery": [
+    {
+      "boundary": "profile_after_verify",
+      "fresh_process": true,
+      "commit_count": 1,
+      "resume_model_calls": 0,
+      "current": true,
+      "required": true,
+      "representation": "MATCHED_SELECTED_KEYS",
+      "passed": true,
+      "execution": "FRESH_PROCESS_OFFLINE_FAKE_AGENT_REAL_TOOLS",
+      "paid_calls": 0
+    },
+    {
+      "boundary": "profile_after_commit",
+      "fresh_process": true,
+      "commit_count": 1,
+      "resume_model_calls": 0,
+      "current": true,
+      "required": true,
+      "representation": "MATCHED_SELECTED_KEYS",
+      "passed": true,
+      "execution": "FRESH_PROCESS_OFFLINE_FAKE_AGENT_REAL_TOOLS",
+      "paid_calls": 0
+    }
+  ],
+  "demo_release": {
+    "passed": true,
+    "file_count": 17,
+    "hash_mismatches": [],
+    "missing_artifacts": [],
+    "secret_files": [],
+    "unresolved_refs": 0,
+    "manifest": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/qa-day1/clean-release/manifests/release_manifest.json",
+    "manifest_sha256": "b4a7f3a7f31cfd4352d50855d96027f6f213c8549949fdba0fdd02e167268c01",
+    "clean_database": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/qa-day1/demo-a-1/state.sqlite"
+  },
+  "f3p_exports": [
+    {
+      "clean": false,
+      "result": {
+        "all_passed": true,
+        "canary_present_in_environment": true,
+        "live_api_calls": 0,
+        "cases": [
+          {
+            "case": "single_repairable",
+            "manifest": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/f3p-evaluation/single_repairable/release-canary-be83bfb8/manifests/release_manifest.json",
+            "file_count": 28,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          },
+          {
+            "case": "successful_legacy_repair",
+            "manifest": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/f3p-evaluation/successful_legacy_repair/release-canary-b7469a11/manifests/release_manifest.json",
+            "file_count": 24,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "clean": true,
+      "result": {
+        "all_passed": true,
+        "canary_present_in_environment": false,
+        "live_api_calls": 0,
+        "cases": [
+          {
+            "case": "single_repairable",
+            "manifest": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/f3p-evaluation/single_repairable/release-clean-a4f9e6c7/manifests/release_manifest.json",
+            "file_count": 28,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          },
+          {
+            "case": "successful_legacy_repair",
+            "manifest": "build/cycle12/offline/4b57ec1c0b5b495999d8036d0a06f406/f3p-evaluation/successful_legacy_repair/release-clean-b383c4a9/manifests/release_manifest.json",
+            "file_count": 24,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          }
+        ]
+      }
+    }
+  ],
+  "qualified_export": {
+    "passed": true,
+    "source_fingerprint": "ddbcbbc768ed990d88e1b96f70e7aa999ebaa1026c82845985926dc74f248fce",
+    "execution": "OFFLINE_FAKE_AGENT_CURRENT_QUALIFIED_RELEASE",
+    "file_count": 27,
+    "hash_mismatches": [],
+    "canary_leaks": [],
+    "replay": {
+      "result": {
+        "method": "two_period_comparison",
+        "n": 20,
+        "periods": [
+          {
+            "start": 1986,
+            "end": 1995,
+            "n": 10,
+            "mean": 0.324
+          },
+          {
+            "start": 2011,
+            "end": 2020,
+            "n": 10,
+            "mean": 0.836
+          }
+        ],
+        "difference": 0.512,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ]
+      },
+      "status": "LOCAL_RECALCULATION_PASS",
+      "paid_calls": 0,
+      "manifest_sha256": "9b2c80a1f377fe1a41fcb8d2b6c07764eedfb187df91ea956ab20d2262eafaa4",
+      "representation_status": "MATCHED_SELECTED_KEYS",
+      "limitation_shared_root": "두 형식은 같은 NASA 제품을 사용합니다. 형식 대조는 독립 관측이나 과학적 진위 인증이 아니며, 공통 원자료·질문 해석의 오류는 남을 수 있습니다.",
+      "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+    },
+    "tamper_blocked": true,
+    "stale_blocked": true,
+    "manifest": "build/cycle12/qualified-export/888d47358cc9475a881f59da74be1331/release/manifests/release_manifest.json",
+    "manifest_sha256": "b8c549588f11763dd03fb332aebecf6dafb73e6b52114d7aa83a39ce7075efe4",
+    "paid_calls": 0,
+    "live_efficacy": "NOT_VALIDATED"
+  },
+  "chrome": [
+    {
+      "command": "node qa/cycle12/browser.cjs",
+      "checks": 25,
+      "execution": "REAL_CHROME_REAL_LOCAL_API_FAKE_AGENT",
+      "passed": true,
+      "output_dir": "build/cycle12/browser/da9d1cf8-6624-4508-bb84-cbe7cecaa9e2"
+    },
+    {
+      "command": "node qa/beginner_v4_browser.cjs",
+      "checks": 35,
+      "execution": "REAL_CHROME_WITH_MOCK_HTTP",
+      "passed": true
+    },
+    {
+      "command": "node qa/research_wizard_browser.cjs",
+      "checks": 38,
+      "execution": "REAL_CHROME_OFFLINE_FIXTURE",
+      "passed": true,
+      "result": "build/research-wizard/browser/0a66b32d-6867-4cf5-b5c0-22c10a798044/result.json"
+    },
+    {
+      "command": "node qa/ui_unblock_browser.cjs",
+      "checks": 53,
+      "execution": "OFFLINE_EXPLICIT_MOCK_TRANSPORT_REAL_CHROME",
+      "passed": true
+    },
+    {
+      "command": "node qa/model_activation_browser.cjs",
+      "checks": 27,
+      "execution": "REAL_CHROME_OFFLINE_MEMORY_CREDENTIALS",
+      "passed": true
+    }
+  ],
+  "chrome_check_count": 178,
+  "pdf": {
+    "path": "build/cycle12/browser/da9d1cf8-6624-4508-bb84-cbe7cecaa9e2/report.pdf",
+    "bytes": 164367,
+    "pages": 5,
+    "checks": {
+      "utf8_text": true,
+      "old_question": true,
+      "new_question": true,
+      "shared_root_limit": true,
+      "no_teacher_approval": true
+    },
+    "inspection": "TEXT_AND_FIVE_RENDERED_PAGES_VISUALLY_CHECKED",
+    "rendered_pages": [
+      "build/cycle12/pdf/current-page-1.png",
+      "build/cycle12/pdf/current-page-2.png",
+      "build/cycle12/pdf/current-page-3.png",
+      "build/cycle12/pdf/current-page-4.png",
+      "build/cycle12/pdf/current-page-5.png"
+    ],
+    "contact_sheet": "build/cycle12/pdf/current-contact.png",
+    "visual_observation": "한글·표·그림·페이지 번호를 확인했고 겹침·잘림을 발견하지 않았다. 그림 다음 페이지 배치와 마지막 manifest 표의 페이지 나눔은 유지한다."
+  },
+  "v4_evaluation": {
+    "all_passed": true,
+    "case_count": 16,
+    "categories": {
+      "normal": 4,
+      "fault": 6,
+      "change": 3,
+      "ambiguous": 3
+    },
+    "source_families": 1,
+    "evidence": "build/cycle12/v4_evaluation.json"
+  },
+  "reference_review": {
+    "execution": "REFERENCE_POLICY_REPLAY_ONLY",
+    "package_sha256": "06479024d75ce9eff01399fe61b84acd631ca32a0dd253fc28086c79a9b8341f",
+    "package_files_checked": 32,
+    "freeze_files_checked": 19,
+    "case_count": 24,
+    "source_families": 2,
+    "policy_evaluations": 72,
+    "comparisons": {
+      "summary.json": {
+        "byte_identical": false,
+        "line_endings_normalized_identical": true,
+        "semantic_identical": true,
+        "original_sha256": "eaea28a87720d30b5b6848748f1f0bc6efd8ccf3d1424fd6814305d45ebee0f7",
+        "observed_sha256": "50c20ac673e53f09af48ae4ba0f3ff3af19efa00a768d8c4322110ffa2e0c39a"
+      },
+      "results.json": {
+        "byte_identical": false,
+        "line_endings_normalized_identical": true,
+        "semantic_identical": true,
+        "original_sha256": "38aea672392cf0a7e9f9913a0eec7755ca6041fbcaeb19e6e39af3fd7c997be5",
+        "observed_sha256": "d364971981640112f8fed625e00f1e2777615c86f0fff78de8bc8bc93d6b051c"
+      },
+      "results.csv": {
+        "byte_identical": true,
+        "line_endings_normalized_identical": true,
+        "semantic_identical": null,
+        "original_sha256": "da045960f538d640a417db0fe66a6c95ef9d56eadc299c74acfb621bb3287ff8",
+        "observed_sha256": "da045960f538d640a417db0fe66a6c95ef9d56eadc299c74acfb621bb3287ff8"
+      }
+    },
+    "additional_probes": [
+      {
+        "probe": "baseline_only",
+        "status": "READY",
+        "reason": "declared_witnesses_consistent"
+      },
+      {
+        "probe": "aggregation_only",
+        "status": "READY",
+        "reason": "declared_witnesses_consistent"
+      },
+      {
+        "probe": "mean_order_only",
+        "status": "GOAL_CONFLICT",
+        "reason": "approved_goal_differs_from_explicit_task_contract"
+      },
+      {
+        "probe": "missing_selected_value",
+        "status": "UNHANDLED_EXCEPTION",
+        "exception_type": "TypeError"
+      },
+      {
+        "probe": "required_representation_absent",
+        "status": "CHECK_PENDING",
+        "reason": "required_representation_unavailable"
+      }
+    ],
+    "summary": {
+      "case_count": 24,
+      "real_source_families": 2,
+      "policy_evaluations": 72,
+      "class_counts": {
+        "valid": 8,
+        "source_conflict": 4,
+        "goal_conflict": 2,
+        "meaning_conflict": 2,
+        "goal_unresolved": 2,
+        "limited_valid": 2,
+        "residual_root_error": 4
+      },
+      "dispositions": {
+        "S0": {
+          "valid": {
+            "READY": 8
+          },
+          "source_conflict": {
+            "READY": 4
+          },
+          "goal_conflict": {
+            "READY": 2
+          },
+          "meaning_conflict": {
+            "READY": 2
+          },
+          "goal_unresolved": {
+            "READY": 2
+          },
+          "limited_valid": {
+            "READY": 2
+          },
+          "residual_root_error": {
+            "READY": 4
+          }
+        },
+        "S1": {
+          "valid": {
+            "READY": 8
+          },
+          "source_conflict": {
+            "SOURCE_CONFLICT": 4
+          },
+          "goal_conflict": {
+            "READY": 2
+          },
+          "meaning_conflict": {
+            "READY": 2
+          },
+          "goal_unresolved": {
+            "READY": 2
+          },
+          "limited_valid": {
+            "READY_WITH_LIMITS": 2
+          },
+          "residual_root_error": {
+            "READY": 4
+          }
+        },
+        "S2": {
+          "valid": {
+            "READY": 8
+          },
+          "source_conflict": {
+            "SOURCE_CONFLICT": 4
+          },
+          "goal_conflict": {
+            "GOAL_CONFLICT": 2
+          },
+          "meaning_conflict": {
+            "SOURCE_MEANING_CONFLICT": 2
+          },
+          "goal_unresolved": {
+            "GOAL_REVIEW_REQUIRED": 2
+          },
+          "limited_valid": {
+            "READY_WITH_LIMITS": 2
+          },
+          "residual_root_error": {
+            "READY": 4
+          }
+        }
+      },
+      "real_source_original_results": {
+        "climate": {
+          "mean_a": "81/500",
+          "mean_b": "1457/2000",
+          "delta": "1133/2000"
+        },
+        "astronomy": {
+          "mean_a": "3990991/1500000",
+          "mean_b": "9286773/800000",
+          "delta": "107373667/12000000"
+        }
+      },
+      "h_trsa_or_models_or_competitor_run": false,
+      "protocol_sha256": "ae9577a176fea5c4b7fd8ba5162504859fd6b3459da07eee1bfe5a9685707e6f"
+    },
+    "app_or_live_agent_run": false,
+    "teacher_use": "NOT_VALIDATED",
+    "python": "3.14.7 (tags/v3.14.7:823f032, Aug  5 2026, 10:51:32) [MSC v.1944 64 bit (AMD64)]",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "passed": true
+  },
+  "cross_domain": {
+    "execution": "FROZEN_CROSS_DOMAIN_DIAGNOSTIC",
+    "passed": true,
+    "source_families": 1,
+    "captured_rows": 7,
+    "snapshots": [
+      {
+        "plan_revision": 1,
+        "selected_keys": {
+          "A": [
+            "TRAPPIST-1 b",
+            "TRAPPIST-1 c",
+            "TRAPPIST-1 d"
+          ],
+          "B": [
+            "TRAPPIST-1 e",
+            "TRAPPIST-1 f",
+            "TRAPPIST-1 g",
+            "TRAPPIST-1 h"
+          ]
+        },
+        "means_day": [
+          "2.660660666666666666666666667",
+          "11.60846625000"
+        ],
+        "difference_day": "8.947805583333333333333333333",
+        "display_operation": "MULTIPLY_BY_24",
+        "difference_hour": "214.7473340000000000000000000",
+        "meaning": {
+          "product": "NASA Exoplanet Archive PS",
+          "quantity_kind": "orbital_period_duration",
+          "unit": "day",
+          "selection": "hostname='TRAPPIST-1' and default_flag=1",
+          "value_column": "pl_orbper"
+        },
+        "authorization": "REFERENCE_AUTHOR_DEFINED_DIAGNOSTIC",
+        "teacher_review": "NOT_VALIDATED"
+      },
+      {
+        "plan_revision": 2,
+        "selected_keys": {
+          "A": [
+            "TRAPPIST-1 b",
+            "TRAPPIST-1 c"
+          ],
+          "B": [
+            "TRAPPIST-1 d",
+            "TRAPPIST-1 e",
+            "TRAPPIST-1 f",
+            "TRAPPIST-1 g",
+            "TRAPPIST-1 h"
+          ]
+        },
+        "means_day": [
+          "1.96638150000",
+          "10.09661680000"
+        ],
+        "difference_day": "8.13023530000",
+        "display_operation": "MULTIPLY_BY_24",
+        "difference_hour": "195.12564720000",
+        "meaning": {
+          "product": "NASA Exoplanet Archive PS",
+          "quantity_kind": "orbital_period_duration",
+          "unit": "day",
+          "selection": "hostname='TRAPPIST-1' and default_flag=1",
+          "value_column": "pl_orbper"
+        },
+        "authorization": "REFERENCE_AUTHOR_DEFINED_DIAGNOSTIC",
+        "teacher_review": "NOT_VALIDATED"
+      }
+    ],
+    "swapped_keys_detected": [
+      "TRAPPIST-1 b",
+      "TRAPPIST-1 c"
+    ],
+    "same_unit_wrong_quantity": "SOURCE_MEANING_CONFLICT",
+    "retained_fields": [
+      "pl_refname",
+      "rowupdate",
+      "pl_orbpererr1",
+      "pl_orbpererr2"
+    ],
+    "runtime_routing": "GENERAL",
+    "production_qualification": "NOT_QUALIFIED",
+    "paid_calls": 0,
+    "live_efficacy": "NOT_VALIDATED",
+    "limitations": [
+      "동일 카탈로그의 두 형식이며 독립 관측이 아닙니다.",
+      "카탈로그 점 추정값입니다. 공분산을 반영한 불확도 전파는 구현하지 않았습니다.",
+      "HTML 참조는 실행하지 않는 원문입니다. 취득 manifest는 참조 작성자의 기록이며 이번 원래 HTTP 취득을 관측하지 않았습니다."
+    ]
+  },
+  "environment": {
+    "docker": {
+      "cli_present": false,
+      "daemon_reachable": false,
+      "image_present": false,
+      "image": "htrsa-sandbox:3.13",
+      "image_id": null,
+      "isolation_probe_passed": false,
+      "available": false,
+      "isolation_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "provider": {
+      "api_key_present": false,
+      "manager_model_configured": false,
+      "provider_importable": true,
+      "structured_output_available": true,
+      "configured": false,
+      "live_smoke_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "search": {
+      "status": "UNCONFIGURED",
+      "validated": false,
+      "provider": null,
+      "error_code": null
+    },
+    "sandbox": {
+      "fail_closed": true
+    },
+    "gates": {
+      "CORE_TESTS_PASS": true,
+      "STRESS_TESTS_PASS": true,
+      "ARTIFACT_VALIDATION_PASS": true,
+      "DOCKER_ISOLATION_PASS": false,
+      "LIVE_API_SMOKE_PASS": false,
+      "LIVE_SEARCH_PASS": false,
+      "DEMO_A_PASS": true,
+      "DEMO_B_PASS": true
+    },
+    "demo_ready": true,
+    "release_ready": false,
+    "productization": {
+      "windows_key": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:06:34.146634+00:00",
+        "error_code": "WINDOWS_ERROR_1312"
+      },
+      "default_browser": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:07:01.150073+00:00",
+        "error_code": null
+      }
+    },
+    "product_release_ready": false
+  },
+  "actual_paid_calls": 0,
+  "live_efficacy": "NOT_VALIDATED",
+  "changed_files": [
+    "src/htrsa/period_comparison.py",
+    "src/htrsa/climate_profile.py",
+    "src/htrsa/qualified_workflow.py",
+    "src/htrsa/qualified_profiles.py",
+    "src/htrsa/qualified_replay.py",
+    "src/htrsa/service.py",
+    "src/htrsa/real_tools.py",
+    "src/htrsa/agent_runtime.py",
+    "src/htrsa/workbench.py",
+    "src/htrsa/final_report.py",
+    "src/htrsa/report_pdf.py",
+    "src/htrsa/workbench_static/beginner_ux.js",
+    "tests/test_cycle12.py",
+    "qa/prepublish_check.py",
+    "qa/cycle12/",
+    "qa/README.md",
+    "README.md",
+    "docs/development/FEATURE_FREEZE.md",
+    "docs/history/연구일지.md"
+  ],
+  "db_migration_added": false,
+  "dependencies_added": false,
+  "observation_window": {
+    "start": "2026-10-03T22:11:52.195448+09:00",
+    "end": "2026-10-03T23:23:17+09:00",
+    "elapsed_seconds": 4284.805,
+    "meaning": "첫 기준선 시도부터 최종 환경 확인까지 검사·수정·대기를 포함한 관측 구간. 문서 작성과 순수 구현/성능 시간은 아님."
+  },
+  "intermediate_runs": {
+    "first_basetemp_parent_error": {
+      "xml": "build/cycle12/baseline.xml",
+      "passed_count": 264,
+      "failed_count": 0,
+      "errors": 746,
+      "skipped_count": 5,
+      "deselected_count": 2,
+      "junit_duration_seconds": 21.133,
+      "started_at": "2026-10-03T22:11:52.195448+09:00",
+      "skips": [
+        {
+          "test": "test_real_windows_store_isolated_canary_roundtrip",
+          "reason": "현재 Windows 실행 토큰에 자격 증명 저장 세션 없음 · NOT_VALIDATED"
+        },
+        {
+          "test": "test_docker_normal_execution_and_structured_output",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        },
+        {
+          "test": "test_docker_timeout",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        },
+        {
+          "test": "test_docker_network_is_blocked",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        },
+        {
+          "test": "test_docker_host_path_is_hidden",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        }
+      ]
+    },
+    "initial_app_defect_reproduction": {
+      "xml": "build/cycle12/reproduced_defects.xml",
+      "passed_count": 0,
+      "failed_count": 3,
+      "errors": 0,
+      "skipped_count": 0,
+      "deselected_count": 0,
+      "junit_duration_seconds": 3.612,
+      "started_at": "2026-10-03T22:24:36.616813+09:00",
+      "skips": []
+    },
+    "opaque_credential_reproduction": {
+      "xml": "build/cycle12/credential_reproduction.xml",
+      "passed_count": 0,
+      "failed_count": 1,
+      "errors": 0,
+      "skipped_count": 0,
+      "deselected_count": 0,
+      "junit_duration_seconds": 1.727,
+      "started_at": "2026-10-03T22:59:58.849198+09:00",
+      "skips": []
+    },
+    "skills_registry_regression_before_fix": {
+      "xml": "build/cycle12/full_regression.xml",
+      "passed_count": 1075,
+      "failed_count": 1,
+      "errors": 0,
+      "skipped_count": 5,
+      "deselected_count": 2,
+      "junit_duration_seconds": 939.864,
+      "started_at": "2026-10-03T22:47:40.847844+09:00",
+      "skips": [
+        {
+          "test": "test_real_windows_store_isolated_canary_roundtrip",
+          "reason": "현재 Windows 실행 토큰에 자격 증명 저장 세션 없음 · NOT_VALIDATED"
+        },
+        {
+          "test": "test_docker_normal_execution_and_structured_output",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        },
+        {
+          "test": "test_docker_timeout",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        },
+        {
+          "test": "test_docker_network_is_blocked",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        },
+        {
+          "test": "test_docker_host_path_is_hidden",
+          "reason": "Docker daemon or built sandbox image unavailable"
+        }
+      ]
+    },
+    "interrupted": [
+      "변경 전 코드를 불러온 두 번째 full·첫 Core·두 번째 offline 실행을 최종 소스 재검증을 위해 중단했다. 통과로 합산하지 않는다."
+    ],
+    "browser_timeout": {
+      "command": "node qa/research_wizard_browser.cjs",
+      "passed_checks_before_timeout": 27,
+      "error": "#list-new visibility 10000ms timeout after draft reload",
+      "rerun": "같은 소스와 기존 검사 그대로 재실행해 38 PASS. 일시적 실패의 원인은 확정하지 않았다."
+    }
+  },
+  "external_gates_executed": [
+    {
+      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m htrsa.preflight smoke-api",
+      "passed": false,
+      "skipped": true,
+      "reason": "API_UNCONFIGURED"
+    },
+    {
+      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m htrsa.preflight validate-search",
+      "passed": false,
+      "skipped": true,
+      "reason": "SEARCH_UNCONFIGURED"
+    },
+    {
+      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m htrsa.preflight validate-docker",
+      "passed": false,
+      "skipped": true,
+      "reason": "DOCKER_UNAVAILABLE"
+    }
+  ],
+  "publication_security": {
+    "publication_status": "BLOCKED",
+    "blockers": [
+      "LICENSE_PENDING_OWNER_CHOICE"
+    ],
+    "public_candidate_files": 352,
+    "suspected_secrets": 0,
+    "history_status": "VALIDATED",
+    "history_objects_scanned": 369,
+    "core_regression": {
+      "status": "PASS",
+      "passed": true,
+      "current_source": true
+    },
+    "evidence": "qa/cycle12/publication_security.json"
+  },
+  "publication_canary_checks": {
+    "checks": {
+      "reviewed_fixed_canary_only": true,
+      "same_value_active_environment_blocks": true,
+      "unrecognized_key_blocks": true
+    },
+    "passed": true,
+    "scope": "기존 고정 SHA-256 합성값 예외의 동작 검사",
+    "paid_calls": 0
+  }
+}

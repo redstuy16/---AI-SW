@@ -23,6 +23,7 @@ async function main(){
  const session=await page.evaluate(async()=>await(await fetch('/api/session')).json());privateValues.push(session.csrf);for(const c of await context.cookies())privateValues.push(c.value);
  async function settings(){if(await page.locator('#editor[open]').count())await page.keyboard.press('Escape');await page.locator('[data-view="settings"]').click();await page.locator('#settings-tab-connections').waitFor();await page.locator('#settings-tab-connections').click();}
  async function models(){await page.locator('#new-research').click();await page.locator('#research-form').waitFor();}
+ async function legitimateConnection(){await page.evaluate(async()=>{const session=await(await fetch('/api/session')).json();const response=await fetch('/api/control/connections',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':session.csrf},body:JSON.stringify({value:{connection_id:'qa-catalog',display_name:'오프라인 검사 연결',adapter_id:'openai',base_url:'https://api.openai.com/v1',destination_approved:true,credential_env_name:'HTRSA_QA_MISSING_KEY'}})});if(!response.ok)throw Error('합법적 검사 연결 구성 실패');});await settings();}
  async function qualify(consent){return page.evaluate(async consent=>{const s=await(await fetch('/api/session')).json(),config=await(await fetch('/api/control/settings')).json();const r=await fetch('/api/control/models/'+config.models[0].profile_id+'/qualify',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':s.csrf},body:JSON.stringify({consent,idempotency_key:crypto.randomUUID()})});return {status:r.status,body:await r.json()};},consent);}
  async function pane(key){if(await page.locator('#editor[open]').count())await page.keyboard.press('Escape');await page.locator('#settings-tab-'+key).click();await page.locator('#settings-pane-'+key).waitFor();}
  async function capture(name){const visible=await page.evaluate(()=>document.body.innerText+'\n'+Array.from(document.querySelectorAll('input:not([type="password"]),textarea')).map(e=>e.value).join('\n'));check(name+' 저장 전 화면 비밀 없음',!privateValues.some(v=>visible.includes(v)));const target=path.join(out,name+'.png');await page.screenshot({path:target,fullPage:true,mask:[page.locator('input[type="password"]')]});shots.push(target);check(name+' 가로 넘침 없음',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));}
@@ -40,8 +41,8 @@ async function main(){
   await page.keyboard.press('Home');await page.keyboard.press('ArrowRight');check('방향키 API 검사 탭',await page.locator('#settings-tab-checks').getAttribute('aria-selected')==='true');
   await page.keyboard.press('ArrowLeft');check('방향키 기본 탭 복귀',await page.locator('#settings-tab-connections').getAttribute('aria-selected')==='true');
  }
- await models();await page.locator('#prepare-selected-model>summary').click();await page.locator('#research-model-consent').check();await page.locator('#research-model-save').click();await page.waitForFunction(()=>document.querySelector('#notice')?.textContent.includes('모델을 등록했습니다.'));await page.keyboard.press('Escape');await settings();
- check('카탈로그 모델 저장 완료',true);
+ await legitimateConnection();await models();await page.locator('#featured-models [name="catalog-model"]').first().check();await page.waitForFunction(()=>document.querySelector('#research-form [name="model_profile_id"]')?.value.startsWith('AUTO-'));await page.keyboard.press('Escape');await settings();
+ check('자동 모델 구성·등록 단계 제거',await page.getByRole('button',{name:'선택한 모델 등록',exact:true}).count()===0);
  if(layoutQA){
   await page.locator('#connection-new').click();await page.locator('#connection-form').waitFor();
   check('키 설정에도 설명 문단 없음',await page.locator('#connection-form p').count()===0);

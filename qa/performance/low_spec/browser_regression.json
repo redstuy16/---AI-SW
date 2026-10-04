@@ -1,0 +1,224 @@
+{
+  "commands": [
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "qa/gui_visual_fixture.py"
+      ],
+      "exit_code": 0,
+      "seconds": 5.349
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "qa/cycle5_visual_fixture.py"
+      ],
+      "exit_code": 0,
+      "seconds": 6.333
+    },
+    {
+      "command": [
+        ".venv/Scripts/python.exe",
+        "-X",
+        "utf8",
+        "qa/product_visual_fixture.py"
+      ],
+      "exit_code": 0,
+      "seconds": 0.724
+    },
+    {
+      "command": [
+        "node",
+        "qa/gui_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 4.317,
+      "result": {
+        "screenshots": 21,
+        "checks": 22,
+        "errors": 0,
+        "unexpected_network": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/product_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 4.239,
+      "result": {
+        "screenshots": 19,
+        "checks": 19,
+        "paid_calls": 0,
+        "canary_exposures": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/multi_provider_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 2.554,
+      "result": {
+        "checks": [
+          {
+            "provider": "anthropic",
+            "native_url_locked": true
+          },
+          {
+            "provider": "deepseek",
+            "native_url_locked": true
+          },
+          {
+            "provider": "google_gemini",
+            "native_url_locked": true
+          },
+          {
+            "provider": "mistral",
+            "native_url_locked": true
+          },
+          {
+            "provider": "openai",
+            "native_url_locked": true
+          },
+          {
+            "provider": "openai_compatible",
+            "native_url_locked": false
+          },
+          {
+            "provider": "xai",
+            "native_url_locked": true
+          }
+        ],
+        "capability_controls": true,
+        "manual_id": true,
+        "native_origin_locked": true,
+        "errors": [],
+        "unexpected_network": [],
+        "mobile_overflow": false,
+        "browser_storage": {
+          "local": 0,
+          "session": 0
+        },
+        "live_calls": 0,
+        "live_validation": "NOT_VALIDATED"
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/cycle5_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 3.886,
+      "result": {
+        "all_passed": true,
+        "checks": 33,
+        "screenshots": 7,
+        "errors": 0,
+        "unexpected_network": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/productization_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 4.372,
+      "result": {
+        "passed": true,
+        "checks": 21,
+        "screenshots": 3,
+        "actual_pythonw": true,
+        "paid_live_calls": 0,
+        "secret_exposures": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/connection_ux_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 5.073,
+      "result": {
+        "passed": true,
+        "checks": 66,
+        "screenshots": 11,
+        "paid_live_calls": 0,
+        "secret_exposures": 0,
+        "credential_backend": "MOCK_OS_STORE"
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/live_api_recording_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 5.576,
+      "result": {
+        "passed": true,
+        "checks": 33,
+        "screenshots": 3,
+        "actual_pythonw": true,
+        "paid_live_calls": 0,
+        "secret_exposures": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/live_api_recording_visual_qa.cjs",
+        "--settings-layout"
+      ],
+      "exit_code": 0,
+      "seconds": 6.381,
+      "result": {
+        "passed": true,
+        "checks": 70,
+        "screenshots": 12,
+        "actual_pythonw": true,
+        "paid_live_calls": 0,
+        "secret_exposures": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/local_browser_auth_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 8.269,
+      "result": {
+        "passed": true,
+        "checks": 51,
+        "screenshots": 4,
+        "secret_exposures": 0,
+        "paid_live_calls": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "qa/hardening_visual_qa.cjs"
+      ],
+      "exit_code": 0,
+      "seconds": 11.277,
+      "result": {
+        "passed": true,
+        "checks": 41,
+        "screenshots": 5,
+        "live_api_calls": 0
+      }
+    }
+  ],
+  "all_passed": true
+}

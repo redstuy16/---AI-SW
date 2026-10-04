@@ -1,0 +1,72 @@
+// 실제 Chrome·소유자 인증·자료 조회·질문 변경·재계산·PDF를 검사한다.
+const {chromium}=require('../browser_runtime.cjs');
+const {spawn}=require('child_process');
+const fs=require('fs'),path=require('path'),crypto=require('crypto');
+const root=path.resolve(__dirname,'../..'),folder=path.join(root,'build/cycle12/browser',crypto.randomUUID());
+fs.mkdirSync(folder,{recursive:true});
+const results=[],errors=[],requests=[];
+let child,browser;
+function check(name,ok){results.push({name,passed:!!ok});if(!ok)throw Error(name);}
+(async()=>{
+ try{
+  const env={...process.env};for(const key of Object.keys(env))if(key.endsWith('API_KEY'))delete env[key];
+  child=spawn(path.join(root,'.venv/Scripts/python.exe'),['-B','-X','utf8','qa/cycle12/browser_fixture.py',folder],{cwd:root,windowsHide:true,env,stdio:['ignore','pipe','pipe']});
+  let stderr='';child.stderr.on('data',v=>stderr+=v);
+  const url=await new Promise((resolve,reject)=>{let text='';child.stdout.on('data',v=>{text+=v;const m=text.match(/http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]{43}/);if(m)resolve(m[0]);});child.on('exit',()=>reject(Error(stderr.slice(-1500))));setTimeout(()=>reject(Error('서버 시간 초과')),30000).unref();});
+  const origin=new URL(url).origin;
+  browser=await chromium.launch({channel:'chrome',headless:true});
+  const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(15000);
+  page.on('pageerror',error=>errors.push(error.message));
+  page.on('request',request=>{requests.push(request.url());if(!request.url().startsWith(origin+'/')&&!request.url().startsWith('blob:'))errors.push('외부 전송');});
+  const unauth=await fetch(origin+'/api/control/research');check('소유자 세션 없는 조회 차단',unauth.status===401&&(await unauth.json()).error==='OWNER_SESSION_REQUIRED');
+  await page.goto(url);await page.locator('#research-table').waitFor();
+  if(await page.locator('#tutorial-skip').count())await page.locator('#tutorial-skip').click();
+  await page.locator('[data-run]').first().click();await page.locator('.conclusion-card').waitFor();
+  check('결론 카드 여섯 항목',await page.locator('.conclusion-card h3').count()===6);
+  check('현재 결론과 형식 대조 실제 표시',(await page.locator('.conclusion-card').innerText()).includes('선택 키별 형식 대조 완료'));
+  check('선택값 조회는 펼치기 전 실행하지 않음',!requests.some(r=>r.includes('source-inspection')));
+  await page.locator('#profile-source-details summary').click();await page.locator('#profile-selected-rows').waitFor();
+  check('독립 관측으로 과장하지 않음',(await page.locator('#profile-source-content').innerText()).includes('독립 관측'));
+  check('출처 HTML 미수집 표시',(await page.locator('#profile-source-content').innerText()).includes('HTML 미수집'));
+  check('로컬 원자료의 원래 HTTP 미관측 표시',(await page.locator('#profile-source-content').innerText()).includes('HTTP 수집 미관측'));
+  check('행은 별도 요청 전 읽지 않음',!requests.some(r=>r.includes('rows=1')));
+  await page.locator('#profile-selected-rows').click();await page.locator('#profile-selected-content tbody tr').first().waitFor();
+  check('선택 관측값 40개 조회',await page.locator('#profile-selected-content tbody tr').count()===40);
+  const gap=await page.locator('#profile-refresh').evaluate(button=>{const a=button.getBoundingClientRect(),b=button.nextElementSibling.getBoundingClientRect();return b.left-a.right;});check('동작 버튼 사이 간격',gap>=8);
+  await page.screenshot({path:path.join(folder,'source.png'),fullPage:true});
+  await page.locator('#profile-amend').click();await page.locator('#profile-question-form').waitFor();
+  const question='1986~1995년과 2011~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.';
+  await page.locator('#profile-question-form textarea').fill(question);await page.locator('#profile-question-form button.primary').click();
+  await page.getByText('다시 확인 필요',{exact:true}).waitFor();
+  check('질문 변경 직후 결론은 재확인 대기',(await page.locator('.conclusion-card').innerText()).includes('변경한 질문 · 재확인 대기'));
+  const rid=JSON.parse(fs.readFileSync(path.join(folder,'execution.json'),'utf8')).research_id;
+  const pendingPdf=await page.evaluate(async id=>(await fetch('/api/control/research/'+id+'/report.pdf',{credentials:'same-origin'})).status,rid);
+  check('재검증 전 현재 PDF 차단',pendingPdf!==200);
+  await page.locator('#profile-recalculate').click();await page.getByText('현재 결론',{exact:true}).waitFor();
+  check('새 질문의 현재 결과 표시',(await page.locator('.conclusion-card').innerText()).includes(question));
+  await page.getByText('변경 내역',{exact:true}).click();
+  check('실제 이전 질문과 현재 질문 표시',(await page.locator('.conclusion-card').innerText()).includes('이전 질문:'));
+  check('추가·제외 키 표시',(await page.locator('.conclusion-card').innerText()).includes('제외 1981'));
+  const inspection=await page.evaluate(async id=>(await fetch('/api/control/research/'+id+'/source-inspection',{credentials:'same-origin'})).json(),rid);
+  check('원질문은 보존',inspection.original_question.includes('1981~2000'));
+  check('현재 질문 변경 기록',inspection.current_question===question);
+  const card=await page.evaluate(async id=>(await fetch('/api/control/research/'+id+'/conclusion-card',{credentials:'same-origin'})).json(),rid);
+  check('계산 수정본 2',card.record.analysis_revision===2);
+  check('이전 결과는 이력',card.analysis_history[1].historical);
+  check('실제 평균과 차이 비교',card.changes.values.length===3);
+  check('API 연구 설정 스위치 추가 없음',await page.locator('[name="secondary_required"]').count()===0);
+  check('Live 효능 미검증',card.live_efficacy==='NOT_VALIDATED');
+  await page.locator('#normal-report').click();const downloading=page.waitForEvent('download');await page.locator('[data-pdf]').click();const download=await downloading;await download.saveAs(path.join(folder,'report.pdf'));
+  check('실제 PDF 저장',fs.readFileSync(path.join(folder,'report.pdf')).subarray(0,5).toString()==='%PDF-');
+  await page.screenshot({path:path.join(folder,'changed-result.png'),fullPage:true});
+  await page.setViewportSize({width:420,height:860});
+  check('좁은 화면 가로 넘침 없음',await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth));
+  check('브라우저 오류와 외부 요청 없음',errors.length===0);
+  fs.writeFileSync(path.join(folder,'observed_card.json'),JSON.stringify(card,null,2),'utf8');
+ }catch(error){errors.push(error.stack||String(error));}
+ finally{if(browser)await browser.close();if(child)child.kill();}
+ const record={execution:'REAL_CHROME_REAL_LOCAL_API_FAKE_AGENT',checks:results,errors,passed:!errors.length&&results.every(r=>r.passed),paid_calls:0,live_efficacy:'NOT_VALIDATED',output_dir:path.relative(root,folder)};
+ const text=JSON.stringify(record,null,2)+'\n';if(!Buffer.from(text,'utf8').toString('utf8').includes(text.trim()))throw Error('UTF-8 검사 실패');
+ fs.writeFileSync(path.join(root,'build/cycle12/browser_results.json'),text,'utf8');console.log(JSON.stringify(record));
+ if(!record.passed)process.exitCode=1;
+})();

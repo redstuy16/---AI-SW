@@ -1,0 +1,20 @@
+{
+  "samples": [
+    {
+      "browser_ready_ms": 1045.308,
+      "requests": 11,
+      "response_bytes": 100636
+    },
+    {
+      "browser_ready_ms": 882.2271000000001,
+      "requests": 11,
+      "response_bytes": 100919
+    },
+    {
+      "browser_ready_ms": 890.9103,
+      "requests": 11,
+      "response_bytes": 98458
+    }
+  ],
+  "scope": "Chrome headless + 실제 loopback 인증 · OS 기본 브라우저 열기 제외"
+}

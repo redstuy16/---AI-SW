@@ -166,6 +166,7 @@ class ScholarlyHTTPClient:
         self.last_status_code: int | None = None
         self.last_retry_after: float | None = None
         self.last_error_code: str | None = None
+        self.dispatch_guard = None
 
     @staticmethod
     def _retry_after_seconds(value: str | None) -> float | None:
@@ -202,6 +203,8 @@ class ScholarlyHTTPClient:
                                      headers=headers) as client:
             for attempt in range(self.retries + 1):
                 try:
+                    if self.dispatch_guard is not None:
+                        self.dispatch_guard()
                     async with client.stream("GET", url, params=params) as response:
                         self.last_status_code = response.status_code
                         if response.status_code in {429, 500, 502, 503, 504}:

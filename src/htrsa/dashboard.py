@@ -360,10 +360,10 @@ def project_hypotheses(state: StateService, research_id: str) -> list[Hypothesis
     return output
 
 
-def project_evidence(state: StateService, research_id: str) -> list[EvidenceProjection]:
+def project_evidence(state: StateService, research_id: str, *, evidence_id=None) -> list[EvidenceProjection]:
     rows = _dict_rows(state, "SELECT e.*,s.title AS source_title,s.doi AS source_doi,s.openalex_id AS source_openalex_id "
                        "FROM evidence e LEFT JOIN sources s ON s.source_id=e.source_id "
-                       "WHERE e.research_id=? ORDER BY e.rowid", (research_id,))
+                       "WHERE e.research_id=?" + (" AND e.evidence_id=?" if evidence_id else "") + " ORDER BY e.rowid", (research_id, evidence_id) if evidence_id else (research_id,))
     return [EvidenceProjection(evidence_id=row["evidence_id"], claim=row.get("claim") or "",
                                polarity=row.get("polarity"), source_type=row.get("source_type"),
                                source_ref=row.get("source_ref") or row.get("source_id"), status=row.get("status") or "UNKNOWN",
@@ -407,11 +407,19 @@ def _experiment_artifacts(state: StateService, research_id: str, experiment_id: 
     return list(dict.fromkeys(values))
 
 
-def project_verification(state: StateService, research_id: str) -> list[VerificationProjection]:
+def project_verification(state: StateService, research_id: str, *, subject_id=None) -> list[VerificationProjection]:
     output: list[VerificationProjection] = []
+    hashes_by_id = {r[0]:r[1] for r in state._db.execute('SELECT artifact_id,sha256 FROM artifacts WHERE research_id=?',(research_id,))}
+    dataset_hashes = {r[0]:r[1] for r in state._db.execute('SELECT dataset_id,sha256 FROM datasets WHERE research_id=?',(research_id,))}
+    critics = {r[0]:_json_value(r[1],{}) for r in state._db.execute('SELECT experiment_id,output_json FROM critic_reviews WHERE research_id=?',(research_id,))}
+    invalidations = {}
+    for r in state._db.execute('SELECT experiment_id,quality_flags_json FROM evidence WHERE research_id=? ORDER BY rowid',(research_id,)):
+        invalidations.setdefault(r[0],_json_value(r[1],[]))
     for row in _dict_rows(state, "SELECT sm.*,e.experiment_id FROM staged_mutations sm "
                        "LEFT JOIN experiments e ON json_extract(sm.payload_json,'$.scientific.experiment_id')=e.experiment_id "
-                       "WHERE sm.research_id=? AND sm.verification_json IS NOT NULL ORDER BY sm.rowid", (research_id,)):
+                       "WHERE sm.research_id=? AND sm.verification_json IS NOT NULL" +
+                       (" AND (sm.mutation_id=? OR e.experiment_id=?)" if subject_id else "") + " ORDER BY sm.rowid",
+                       (research_id, subject_id, subject_id) if subject_id else (research_id,)):
         verification = _json_value(row["verification_json"], {})
         payload = _json_value(row["payload_json"], {})
         science = payload.get("scientific") if isinstance(payload, dict) else {}
@@ -420,22 +428,12 @@ def project_verification(state: StateService, research_id: str) -> list[Verifica
                         if isinstance(science, dict) and science.get(key)]
         hashes = {}
         for artifact_id in artifact_ids:
-            artifact = _row(state, "SELECT sha256 FROM artifacts WHERE artifact_id=? AND research_id=?",
-                            (artifact_id, research_id))
-            hashes[artifact_id] = artifact.get("sha256") if artifact else None
+            hashes[artifact_id] = hashes_by_id.get(artifact_id)
         dataset_hash = None
         if isinstance(science, dict) and science.get("dataset_id"):
-            dataset = _row(state, "SELECT sha256 FROM datasets WHERE dataset_id=? AND research_id=?",
-                           (science["dataset_id"], research_id))
-            dataset_hash = dataset.get("sha256") if dataset else None
-        critic = None
-        if subject:
-            critic_row = _row(state, "SELECT output_json FROM critic_reviews WHERE research_id=? AND experiment_id=?",
-                              (research_id, subject))
-            critic = _json_value(critic_row["output_json"], {}) if critic_row else None
-        invalid = _row(state, "SELECT quality_flags_json FROM evidence WHERE research_id=? AND experiment_id=?",
-                       (research_id, subject)) if subject else None
-        invalidation = _json_value(invalid.get("quality_flags_json"), []) if invalid else []
+            dataset_hash = dataset_hashes.get(science['dataset_id'])
+        critic = critics.get(subject)
+        invalidation = invalidations.get(subject,[]) if subject else []
         output.append(VerificationProjection(
             subject_type="experiment" if row.get("experiment_id") else "staged_mutation",
             subject_id=subject, verdict="FAIL" if invalidation else verification.get("verdict", "UNKNOWN"),
@@ -445,7 +443,8 @@ def project_verification(state: StateService, research_id: str) -> list[Verifica
             state_version=row.get("base_state_version"),
             invalidation_reason="; ".join(invalidation) if invalidation else None))
     for row in _dict_rows(state, "SELECT evidence_id,verification_json,verification_json FROM evidence "
-                       "WHERE research_id=? AND source_type='LITERATURE' AND verification_json IS NOT NULL ORDER BY rowid", (research_id,)):
+                       "WHERE research_id=? AND source_type='LITERATURE' AND verification_json IS NOT NULL" +
+                       (" AND evidence_id=?" if subject_id else "") + " ORDER BY rowid", (research_id, subject_id) if subject_id else (research_id,)):
         verification = _json_value(row["verification_json"], {})
         output.append(VerificationProjection(subject_type="literature_evidence", subject_id=row["evidence_id"],
                                              verdict="PASS" if verification.get("passed") else "FAIL",
@@ -454,17 +453,23 @@ def project_verification(state: StateService, research_id: str) -> list[Verifica
     return output
 
 
-def project_experiments(state: StateService, research_id: str) -> list[ExperimentProjection]:
-    verifications = {item.subject_id: item.model_dump(mode="json") for item in project_verification(state, research_id)}
+def project_experiments(state: StateService, research_id: str, *, experiment_id=None) -> list[ExperimentProjection]:
+    verifications = {item.subject_id: item.model_dump(mode="json") for item in project_verification(state, research_id, subject_id=experiment_id)}
+    datasets = {r['dataset_id']:dict(r) for r in state._db.execute('SELECT dataset_id,original_name,sha256,row_count,status FROM datasets WHERE research_id=?',(research_id,))}
+    hypotheses_by_experiment = {}
+    for r in state._db.execute("SELECT from_id,to_id FROM entity_edges WHERE research_id=? AND from_type='experiment' AND to_type='hypothesis' AND edge_type='tests' ORDER BY rowid",(research_id,)):
+        hypotheses_by_experiment.setdefault(r[0],[]).append(r[1])
+    artifacts_by_experiment = {}
+    for r in state._db.execute("SELECT payload_json FROM staged_mutations WHERE research_id=? AND status='COMMITTED' ORDER BY rowid",(research_id,)):
+        science = _json_value(r[0],{}).get('scientific')
+        if isinstance(science,dict):
+            artifacts_by_experiment.setdefault(science.get('experiment_id'),[]).extend(str(science[k]) for k in ('profile_artifact_id','stats_artifact_id','figure_artifact_id') if science.get(k))
     output = []
-    for row in _dict_rows(state, "SELECT * FROM experiments WHERE research_id=? ORDER BY rowid", (research_id,)):
-        hypotheses = [item["to_id"] for item in state._db.execute(
-            "SELECT to_id FROM entity_edges WHERE research_id=? AND from_type='experiment' AND from_id=? "
-            "AND to_type='hypothesis' AND edge_type='tests' ORDER BY rowid", (research_id, row["experiment_id"]))]
-        artifacts = _experiment_artifacts(state, research_id, row["experiment_id"])
+    for row in _dict_rows(state, "SELECT * FROM experiments WHERE research_id=?" + (" AND experiment_id=?" if experiment_id else "") + " ORDER BY rowid", (research_id,experiment_id) if experiment_id else (research_id,)):
+        hypotheses = hypotheses_by_experiment.get(row['experiment_id'],[])
+        artifacts = list(dict.fromkeys(artifacts_by_experiment.get(row['experiment_id'],[]) + ([row['result_artifact_id']] if row.get('result_artifact_id') else [])))
         stats = _stats_payload(state, research_id, row.get("result_artifact_id"))
-        dataset = _row(state, "SELECT dataset_id,original_name,sha256,row_count,status FROM datasets WHERE dataset_id=? AND research_id=?",
-                       (row.get("dataset_id"), research_id)) if row.get("dataset_id") else None
+        dataset = datasets.get(row.get('dataset_id'))
         output.append(ExperimentProjection(experiment_id=row["experiment_id"], hypothesis_ids=hypotheses,
                                            dataset=dataset, method=row.get("method"), status=row.get("status"),
                                            sample_size=stats.get("n") if isinstance(stats.get("n"), int) else (dataset or {}).get("row_count"),

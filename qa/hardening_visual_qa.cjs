@@ -66,7 +66,7 @@ async function main(){
  const rid=await page.evaluate(()=>app.rid),control=await page.evaluate(async id=>await(await fetch('/api/control/research/'+id+'/control')).json(),rid);
  check('연구 시작부터 오프라인 완료',control.status==='COMPLETED',{status:control.status});
  check('검색 불필요한 CSV 계산 검색 전송 0',await page.evaluate(async id=>{const v=await(await fetch('/api/control/research/'+id+'/control')).json();return v.effective_snapshot.search_policy==='AUTO';},rid));
- await page.locator('#technical-research').click();await page.locator('[data-tab=timeline]').waitFor();await page.locator('[data-tab=timeline]').click();await page.locator('#activity-next').waitFor();
+ await page.locator('[data-tab=timeline]').waitFor();await page.locator('[data-tab=timeline]').click();await page.locator('#activity-next').waitFor();
  check('저사양 활동 기록 페이지 25개 이하',await page.locator('#run-content tbody tr').count()<=25);
  await page.locator('[data-tab=report]').click();await page.locator('#run-content').waitFor();await page.waitForFunction(()=>document.querySelector('#run-content').textContent.length>100);await capture('offline-report');
  check('완료 후 자동 새로고침 중지',control.status==='COMPLETED');

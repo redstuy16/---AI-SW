@@ -8,7 +8,15 @@ def classify(snapshot, preflight):
     actions = {"CREDENTIAL_UNCONFIGURED": ("AI 연결에 키가 없습니다.", "설정에서 키를 등록해 주세요.", "AI 연결"),
                "PRICE_REQUIRED": ("안전한 비용 상한을 계산할 단가가 없습니다.", "AI 모델의 단가를 확인해 주세요.", "AI 연결"),
                "PRIMARY_MODEL_REQUIRED": ("사용할 AI 모델이 없습니다.", "AI 연결에서 모델을 확인해 주세요.", "AI 연결"),
-               "NEEDS_RECONCILIATION": ("이전 요청의 비용이 아직 확정되지 않았습니다.", "사용량에서 해당 요청을 확인해 주세요.", "사용량")}
+               "NEEDS_RECONCILIATION": ("이전 요청의 비용이 아직 확정되지 않았습니다.", "사용량에서 해당 요청을 확인해 주세요.", "사용량"),
+               "SEARCH_EGRESS_DENIED": ("공개 검색어 전송에 동의해 주세요.", "모델과 예산에서 검색 동의를 확인해 주세요.", "검색 설정"),
+               "SEARCH_QUERY_REQUIRED": ("공개 검색어가 비어 있습니다.", "모델과 예산에서 검색어를 넣어 주세요.", "검색 설정"),
+               "SEARCH_DISABLED": ("필수 검색이 꺼져 있습니다.", "웹 검색을 자동으로 선택하거나 필수 검색을 해제해 주세요.", "검색 설정"),
+               "SEARCH_REQUIRED_BUT_DISABLED": ("필수 검색이 꺼져 있습니다.", "웹 검색을 자동으로 선택하거나 필수 검색을 해제해 주세요.", "검색 설정"),
+               "COMPLETION_RESERVE_BLOCKED": ("계획과 보고서 작성 예산이 부족합니다.", "모델과 예산에서 금액이나 모델을 조정해 주세요.", "예산 확인"),
+               "SEARCH_PRIVATE_QUERY_BLOCKED": ("검색어에 공개하면 안 되는 정보가 있습니다.", "개인정보·키·내부 주소를 검색어에서 지워 주세요.", "검색 설정"),
+               "SEARCH_ATTEMPT_LIMIT": ("검색 횟수가 0회입니다.", "검색 횟수를 늘려 주세요.", "검색 설정")}
+    actions["PRICE_UNKNOWN"] = ("검색 단가를 확인할 수 없습니다.", "검색 단가를 확인하거나 웹 검색을 사용 안 함으로 바꿔 주세요.", "검색 설정")
     for code in result["reasons"]:
         category = "USER_ACTION_REQUIRED" if code in actions or "BUDGET" in code or "APPROVAL" in code else "HARD_BLOCK"
         what, next_step, action = actions.get(code, ("연구를 시작할 수 없습니다.", "설정과 자료를 확인해 주세요.", "문제가 생겼어요"))

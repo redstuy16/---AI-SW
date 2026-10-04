@@ -688,6 +688,17 @@ class StateService:
                 "INSERT INTO runtime_steps(research_id,step_key,status,output_json,contract_id,attempt,updated_at) VALUES (?,?,'COMPLETED',?,?,1,?) ON CONFLICT(research_id,step_key) DO UPDATE SET status='COMPLETED',output_json=excluded.output_json,contract_id=COALESCE(excluded.contract_id,runtime_steps.contract_id),updated_at=excluded.updated_at",
                 (research_id, step_key, to_json(output), contract_id, utc_now().isoformat()))
 
+    def fail_runtime_step(self, research_id: str, step_key: str, error: dict) -> None:
+        row = self.runtime_step(research_id, step_key)
+        if row and row["status"] != "COMPLETED":
+            with self._db:
+                self._db.execute("UPDATE runtime_steps SET status='FAILED',output_json=?,updated_at=? WHERE research_id=? AND step_key=?",
+                                 (to_json(error), utc_now().isoformat(), research_id, step_key))
+            if row["contract_id"]:
+                contract, task_id = self.contract(row["contract_id"])
+                if self.task_status(task_id) in {"RUNNING", "WAITING_RETRY", "WAITING_ESCALATION"}:
+                    self.set_task_status(contract.contract_id, "FAILED")
+
     def save_runtime_cursor(self, cursor) -> None:
         from .recovery import ResearchRuntimeCursor
 
@@ -919,7 +930,7 @@ class StateService:
             if from_json(existing["payload_json"]) != item.model_dump(mode="json"):
                 raise ContractViolationError("verified literature evidence cannot be replaced")
             return existing["evidence_id"]
-        verdict = verify_alignment(source, item, reviewer)
+        verdict = verify_alignment(source, item, reviewer, state=self)
         if not verdict["passed"]:
             raise ContractViolationError("literature evidence alignment failed: " + verdict["reason"])
         if item.target_hypothesis_id:
@@ -927,12 +938,24 @@ class StateService:
                       (research_id, item.target_hypothesis_id))
         identity = new_id("E")
         text_hash = hashlib.sha256(item.evidence_text.encode("utf-8", errors="strict")).hexdigest()
+        provenance = {"source_id": item.source_id, "source_metadata_hash": source["metadata_hash"],
+                      "text_field": item.text_field, "text_hash": text_hash}
+        from .literature import screen_source
+        from .scholarly import source_from_row
+        material = source_from_row(source)
+        if item.text_field == "fulltext":
+            from .source_documents import document_span
+            page_text, provenance["document"] = document_span(self, research_id, item.source_id, item.evidence_location)
+            material = material.model_copy(update={"abstract": page_text})
+        run = self._one("SELECT goal,research_question FROM research_runs WHERE research_id=?", (research_id,))
+        relevance = screen_source(item.source_id, material, run["research_question"] or run["goal"]).relevance
+        if relevance in {"DIRECT", "INDIRECT"}:
+            provenance["relevance"] = relevance
         def insert():
             self._db.execute("INSERT INTO evidence(evidence_id,research_id,source_id,experiment_id,payload_json,claim,polarity,source_type,source_ref,status,provenance_json,confidence,source_metadata_hash,text_field,text_hash,evidence_text,evidence_location,limitations_json,target_hypothesis_id,verification_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                              (identity, research_id, item.source_id, None, to_json(item), item.claim,
                               item.polarity, "LITERATURE", item.source_id, "VERIFIED",
-                              to_json({"source_id": item.source_id, "source_metadata_hash": source["metadata_hash"],
-                                       "text_field": item.text_field, "text_hash": text_hash}), item.confidence,
+                              to_json(provenance), item.confidence,
                               source["metadata_hash"], item.text_field, text_hash, item.evidence_text,
                               item.evidence_location, to_json(item.limitations), item.target_hypothesis_id,
                               to_json(verdict)))
@@ -941,6 +964,34 @@ class StateService:
         self._planning_commit(research_id, "LITERATURE_EVIDENCE_VERIFIED", "evidence", identity,
                               {"source_id": item.source_id, "polarity": item.polarity, "text_hash": text_hash}, insert)
         return identity
+
+    def save_source_document(self, research_id: str, source_id: str, record: dict, *, pdf=None, text=None) -> dict:
+        source = self._one("SELECT status,metadata_hash FROM sources WHERE research_id=? AND source_id=?", (research_id, source_id))
+        if (source["status"] == "INVALIDATED" or record.get("research_id") != research_id
+                or record.get("source_id") != source_id or record.get("source_metadata_hash") != source["metadata_hash"]):
+            raise ContractViolationError("source document identity mismatch")
+        contract = self._one("SELECT contract_id FROM contracts WHERE research_id=? ORDER BY rowid DESC LIMIT 1", (research_id,))
+        value, artifacts = dict(record), []
+        for key, content, kind, suffix in (("pdf", pdf, "SOURCE_PDF", "pdf"), ("text", text, "SOURCE_TEXT", "json")):
+            if content is None:
+                continue
+            digest = hashlib.sha256(content).hexdigest()
+            identity = new_id("ART")
+            relative = "artifacts/source_documents/" + source_id + "-" + digest[:16] + "." + suffix
+            path = self.workspace.path(research_id, relative)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+            value[key] = {"artifact_id": identity, "relative_path": relative, "sha256": digest}
+            artifacts.append((identity, kind, relative, digest, len(content)))
+        def write():
+            old = self._db.execute("SELECT revision FROM control_configs WHERE kind='source_document' AND id=?", (source_id,)).fetchone()
+            for identity, kind, relative, digest, size in artifacts:
+                self._db.execute("INSERT INTO artifacts(artifact_id,research_id,contract_id,kind,payload_json,producer_type,producer_id,artifact_type,relative_path,sha256,size_bytes,created_at,status) VALUES(?,?,?,'file',?,'system',?,?,?,?,?,?,'VERIFIED')",
+                    (identity, research_id, contract[0], to_json({"source_id": source_id}), source_id, kind, relative, digest, size, utc_now().isoformat()))
+            self._db.execute("INSERT OR REPLACE INTO control_configs VALUES('source_document',?,?,?)", (source_id, (old[0] if old else 0) + 1, to_json(value)))
+        self._planning_commit(research_id, "SOURCE_DOCUMENT_SAVED", "source", source_id,
+                              {"status": value["status"], "artifacts": value.get("pdf"), "text": value.get("text")}, write)
+        return value
 
     def mark_source_extracted(self, research_id: str, source_id: str) -> None:
         row = self._one("SELECT status FROM sources WHERE research_id=? AND source_id=?",
@@ -1313,6 +1364,11 @@ class StateService:
                 card = conclusion_card(self, research_id)
                 if not card["available"] or not card["current"]:
                     raise ContractViolationError("qualified procedure requires a current verified claim")
+            if reason == StopReason.LITERATURE_REVIEW_COMPLETED:
+                from .research_report import report_record
+                report = report_record(self, research_id)
+                if not report or report["status"] != "READY" or not report["draft"]["claims"]:
+                    raise ContractViolationError("문헌 조사 완료에는 현재 출처를 검증한 보고서가 필요합니다.")
             if reason == StopReason.GOAL_ANSWERED:
                 if candidate is None or not candidate.evidence_refs or candidate.support_level == "NONE":
                     raise ContractViolationError("answered goal requires supported conclusion")
@@ -1333,7 +1389,7 @@ class StateService:
                         for evidence_id in evidence_ids) for row in supported):
                     raise ContractViolationError("conclusion lacks a supported hypothesis")
             self._db.execute("UPDATE research_runs SET run_status=?,stop_reason=?,conclusion_json=? WHERE research_id=?",
-                             ("COMPLETED" if reason in {StopReason.GOAL_ANSWERED, StopReason.QUALIFIED_PROCEDURE_COMPLETED} else "STOPPED",
+                             ("COMPLETED" if reason in {StopReason.GOAL_ANSWERED, StopReason.QUALIFIED_PROCEDURE_COMPLETED, StopReason.LITERATURE_REVIEW_COMPLETED} else "STOPPED",
                               reason.value, to_json(candidate) if candidate is not None else None, research_id))
             self._db.execute("UPDATE tasks SET status='CANCELLED' WHERE research_id=? AND status IN ('ISSUED','RUNNING','WAITING_RETRY','WAITING_ESCALATION')",
                              (research_id,))

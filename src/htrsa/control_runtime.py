@@ -42,7 +42,9 @@ class RoutedGateway:
 
     async def run_structured(self, *, role, instructions, input_text, output_type, model, metadata=None):
         from .providers.normalized import GenerationRequest
+        from .product_policy import task_profile
         profile = ModelProfile.model_validate(self.snapshot["models"][role])
+        profile = task_profile(profile, "report" if output_type.__name__ == "ReportDraft" else "planning")
         request = GenerationRequest(request_id="structured", research_id=self.rid, role=role,
             model_profile_id=profile.profile_id, system_instructions=instructions, input_text=input_text,
             structured_output_schema=output_type.model_json_schema(), max_output_tokens=profile.output_limit,
@@ -99,9 +101,16 @@ class RoutedGateway:
         excluded = {"budget_reservation_id"}
         if not request.native_schema_strict: excluded.add("native_schema_strict")
         if not request.explicit_parallel_tool_control: excluded.add("explicit_parallel_tool_control")
+        profile_data = profile.model_dump(mode="json")
+        if not profile.task_output_limits:
+            profile_data.pop("task_output_limits", None)
         request_key = sha256(compact({"rid": self.rid, "request": request.model_dump(mode="json", exclude=excluded),
-            "profile": profile.model_dump(mode="json"), "adapter_version": adapter.version}).encode("utf-8", errors="strict")).hexdigest()
+            "profile": profile_data, "adapter_version": adapter.version}).encode("utf-8", errors="strict")).hexdigest()
         cached = self.store.db.execute("SELECT * FROM control_model_cache WHERE key=?", (request_key,)).fetchone()
+        if cached is None and not profile.task_output_limits:
+            explicit_key = sha256(compact({"rid": self.rid, "request": request.model_dump(mode="json", exclude=excluded),
+                "profile": profile.model_dump(mode="json"), "adapter_version": adapter.version}).encode("utf-8", errors="strict")).hexdigest()
+            cached = self.store.db.execute("SELECT * FROM control_model_cache WHERE key=?", (explicit_key,)).fetchone()
         if cached:
             if cached["error"]: raise ModelProviderError(cached["error"], retryable=False)
             value = json.loads(cached["output_json"])
@@ -118,7 +127,7 @@ class RoutedGateway:
         if profile.local_api_unmetered and connection.endpoint_class == "loopback":
             if count > profile.input_byte_limit or count + request.max_output_tokens > profile.context_limit: raise ControlError("CONTEXT_LIMIT_BLOCKED")
             bound = 0
-        else: bound = admitted_cost(profile, count)
+        else: bound = admitted_cost(profile.model_copy(update={"output_limit": request.max_output_tokens}), count)
         timeout = min(profile.timeout_sec, request.timeout)
         if self.purpose == "research":
             run = self.store.db.execute("SELECT started_at FROM control_runs WHERE research_id=?", (self.rid,)).fetchone()
@@ -152,6 +161,7 @@ class RoutedGateway:
             self.store.transition(reservation, "RELEASED")
             raise
         trace = {"reservation_id": reservation, "requested_model_id": profile.model_id, "model_alias": profile.model_alias,
+            "contract_id": request.metadata.get("contract_id"),
             "profile_id": profile.profile_id, "profile_revision": self.snapshot.get("profile_revisions", {}).get(profile.profile_id),
             "capability_evidence": {k: v.model_dump(mode="json") for k,v in profile.capabilities.items()},
             "requested_parameters": request.model_dump(mode="json", exclude={"input_text","system_instructions","developer_instructions","messages","tools","metadata"}),
@@ -177,6 +187,7 @@ class RoutedGateway:
                 cost = ((usage.input_tokens-cached_tokens-write)*price.input_per_million + cached_tokens*(price.cached_input_per_million or 0)
                     + write*(price.cache_write_per_million or 0) + usage.output_tokens*price.output_per_million)/1000000
             trace.update(response_id=result.response_id, provider_request_id=result.provider_request_id,
+                finish_reason=result.finish_reason, incomplete_reason=result.provider_metadata.get("incomplete_reason"),
                 resolved_model_id=result.model_id, provider_model_revision=result.model_revision, resolved_at=datetime.now().astimezone().isoformat(),
                 usage=usage.model_dump(mode="json"), latency_ms=result.latency_ms, raw_response_ref=result.raw_response_ref)
             error, output = None, None
@@ -208,7 +219,7 @@ def snapshot_remaining(snapshot, started_at):
 
 
 def terminal_status(stop_reason):
-    return {"GOAL_ANSWERED": "COMPLETED", "BUDGET_EXHAUSTED": "BUDGET_BLOCKED",
+    return {"GOAL_ANSWERED": "COMPLETED", "LITERATURE_REVIEW_COMPLETED": "COMPLETED", "LITERATURE_DESIGN_COMPLETED": "COMPLETED", "BUDGET_EXHAUSTED": "BUDGET_BLOCKED",
             "INSUFFICIENT_DATA": "INSUFFICIENT_DATA", "UNRESOLVED_VERIFICATION": "VALIDATION_INCOMPLETE",
             "ACTION_LIMIT_REACHED": "LIMIT_REACHED"}.get(stop_reason, "FAILED")
 
@@ -297,6 +308,11 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
             runtime.research_slice_config = cycle5_config
         runtime.control_boundary = lambda: boundary(store, state, rid, runtime, snapshot)
         runtime.optional_admission = lambda kind: optional_admission(store, rid, snapshot, kind=kind)
+        if snapshot.get("ai_report_enabled"):
+            from .research_report import write_report
+            runtime.report_writer = lambda: write_report(runtime, store, rid, snapshot)
+            from .search_policy import public_query
+            runtime.approved_search_query = public_query(snapshot)[:400] if snapshot.get("public_search_consent") else None
         if snapshot.get("research_profile_mode") == "AUTO":
             from .qualified_profiles import registry
             from .research_design import current_design
@@ -308,6 +324,8 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
                 await execute_profile(runtime, rid, snapshot)
                 if state._one("SELECT run_status FROM research_runs WHERE research_id=?", (rid,))[0] == "ACTIVE":
                     state.stop_research(rid, "QUALIFIED_PROCEDURE_COMPLETED")
+                if getattr(runtime, "report_writer", None):
+                    await runtime.report_writer()
                 export_final_report(state, rid)
                 store.db.execute("UPDATE control_runs SET status='COMPLETED',pid=NULL,version=version+1,error=NULL WHERE research_id=?", (rid,))
                 return
@@ -323,10 +341,13 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
                 if not qualified_literature(state, rid):
                     try:
                         await run_search(state, store, Credentials(Path(__file__).resolve().parents[2], workspace, credential_file), rid, snapshot,
-                            before_dispatch=lambda: boundary(store, state, rid, snapshot=snapshot))
+                            before_dispatch=lambda: boundary(store, state, rid, snapshot=snapshot),
+                            queries=getattr(runtime, "planned_search_queries", None) if snapshot.get("ai_report_enabled") else None)
                     except ControlError as exc:
-                        if not exc.code.startswith("SEARCH_"):
+                        if not exc.code.startswith("SEARCH_") and exc.code not in {"COMPLETION_RESERVE_BLOCKED", "PRICE_UNKNOWN"}:
                             raise
+                        if snapshot.get("ai_report_enabled"):
+                            runtime.input_limitation = exc.code
                         state.runtime_event(rid, "LITERATURE_ACQUISITION_LIMITATION", {"code": exc.code})
                 if snapshot["search_required"] and not qualified_literature(state, rid):
                     state.runtime_event(rid, "LITERATURE_EVIDENCE_MISSING", {"stop_policy": True})
@@ -343,6 +364,8 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
             result = await runtime._run_with_stops(rid, source, snapshot["question"])
         else:
             result = await runtime.resume(rid)
+        if source is not None and getattr(runtime, "report_writer", None):
+            await runtime.report_writer()
         export_final_report(state, rid)
         store.db.execute("UPDATE control_runs SET status=?,pid=NULL,version=version+1,error=? WHERE research_id=?",
                          (terminal_status(result.get("stop_reason")), result.get("stop_reason"), rid))

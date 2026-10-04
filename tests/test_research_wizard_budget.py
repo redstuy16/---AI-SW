@@ -43,9 +43,78 @@ def test_search_permission_remains_separate(egress, consent, query, status):
         'egress':egress, 'public_search_consent':consent, 'public_search_query':query}) == status
 
 
+def test_new_search_defaults_derive_question_but_preserve_explicit_and_legacy_denials(app):
+    from htrsa.control_plane import NewResearch
+    from htrsa.search_policy import public_query
+    configure(app)
+    value = app.prepare({'beginner_mode': True, 'question': '탄산음료의 온도에 따른 CO₂ 방출 속도', 'model_profile_id': 'm', 'ai_report_enabled': True})
+    assert value['public_search_consent'] is True and value['public_search_query'] == ''
+    assert value['search_required'] is False
+    assert public_query(value) == '탄산음료의 온도에 따른 CO2 방출 속도'
+    assert decision(value) == 'SEARCH_ALLOWED'
+    assert decision(dict(value, public_search_consent=False)) == 'SEARCH_EGRESS_DENIED'
+    assert NewResearch(question='예전 분석', source_relative='data.csv').public_search_consent is False
+    assert public_query(dict(value, settings_version=1)) == ''
+    assert decision(dict(value, settings_version=1)) == 'SEARCH_QUERY_REQUIRED'
+
+
+def test_auto_query_private_text_is_checked_before_truncation(app):
+    from htrsa.research_report import search_suggestion
+    configure(app)
+    value = app.prepare({'beginner_mode': True, 'question': '탄산음료 온도 ' * 60 + ' secret@example.com', 'model_profile_id': 'm', 'ai_report_enabled': True})
+    assert decision(value) == 'SEARCH_PRIVATE_QUERY_BLOCKED'
+    assert 'SEARCH_PRIVATE_QUERY_BLOCKED' in app.preflight(dict(value, ai_report_enabled=True))['reasons']
+    assert app.store.ledger()['spent'] == '0'
+    with pytest.raises(ControlError, match='SEARCH_PRIVATE_QUERY_BLOCKED'):
+        search_suggestion('', value['question'])
+
+
+def test_manual_query_keeps_automatic_model_queries(app, monkeypatch):
+    from urllib.parse import parse_qs, urlsplit
+    from test_research_report_flow import rig, run
+    gateway, model_calls, requests = rig(app, monkeypatch)
+    rid = run(app, gateway, public_search_query='gas')
+    assert app.store.run(rid)['status'] == 'COMPLETED'
+    assert model_calls == ['manager', 'report']
+    queries = [parse_qs(urlsplit(url).query)['query.bibliographic'][0] for url in requests]
+    assert 'gas' in queries
+    assert 'temperature CO2 release carbonated beverage' in queries
+
+
+def test_automatic_query_and_permission_need_no_user_input_or_extra_model_call(app, monkeypatch):
+    from test_research_report_flow import rig, request
+    gateway, calls, searches = rig(app, monkeypatch)
+    body = request()
+    body.pop('public_search_query');body.pop('public_search_consent')
+    preflight = app.request('POST', '/api/control/research/preflight', body)
+    assert preflight.body['ready'] and preflight.body['search_status'] == 'SEARCH_ALLOWED'
+    created = app.create(body)
+    rid = created['research_id']
+    assert created['snapshot']['public_search_consent'] is True
+    assert created['snapshot']['public_search_query'] == ''
+    app.command(rid, 'start', {'expected_version':0,'idempotency_key':'automatic-search-start'})
+    from htrsa.control_runtime import execute
+    asyncio.run(execute(app.database,app.workspace,rid,provider_factory=gateway))
+    assert app.store.run(rid)['status'] == 'COMPLETED'
+    assert calls == ['manager','report'] and len(searches)==5
+
+
+@pytest.mark.parametrize('updates,code', [
+    ({'public_search_consent': False}, 'SEARCH_EGRESS_DENIED'),
+    ({'egress': 'none'}, 'SEARCH_EGRESS_DENIED'),
+    ({'search_attempt_limit': 0}, 'SEARCH_ATTEMPT_LIMIT')])
+def test_tolerant_evidence_policy_preserves_pre_dispatch_search_guards(app, updates, code):
+    from test_research_report_flow import request
+    configure(app)
+    snap = app.prepare(request(search_required=False, **updates))
+    check = app.preflight(snap)
+    assert not check['ready'] and code in check['reasons']
+    assert app.store.ledger()['requests'] == []
+
+
 @pytest.mark.parametrize('available,reserve,unit,expected', [
     ('.10','.04','.02',3), ('.08','.04','.02',2), ('.05','.04','.02',0),
-    ('.10','.04','0',5), ('.10','.10','0',5),
+    ('.10','.04','0',10), ('.10','.10','0',10),
     ('.000003','0','.0000001',3)])
 def test_allocation_separate_model_search_and_micro_rounding(app, available, reserve, unit, expected):
     value = research(app)
@@ -77,7 +146,8 @@ def test_counter_pending_limits_manual_zero_and_unknown_completion(app):
     view['can_complete']=False;view['completion_reserve_usd']=None
     assert search_allocation(app.store,rid,snap,price=Decimal('.10'),price_source='fixture',view=view)['allowed_attempts']==1
     snap['adaptive_budget']=True
-    assert search_allocation(app.store,rid,snap,price=Decimal(0),price_source='fixture',view=view)['allowed_attempts']==0
+    assert search_allocation(app.store,rid,snap,price=Decimal(0),price_source='fixture',view=view)['allowed_attempts']==1
+    assert search_allocation(app.store,rid,snap,price=Decimal('.01'),price_source='fixture',view=view)['allowed_attempts']==0
 
 
 def test_paid_search_uses_own_ledger_and_reduces_until_model_completion(app):

@@ -63,7 +63,8 @@ def resolve_catalog_profile(store, selection):
                 checked_at=utc_now().isoformat(), details=entry["source"])
                 for key in entry.get("documented_capabilities", ())}
     profile = ModelProfile(profile_id=identity, connection_id=connection_id, model_id=model_id,
-        protocol=protocol, display_name=entry["display_name"], output_limit=1024, timeout_sec=120,
+        protocol=protocol, display_name=entry["display_name"], output_limit=4096, timeout_sec=120,
+        task_output_limits={"planning": 1024, "report": 4096},
         capabilities=evidence, reasoning_levels=entry.get("reasoning_levels", []))
     try:
         store.put("model", identity, profile)
@@ -152,12 +153,14 @@ def resolve_effective_settings(store, draft, *, task_intent="research"):
     version = raw.get("settings_version", 1 if raw.get("source_relative") else SETTINGS_VERSION)
     raw["settings_version"] = version
     sources = {}
-    for key in ("performance_profile", "adaptive_budget", "search_policy", "search_required", "search_attempt_limit"):
+    for key in ("performance_profile", "adaptive_budget", "search_policy", "search_required", "search_attempt_limit",
+                "fulltext_enabled", "openalex_archive_enabled", "searxng_url"):
         if key in raw and raw[key] is not None:
             sources[key] = "main"
         elif version == SETTINGS_VERSION:
             raw[key] = owner.get(key, {"performance_profile":"BALANCED", "adaptive_budget":True,
-                "search_policy":"AUTO", "search_required":True, "search_attempt_limit":5}[key])
+                "search_policy":"AUTO", "search_required":False, "search_attempt_limit":10,
+                "fulltext_enabled":False, "openalex_archive_enabled":False, "searxng_url":None}[key])
             sources[key] = "owner" if key in owner else "application"
     raw["search_attempt_limit"] = min(raw.get("search_attempt_limit", 5), store.defaults().search_attempt_limit) if type(raw.get("search_attempt_limit", 5)) is int else raw.get("search_attempt_limit")
     pool = list(dict.fromkeys(raw.get("selected_model_pool", [])))
@@ -252,6 +255,12 @@ REDUCTION_ORDER = ["extra_literature", "hypotheses", "repeated_review", "sensiti
 
 def profile_bound(profile):
     return admitted_cost(profile, min(profile.input_byte_limit, profile.context_limit - profile.output_limit))
+
+
+def task_profile(profile, purpose):
+    limit = min(profile.output_limit, profile.max_output_tokens or profile.output_limit,
+                profile.task_output_limits.get(purpose, profile.output_limit))
+    return profile.model_copy(update={"output_limit": limit})
 
 
 def catalog(store):
@@ -413,12 +422,19 @@ def completion_budget(store, rid, snapshot, *, exclude_current=False):
     roles = remaining_roles(stage)
     if snapshot.get("settings_version", 1) >= 2 and (not snapshot.get("source") or snapshot.get("question_only")):
         roles = ["manager"] if stage == "START" else []
+    purposes = ["planning"] * len(roles)
+    if snapshot.get("ai_report_enabled"):
+        saved = store.db.execute("SELECT payload FROM control_configs WHERE kind='ai_report' AND id=?", (rid,)).fetchone()
+        if not saved or json.loads(saved[0]).get("status") == "RUNNING":
+            roles = roles + ["manager"]
+            purposes.append("report")
     if exclude_current and roles:
         roles = roles[1:]
+        purposes = purposes[1:]
     amounts = []
     try:
-        for role in roles:
-            profile = ModelProfile.model_validate(snapshot["models"][role])
+        for role, purpose in zip(roles, purposes):
+            profile = task_profile(ModelProfile.model_validate(snapshot["models"][role]), purpose)
             conn = snapshot["connections"][profile.connection_id]
             amounts.append(Decimal(0) if profile.local_api_unmetered and conn["endpoint_class"] == "loopback"
                            else profile_bound(profile))
@@ -442,7 +458,7 @@ def completion_budget(store, rid, snapshot, *, exclude_current=False):
             "unsettled_exposure_usd": ledger["unresolved"], "available_usd": str(available),
             "completion_reserve_usd": str(reserved) if reserved is not None else None,
             "f3p_reserve_usd": str(recovery) if recovery is not None else None,
-            "mandatory_calls": roles, "local_report_export_usd": "0", "ai_narrative": "NOT_RUN",
+            "mandatory_calls": roles, "local_report_export_usd": "0", "ai_narrative": "PLANNED" if snapshot.get("ai_report_enabled") else "NOT_RUN",
             "can_complete": reserved is not None and available >= reserved,
             "reduction_order": REDUCTION_ORDER, "environment_efficacy": "NOT_VALIDATED"}
 

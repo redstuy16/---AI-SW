@@ -122,6 +122,7 @@ class ModelProfile(StrictModel):
     input_byte_limit: int = Field(default=32000, ge=256, le=200000)
     context_limit: int = Field(default=32768, ge=512, le=1000000)
     output_limit: int = Field(default=2048, ge=32, le=32768)
+    task_output_limits: dict[Literal["planning", "report"], StrictInt] = Field(default_factory=dict)
     timeout_sec: int = Field(default=60, ge=1, le=120)
     concurrency: Literal[1] = 1
     reasoning_effort: str | None = None
@@ -155,6 +156,8 @@ class ModelProfile(StrictModel):
     def bounded(self):
         if self.output_limit >= self.context_limit:
             raise ValueError("output must fit context")
+        if any(not 32 <= n <= 32768 for n in self.task_output_limits.values()):
+            raise ValueError("task output limit is outside supported range")
         if self.reasoning_effort is not None:
             raise ValueError("use normalized reasoning_policy with model capability evidence")
         if set(self.capabilities) - set(CAPABILITIES): raise ValueError("unknown capability")
@@ -183,7 +186,7 @@ class Defaults(StrictModel):
     monthly_limit_usd: Decimal = Field(default=Decimal("20"), gt=0, le=1000, allow_inf_nan=False)
     request_limit_usd: Decimal = Field(default=Decimal("0.25"), gt=0, le=100, allow_inf_nan=False)
     accounting_timezone: Literal["Asia/Seoul"] = "Asia/Seoul"
-    search_attempt_limit: StrictInt = Field(default=5, ge=0, le=20)
+    search_attempt_limit: StrictInt = Field(default=10, ge=0, le=20)
 
 
 from .research_design import DetailedDesign
@@ -207,6 +210,7 @@ class NewResearch(StrictModel):
     model_reasoning: ReasoningPolicy | None = None
     sampling_mode: Literal["provider_default", "profile"] = "provider_default"
     report_format: Literal["pdf"] = "pdf"
+    ai_report_enabled: bool = False
     research_depth: Literal["explore", "standard", "deep", "focused"] = "standard"
     routing: dict[str, str] = Field(default_factory=dict)
     routing_profile_id: str | None = None
@@ -229,7 +233,10 @@ class NewResearch(StrictModel):
     public_search_query: str = Field(default="", max_length=500)
     public_search_consent: bool = False
     search_required: bool = False
-    search_attempt_limit: StrictInt = Field(default=5, ge=0, le=20)
+    search_attempt_limit: StrictInt = Field(default=10, ge=0, le=20)
+    fulltext_enabled: bool = False
+    openalex_archive_enabled: bool = False
+    searxng_url: str | None = Field(default=None, max_length=500)
 
     @model_validator(mode="before")
     @classmethod
@@ -242,8 +249,9 @@ class NewResearch(StrictModel):
             value["source_relative"] = None
         value.setdefault("settings_version", 1 if value.get("source_relative") else 2)
         if value["settings_version"] == 2:
-            value.setdefault("search_required", True)
+            value.setdefault("search_required", False)
             value.setdefault("search_policy", "AUTO")
+            value.setdefault("public_search_consent", True)
             value.setdefault("performance_profile", "BALANCED")
         value["report_format"] = "pdf"
         return value
@@ -252,6 +260,9 @@ class NewResearch(StrictModel):
     def flags(self):
         if not self.question.strip() or not self.title.strip():
             raise ValueError('연구 질문과 이름이 필요합니다')
+        if self.searxng_url:
+            from .source_documents import validate_public_url
+            object.__setattr__(self, 'searxng_url', validate_public_url(self.searxng_url.strip(), allow_loopback=True, root=True).rstrip('/'))
         if self.ridge_arithmetic_check and not self.verification_repair:
             raise ValueError("Ridge requires repair")
         if not set(self.routing) <= set(ROLES):
@@ -302,12 +313,43 @@ class PinnedTransport(httpx.AsyncBaseTransport):
     """DNS 주소를 검사하고 고정 IP에 TLS SNI로 연결한다. 인증과 요청은 승인된 출처를 벗어나지 않는다."""
     def __init__(self, connection: Connection):
         host, port = validate_endpoint(connection.base_url, connection.endpoint_class, native=connection.adapter_id != "openai_compatible")
+        self._pin(connection.base_url, connection.endpoint_class, host, port)
+
+    @classmethod
+    def scholarly(cls, host):
+        if host not in {"api.crossref.org", "api.openalex.org"}:
+            raise ControlError("SEARCH_DESTINATION_DENIED")
+        value = cls.__new__(cls)
+        value._pin("https://" + host, "cloud", host, 443)
+        return value
+
+    @classmethod
+    def public_resource(cls, url, *, allow_loopback=False):
+        from urllib.parse import urlsplit
+        target = urlsplit(url)
+        if not target.hostname or target.username or target.password or target.fragment:
+            raise ControlError("SEARCH_DESTINATION_DENIED")
+        try:
+            loopback = ipaddress.ip_address(target.hostname).is_loopback
+        except ValueError:
+            loopback = False
+        if loopback:
+            if not allow_loopback or target.scheme not in {"http", "https"}:
+                raise ControlError("SEARCH_DESTINATION_DENIED")
+        elif target.scheme != "https" or target.port not in {None, 443}:
+            raise ControlError("SEARCH_DESTINATION_DENIED")
+        value = cls.__new__(cls)
+        value._pin(url, "loopback" if loopback else "cloud", target.hostname,
+                   target.port or (443 if target.scheme == "https" else 80))
+        return value
+
+    def _pin(self, origin, endpoint_class, host, port):
         addresses = sorted({item[4][0] for item in socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)})
-        if not addresses or any((not ipaddress.ip_address(a).is_loopback if connection.endpoint_class == "loopback"
+        if not addresses or any((not ipaddress.ip_address(a).is_loopback if endpoint_class == "loopback"
                                  else not ipaddress.ip_address(a).is_global) for a in addresses):
             raise ControlError("ENDPOINT_DENIED")
         self.host, self.port, self.ip = host, port, addresses[0]
-        self.origin = httpx.URL(connection.base_url)
+        self.origin = httpx.URL(origin)
         self.transport = httpx.AsyncHTTPTransport(retries=0)
 
     async def handle_async_request(self, request):
@@ -375,7 +417,7 @@ class Credentials:
         return value
 
     def active_secrets(self, references=()):
-        names = {d["credential"] for d in DEFINITIONS.values() if d["credential"]} | {n for n in references if n}
+        names = {d["credential"] for d in DEFINITIONS.values() if d["credential"]} | {n for n in references if n} | {'OPENALEX_API_KEY'}
         values = self._values()
         protected = set(values.values()) | {os.environ[n] for n in names if os.environ.get(n)}
         if self.os_store and self.os_store.available:
@@ -590,12 +632,13 @@ class ControlStore:
             pending = self.db.execute("SELECT payload FROM control_configs WHERE kind='research_settings' AND id=?", (rid,)).fetchone()
             if pending and not json.loads(pending[0])["applied"]:
                 run_limit = min(Decimal(str(run_limit)), Decimal(json.loads(pending[0])["settings"]["run_limit_usd"]))
-            run_spend = self.db.execute(f"SELECT COALESCE(SUM({exposure}),0),COUNT(*) FROM spend_ledger WHERE research_id=?", (rid,)).fetchone()
+            run_spend = self.db.execute(f"SELECT COALESCE(SUM({exposure}),0),SUM(CASE WHEN purpose='web_search' AND reserved=0 THEN 0 ELSE 1 END) FROM spend_ledger WHERE research_id=?", (rid,)).fetchone()
             # 미정산 노출은 월이 바뀌어도 유지한다.
             month_spend = self.db.execute(f"SELECT COALESCE(SUM({exposure}),0) FROM spend_ledger WHERE month=? OR status IN ('RESERVED','DISPATCHED','UNRESOLVED')", (month,)).fetchone()[0]
-            if run_spend[1] >= attempts or run_spend[0] + amount > micro(run_limit) or month_spend + amount > micro(monthly_limit):
+            free_search = purpose == 'web_search' and role == 'search' and amount == 0
+            if not free_search and ((run_spend[1] or 0) >= attempts or run_spend[0] + amount > micro(run_limit) or month_spend + amount > micro(monthly_limit)):
                 raise ControlError("BUDGET_BLOCKED")
-            if run_spend[0] + amount + micro(completion_reserve) > micro(run_limit) or month_spend + amount + micro(completion_reserve) > micro(monthly_limit):
+            if not free_search and (run_spend[0] + amount + micro(completion_reserve) > micro(run_limit) or month_spend + amount + micro(completion_reserve) > micro(monthly_limit)):
                 raise ControlError("COMPLETION_RESERVE_BLOCKED")
             if self.db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('DISPATCHED','UNRESOLVED')", (rid,)).fetchone():
                 raise ControlError("NEEDS_RECONCILIATION")

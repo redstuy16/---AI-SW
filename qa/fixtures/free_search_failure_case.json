@@ -1,0 +1,68 @@
+{
+  "description": "사용자 탄산음료 연구에서 읽기 전용으로 추출한 공개 검색 실패 사례. 연구 ID·키·개인 경로를 제외했다.",
+  "question": "탄산음료의 온도에 따른 CO2 방출 속도",
+  "planned_queries": [
+    "탄산음료의 온도에 따른 CO2 방출 속도",
+    "CO2 release rate of carbonated soft drinks at different temperatures"
+  ],
+  "executed_queries": [
+    "탄산음료의 온도에 따른 CO2 방출 속도",
+    "null effect conflicting evidence 탄산음료의 온도에 따른 CO2 방출 속도"
+  ],
+  "configured_request_limit": 5,
+  "report_output_limit": 1024,
+  "original_report_step_status": "RUNNING",
+  "cash_cost_usd": "0.001091",
+  "remaining_budget_usd": "0.098909",
+  "original_incomplete_reason": null,
+  "sources": [
+    {
+      "title": "TiC-SKD11 함침 복합재의 온도에 따른 인장 특성과 파괴거동 변화",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "Dynamic Constitutive Equations of Auto-body Steel Sheets with the Variation of Temperature (II) - Flow Stress Constitutive Equation -",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "Dynamic Constitutive Equations of Auto-Body Steel Sheets with the Variation of Temperature (I) - Dynamic Material Characteristics with the Variation of Temperature -",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "Temperature-dependence of Mechanical Properties of Die Steel STD61",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "Functionalized Graphene/Polyimide Nanocomposites under Different Thermal Imidization Temperatures",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "Temperature Effect on the Compaction Characteristic of Cohesionless Soil",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "The Effect of pH and temperature on the Morphology of Aluminum Hydroxides formed by Hydrolysis Reaction",
+      "abstract": null,
+      "original_relevance": "IRRELEVANT",
+      "expected_relevance": "IRRELEVANT"
+    },
+    {
+      "title": "독도문제의 「발생시점・위치・크기・속도」의 편견에 관한 연구",
+      "abstract": null,
+      "original_relevance": "INDIRECT",
+      "expected_relevance": "IRRELEVANT"
+    }
+  ]
+}

@@ -56,7 +56,7 @@ def _verified_experiments(state, research_id: str) -> list[dict]:
                                                    (research_id,))]
 
 
-def _validate_literature_provenance(source: dict, evidence: dict) -> None:
+def _validate_literature_provenance(source: dict, evidence: dict, *, state=None) -> None:
     if source["status"] != "VERIFIED" or evidence["status"] != "VERIFIED":
         raise ReportValidationError("invalidated source or evidence")
     if evidence["source_metadata_hash"] != source["metadata_hash"]:
@@ -64,7 +64,17 @@ def _validate_literature_provenance(source: dict, evidence: dict) -> None:
     if metadata_digest(source_from_row(source)) != source["metadata_hash"]:
         raise ReportValidationError("stored source metadata was modified")
     field = evidence["text_field"]
-    if field != "abstract" or not source[field] or evidence["evidence_text"] not in source[field]:
+    text = source.get("abstract") if field == "abstract" else None
+    if field == "fulltext" and state is not None:
+        from .source_documents import document_span
+        from .control_plane import ControlError
+        from .storage import ArtifactIntegrityError
+        try:
+            text, _ = document_span(state, source["research_id"], source["source_id"],
+                                    evidence["evidence_location"], proof=from_json(evidence["provenance_json"]).get("document"))
+        except (ControlError, ArtifactIntegrityError, ValueError, OSError) as exc:
+            raise ReportValidationError("source document integrity lost") from exc
+    if not text or evidence["evidence_text"] not in text:
         raise ReportValidationError("source text alignment lost")
     digest = hashlib.sha256(evidence["evidence_text"].encode("utf-8", errors="strict")).hexdigest()
     if digest != evidence["text_hash"]:
@@ -137,7 +147,7 @@ def build_final_conclusion(state, research_id: str) -> FinalConclusion:
             source = sources.get(row["source_id"])
             if source is None:
                 raise ReportValidationError("verified literature evidence has no source")
-            _validate_literature_provenance(source, row)
+            _validate_literature_provenance(source, row, state=state)
             literature.append(row)
     support = [row["evidence_id"] for row in literature if row["polarity"] == "SUPPORT"]
     contradiction = [row["evidence_id"] for row in literature if row["polarity"] == "CONTRADICT"]
@@ -208,7 +218,7 @@ def validate_final_conclusion(state, research_id: str, candidate: FinalConclusio
             source = sources.get(row["source_id"])
             if source is None:
                 raise ReportValidationError("unresolved source reference")
-            _validate_literature_provenance(source, row)
+            _validate_literature_provenance(source, row, state=state)
         elif row["experiment_id"] not in experiments:
             raise ReportValidationError("invalidated experiment evidence reference")
     for identity in candidate.experiment_refs:
@@ -461,6 +471,10 @@ def export_final_report(state, research_id: str,
             "current_source": qualified["current_source"], "authority": qualified.get("authority"),
             **({"research_design": {"hash": design["hash"], "revision": design["revision"], "path": "research_design.json"}} if design else {}),
             "expected_claim":qualified["card"]["calculation"]}) + "\n"
+    from .research_report import report_record
+    ai_report = report_record(state, research_id)
+    if ai_report:
+        files["ai_report.json"] = to_json(ai_report) + "\n"
     manifest = {"research_id": research_id, "state_version": run["state_version"],
                 "files": {name: sha256_bytes(content.encode("utf-8", errors="strict"))
                           for name, content in files.items()},

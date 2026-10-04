@@ -86,3 +86,46 @@ node qa/tutorial_zoom_browser.cjs
 처음에는 독립 팝업에서 참여 여부를 묻는다. 이번만 건너뛰기와 다시 보지 않기를 구분하며 설정에서 재실행할 수 있다. API 발급 → 앱 연결 → 새 연구 → 항목 입력의 4개 과정을 실제 화면의 화살표와 안내 상자로 진행한다. 발급 안내는 선택한 제공사의 필요한 순서를 먼저 표시하고 계정·결제·키 관리 정보는 아래에서 펼쳐 읽는다. 상세 안내 30개·도움말 41개와 버전 2/3의 이전 과정 상태를 보존한다. `node qa/help_api_browser.cjs`는 단가 적용·반복 연결 확인을 실제 앱과 모의 제공사로 검사한다.
 
 [구현·검증 보고서](results/tutorial_implementation_report.md) · [최종 결과](results/tutorial_final_validation.json). 큰 원시 결과는 `build/tutorial/`, 캡처는 `output/playwright/tutorial/`에 저장한다.
+
+## 자동 검색·AI 보고서 검사
+
+```powershell
+.\.venv\Scripts\python.exe -B -X utf8 -m pytest tests/test_research_report_flow.py -q -p no:cacheprovider
+node qa/research_report_browser.cjs
+node qa/research_report_browser.cjs --weak
+node qa/research_report_browser.cjs --many
+node qa/research_report_native_zoom_browser.cjs
+.\.venv\Scripts\python.exe -B -X utf8 qa/research_report_live_search_probe.py
+.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/offline_validation.py
+```
+
+Chrome 검사는 모의 제공사와 실제 실행기를 사용한다. `research_report_live_search_probe.py`는 공개 검색어만 실제 Crossref로 보내며 AI를 호출하지 않는다. [실행 결과](results/research_search_report_redesign.md)
+
+## 무료 검색·공개 원문·페이지 근거 검사
+
+```powershell
+.\.venv\Scripts\python.exe -B -X utf8 -m pytest tests/test_free_search_recovery.py tests/test_research_report_flow.py -q -p no:cacheprovider
+.\.venv\Scripts\python.exe -B -X utf8 qa/free_search_evaluate.py
+.\.venv\Scripts\python.exe -B -X utf8 qa/free_search_recovery_probe.py
+node qa/free_source_browser.cjs
+node qa/free_source_browser.cjs --zoom
+.\.venv\Scripts\python.exe -B -X utf8 qa/free_search_live_probe.py
+```
+
+평가는 고정 모의 자료의 확보율·관련성·인용·보고서·요청 수치 확보를 각각 기록한다. Chrome에서 보고서와 공개 원문을 동시에 읽고 페이지 이동·390px·브라우저 자체 200%·키보드·무료 조회를 검사한다. 실제 검색 probe는 익명 OpenAlex와 Crossref만 호출하며 모델·PDF·사용자 연구를 실행하지 않는다. [사용 안내](../docs/guides/RESEARCH_REPORTS.md)
+
+## 연구 기본 화면 v8 검사
+
+```powershell
+.\.venv\Scripts\python.exe -B -X utf8 -m pytest -q -p no:cacheprovider tests/test_research_base_screen.py tests/test_execution_flow.py
+node qa/research_base_browser.cjs
+node qa/research_report_browser.cjs
+node qa/research_report_browser.cjs --weak
+node qa/research_report_browser.cjs --many
+node qa/research_report_native_zoom_browser.cjs
+node qa/cycle12/browser.cjs
+node qa/cycle12/pdf_currentness_browser.cjs
+```
+
+별도 고정 작업 공간에서 목록 60개·페이지 이동·긴 제목·공식 상태·범주·7단계·읽기 전용 조회·자동 상태 갱신·선택과 스크롤 보존·오래된 보고서 차단을 확인한다. 상태 전환 주입은 오프라인 화면 검사이며 실제 Live Agent 실행 증명이 아니다. [실행 보고서](results/research_base_v8_report.md)

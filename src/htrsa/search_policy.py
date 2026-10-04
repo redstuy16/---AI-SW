@@ -14,6 +14,20 @@ from .scholarly import SearchResult, SearchRequest, metadata_digest
 CROSSREF_PRICE_CHECKED_AT = '2026-10-02T16:27:49+00:00'
 
 
+def default_search_price():
+    from datetime import datetime
+    fresh = 0 <= (utc_now() - datetime.fromisoformat(CROSSREF_PRICE_CHECKED_AT)).total_seconds() <= 30 * 86400
+    return Decimal(0) if fresh else None, 'https://www.crossref.org/services/metadata-retrieval/'
+
+
+def free_search_price(provider):
+    from datetime import datetime
+    fresh = 0 <= (utc_now() - datetime.fromisoformat('2026-10-04T15:00:00+00:00')).total_seconds() <= 30 * 86400
+    source = 'https://help.openalex.org/access/example-costs/' if provider == 'scholarly.openalex' else (
+        'https://docs.searxng.org/dev/search_api.html' if provider == 'scholarly.searxng' else default_search_price()[1])
+    return Decimal(0) if fresh else None, source
+
+
 class SearchPolicy(StrEnum):
     AUTO = 'AUTO'
     DISABLED = 'DISABLED'
@@ -29,6 +43,14 @@ def private_query(query, protected=()):
             or bool(re.search(r'(?i)(sk-[\w-]{12,}|AIza[\w-]{35}|ghp_\w{36}|[A-Z]:[\\/]|/home/|/Users/|https?://|@|API[_ ]?KEY|password|confidential|private|internal|비밀번호|비공개|주민등록|\d{3}[- ]\d{3,4}[- ]\d{4}|(?:\d+[,.]\d+[,; ]+){3})', query)))
 
 
+def public_query(snapshot):
+    """직접 지정한 검색어가 없으면 새 연구의 질문에서 공개 검색 주제를 구성한다."""
+    text = str(snapshot.get('public_search_query') or '').strip()
+    if not text and snapshot.get('settings_version', 1) >= 2:
+        text = str(snapshot.get('question') or snapshot.get('title') or '').strip()
+    return re.sub(r'\s+', ' ', text.translate(str.maketrans('₀₁₂₃₄₅₆₇₈₉', '0123456789'))).strip()
+
+
 def decision(snapshot, *, question=None, budget_ok=True, protected=()):
     policy = SearchPolicy(snapshot.get('search_policy', 'DISABLED'))
     required = snapshot.get('search_required', False)
@@ -36,11 +58,13 @@ def decision(snapshot, *, question=None, budget_ok=True, protected=()):
         return 'SEARCH_REQUIRED_BUT_DISABLED' if required else 'SEARCH_DISABLED'
     if snapshot.get("search_attempt_limit", 5) == 0:
         return 'SEARCH_ATTEMPT_LIMIT'
-    if not required and not useful(question or snapshot['question']):
+    if not required and not snapshot.get('ai_report_enabled') and not useful(question or snapshot['question']):
         return 'SEARCH_NOT_NEEDED'
+    if snapshot.get('ai_report_enabled') and snapshot.get('public_search_consent') is not True:
+        return 'SEARCH_EGRESS_DENIED'
     if snapshot.get('egress') != 'research' and not (snapshot.get('egress') == 'selected' and snapshot.get('public_search_consent') is True):
         return 'SEARCH_EGRESS_DENIED'
-    query = snapshot.get('public_search_query', '').strip()
+    query = public_query(snapshot)
     if not query:
         return 'SEARCH_QUERY_REQUIRED'
     if private_query(query, protected):
@@ -80,6 +104,8 @@ def search_allocation(store, rid, snapshot, *, price, price_source, view=None):
     unit = micro(price)
     if not remaining:
         return record | {'status': 'SEARCH_ATTEMPT_LIMIT'}
+    if unit == 0:
+        return record | {'allowed_attempts': remaining, 'status': 'FREE_REQUEST_LIMIT', 'cash_cost_usd': '0'}
     if not snapshot.get('adaptive_budget', True):
         return record | {'allowed_attempts': remaining, 'status': 'MANUAL_LIMIT'}
     if not view['can_complete']:
@@ -100,6 +126,19 @@ class PolicyProvider:
         self.provider, self.store, self.credentials, self.snapshot = provider, store, credentials, snapshot
         self.name, self.price, self.price_source = provider.name, price, price_source
         self.before_dispatch = before_dispatch
+        self.rid = snapshot.get('research_id')
+
+    def protected(self):
+        return self.credentials.active_secrets([*(c.get('credential_env_name') for c in self.store.configs('connection')), 'OPENALEX_API_KEY'])
+
+    def allowance_usage(self, client):
+        raw = getattr(client, 'last_usage', {})
+        if not isinstance(raw, dict):
+            return {}
+        names = {'X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Credits-Used', 'X-RateLimit-Reset'}
+        protected = self.protected()
+        return {name: str(value) for name, value in raw.items() if name in names and len(str(value)) <= 128
+                and re.fullmatch(r'[0-9TZ:+. -]+', str(value)) and not any(secret in str(value) for secret in protected)}
 
     def task_snapshot(self, request):
         value = dict(self.snapshot)
@@ -115,11 +154,27 @@ class PolicyProvider:
         if self.before_dispatch:
             self.before_dispatch()
         snapshot = self.task_snapshot(request)
-        protected = self.credentials.active_secrets(c.get('credential_env_name') for c in self.store.configs('connection'))
+        protected = self.protected()
         if decision(snapshot, protected=protected) != 'SEARCH_ALLOWED' or private_query(request.query, protected):
             return False
         cached = SearchResult.model_validate(previous)
-        if cached.request != request or not cached.sources:
+        if cached.request != request:
+            return False
+        if self.snapshot.get('ai_report_enabled'):
+            proof = self.store.db.execute("SELECT payload FROM control_audit WHERE research_id=? AND kind='SEARCH_COMPLETED' ORDER BY seq DESC", (request.research_id,)).fetchall()
+            import json
+            completed = any((item := json.loads(row[0])).get('status') == 'COMPLETED' and item.get('query') == request.query
+                            and item.get('provider') == self.name and item.get('selected_result_ids') == [s.doi or s.openalex_id or s.metadata_hash or sha256(s.title.encode()).hexdigest() for s in cached.sources]
+                            and [v.get('metadata_hash') for v in item.get('sources', [])] == [metadata_digest(s) for s in cached.sources]
+                            for row in proof)
+            if completed:
+                for source in cached.sources:
+                    row = self.store.db.execute("SELECT status,metadata_hash FROM sources WHERE research_id=? AND (doi=? OR openalex_id=?)", (request.research_id, source.doi, source.openalex_id)).fetchone()
+                    if row and row['status'] == 'INVALIDATED':
+                        return False
+                self.store.audit(request.research_id, 'SEARCH_COMPLETED_REPLAY_REUSED', {'provider':self.name,'query_hash':sha256(request.query.encode()).hexdigest(),'search_cost':'0'})
+                return True
+        if not cached.sources:
             return False
         for source in cached.sources:
             try:
@@ -139,15 +194,18 @@ class PolicyProvider:
         if self.before_dispatch:
             self.before_dispatch()
         view = completion_budget(self.store, request.research_id, self.snapshot)
-        protected = self.credentials.active_secrets(c.get('credential_env_name') for c in self.store.configs('connection'))
+        protected = self.protected()
         task = self.task_snapshot(request)
-        status = decision(task, budget_ok=view['can_complete'], protected=protected)
+        self.rid = request.research_id
+        status = decision(task, budget_ok=self.price == 0 or view['can_complete'], protected=protected)
         if private_query(request.query, protected):
             status = 'SEARCH_PRIVATE_QUERY_BLOCKED'
         if status == 'SEARCH_ALLOWED' and (self.price is None or not self.price_source):
             status = 'PRICE_UNKNOWN'
         allocation = search_allocation(self.store, request.research_id, task,
             price=self.price, price_source=self.price_source, view=view)
+        if status == 'SEARCH_OPTIONAL_REDUCED' and allocation['status'] == 'COMPLETION_RESERVE_BLOCKED':
+            status = 'COMPLETION_RESERVE_BLOCKED'
         if status == 'SEARCH_ALLOWED' and not allocation['allowed_attempts']:
             status = allocation['status']
         record = {'search_request_id': new_id('SRCH'), 'provider': self.name,
@@ -158,11 +216,11 @@ class PolicyProvider:
         self.store.audit(request.research_id, 'SEARCH_BUDGET_ALLOCATION', allocation)
         if status != 'SEARCH_ALLOWED':
             self.store.audit(request.research_id, 'SEARCH_POLICY_DECISION', record)
-            if task.get('search_required'):
+            if task.get('search_required') or status == 'COMPLETION_RESERVE_BLOCKED':
                 raise ControlError(status)
             return SearchResult(provider=self.name, request=request, sources=[])
         from .product_policy import effective_cap
-        reserve = Decimal(view['completion_reserve_usd'] or '0') if self.snapshot.get('adaptive_budget') else 0
+        reserve = Decimal(view['completion_reserve_usd'] or '0') if self.snapshot.get('adaptive_budget') and self.price != 0 else 0
         reservation = self.store.reserve(rid=request.research_id, connection=self.name, model='metadata-search',
             role='search', purpose='web_search', bound=self.price,
             run_limit=effective_cap(self.store, request.research_id, self.snapshot),
@@ -177,9 +235,10 @@ class PolicyProvider:
             nonlocal dispatched
             if self.before_dispatch:
                 self.before_dispatch()
+            self._time_guard(request.research_id)
             self.store.dispatch_search(reservation, request.research_id,
                 min(task.get("search_attempt_limit", 5), allocation['used'] + allocation['allowed_attempts']), self.name,
-                snapshot=self.snapshot, completion_reserve=reserve)
+                snapshot=None if self.price == 0 else self.snapshot, completion_reserve=reserve)
             dispatched += 1
             self.store.audit(request.research_id, 'SEARCH_DISPATCHED', record | {'reservation_id': reservation, 'transport_attempt':dispatched})
         try:
@@ -199,7 +258,8 @@ class PolicyProvider:
                 raise ControlError('SECRET_IN_SEARCH_RESPONSE')
             record.update(status='COMPLETED', result_count=len(result.sources), query=request.query,
                           selected_result_ids=[s.doi or s.openalex_id or s.metadata_hash or sha256(s.title.encode()).hexdigest() for s in result.sources],
-                          sources=[{'url': s.url, 'retrieved_at': s.retrieved_at, 'metadata_hash': metadata_digest(s), 'retrieval_reference': record['search_request_id']} for s in result.sources])
+                          sources=[{'url': s.url, 'doi': s.doi, 'openalex_id': s.openalex_id, 'retrieved_at': s.retrieved_at, 'metadata_hash': metadata_digest(s),
+                                    'oa_pdf_url': s.provider_ids.get('oa_pdf_url'), 'retrieval_reference': record['search_request_id']} for s in result.sources])
             return result
         except Exception:
             record['status'] = 'FAILED'
@@ -208,6 +268,8 @@ class PolicyProvider:
             if client is not None and hasattr(client, "dispatch_guard"):
                 client.dispatch_guard = previous_guard
             record.update(completed_at=utc_now().isoformat(), latency_ms=round((perf_counter()-started)*1000, 3), actual_dispatch_attempts=dispatched)
+            record['free_allowance_usage'] = self.allowance_usage(client)
+            record['cash_cost_usd'] = '0' if self.price == 0 else record.get('search_cost')
             # 무료 메타데이터만 실패 비용을 0으로 확정한다. 유료 전송의 모호한 비용은 유지한다.
             if not dispatched:
                 self.store.transition(reservation, 'RELEASED')
@@ -220,7 +282,148 @@ class PolicyProvider:
             self.store.audit(request.research_id, 'SEARCH_COMPLETED', record)
 
     async def get_work(self, external_id):
-        raise ControlError('SEARCH_FETCH_NOT_APPROVED')
+        from .scholarly import normalize_doi, normalize_openalex_id, NormalizedSource
+        doi, identity = normalize_doi(external_id), normalize_openalex_id(external_id)
+        if self.price != 0 or not self.rid or not (doi or identity) or not self.store.db.execute(
+                "SELECT 1 FROM sources WHERE research_id=? AND (doi=? OR openalex_id=?) AND status NOT IN ('IRRELEVANT','INVALIDATED')",
+                (self.rid, doi, identity)).fetchone():
+            raise ControlError('SEARCH_FETCH_NOT_APPROVED')
+        key = sha256((self.rid + self.name + external_id).encode('utf-8', errors='strict')).hexdigest()
+        try:
+            cached = self.store.config('source_lookup', key)
+        except ControlError:
+            cached = None
+        if cached:
+            if self.before_dispatch:
+                self.before_dispatch()
+            if decision(self.snapshot, budget_ok=True, protected=self.protected()) != 'SEARCH_ALLOWED':
+                raise ControlError('SEARCH_FETCH_NOT_APPROVED')
+            if cached['status'] == 'FAILED':
+                from .scholarly import ScholarlyError
+                raise ScholarlyError('이미 기록된 보완 조회 실패', code=cached['error'])
+            source = NormalizedSource.model_validate(cached['source'])
+            if sha256(source.model_dump_json().encode()).hexdigest() != cached['sha256']:
+                raise ControlError('SEARCH_CACHE_CHANGED')
+            if (doi and source.doi != doi or identity and source.openalex_id != identity
+                    or any(v in source.model_dump_json() for v in self.protected())):
+                raise ControlError('SEARCH_CACHE_CHANGED')
+            return source
+        async def invoke():
+            source = await self.provider.get_work(external_id)
+            if doi and source.doi != doi or identity and source.openalex_id != identity:
+                raise ControlError('SEARCH_FETCH_IDENTITY_MISMATCH')
+            if any(v in source.model_dump_json() for v in self.protected()):
+                raise ControlError('SECRET_IN_SEARCH_RESPONSE')
+            return source
+        try:
+            source = await self._free_request('lookup', external_id, getattr(self.provider, 'client', None), invoke)
+            value = {'status': 'COMPLETED', 'source': source.model_dump(mode='json'),
+                     'sha256': sha256(source.model_dump_json().encode()).hexdigest()}
+        except Exception as exc:
+            from .control_plane import ControlBoundary
+            if isinstance(exc, ControlBoundary) or isinstance(exc, ControlError):
+                raise
+            value = {'status': 'FAILED', 'error': getattr(exc, 'code', 'SEARCH_FETCH_FAILED')}
+            self.store.put('source_lookup', key, value)
+            raise
+        self.store.put('source_lookup', key, value)
+        return source
+
+    def _time_guard(self, rid):
+        from .control_runtime import snapshot_remaining
+        run = self.store.db.execute('SELECT started_at FROM control_runs WHERE research_id=?', (rid,)).fetchone()
+        if run and run[0] and snapshot_remaining(self.snapshot, run[0]) <= 0:
+            raise ControlError('TIME_LIMIT')
+
+    async def _free_request(self, kind, identity, client, invoke):
+        from .product_policy import effective_cap
+        status = decision(self.snapshot, budget_ok=True, protected=self.protected())
+        if status != 'SEARCH_ALLOWED' or self.price != 0 or not self.price_source:
+            raise ControlError(status if status != 'SEARCH_ALLOWED' else 'SEARCH_FETCH_NOT_APPROVED')
+        allocation = search_allocation(self.store, self.rid, self.snapshot, price=Decimal(0), price_source=self.price_source)
+        if not allocation['allowed_attempts']:
+            raise ControlError(allocation['status'])
+        reservation = self.store.reserve(rid=self.rid, connection=self.name, model='public-' + kind, role='search', purpose='web_search',
+            bound=0, run_limit=effective_cap(self.store, self.rid, self.snapshot), monthly_limit=self.snapshot['monthly_limit_usd'],
+            request_limit=self.snapshot['request_limit_usd'], attempts=self.snapshot['depth_limits']['attempts'], revision=self.price_source)
+        previous = getattr(client, 'dispatch_guard', None)
+        dispatched = 0
+        record = {'kind': kind, 'identity_hash': sha256(identity.encode('utf-8', errors='strict')).hexdigest(),
+                  'reservation_id': reservation, 'provider': self.name, 'status': 'FAILED', 'cash_cost_usd': '0'}
+        def guard():
+            nonlocal dispatched
+            if self.before_dispatch:
+                self.before_dispatch()
+            self._time_guard(self.rid)
+            self.store.dispatch_search(reservation, self.rid, allocation['configured_limit'], self.name, snapshot=None)
+            dispatched += 1
+        try:
+            if previous is not None:
+                raise ControlError('SEARCH_CLIENT_BUSY')
+            if client is None:
+                guard()
+            else:
+                client.dispatch_guard = guard
+            result = await invoke()
+            record['status'] = 'COMPLETED'
+            if hasattr(result, 'provider_ids'):
+                record.update(doi=result.doi, openalex_id=result.openalex_id,
+                              metadata_hash=metadata_digest(result), oa_pdf_url=result.provider_ids.get('oa_pdf_url'))
+            return result
+        except Exception as exc:
+            record['error'] = getattr(exc, 'code', 'SEARCH_FETCH_FAILED')
+            raise
+        finally:
+            if client is not None:
+                client.dispatch_guard = previous
+            self.store.transition(reservation, 'SETTLED' if dispatched else 'RELEASED', settled=0)
+            record.update(actual_dispatch_attempts=dispatched, free_allowance_usage=self.allowance_usage(client))
+            self.store.audit(self.rid, 'SEARCH_FETCH_COMPLETED', record)
+
+    def approve_document_url(self, source, url):
+        from .source_documents import validate_public_url
+        validate_public_url(url)
+        if any(v in url for v in self.protected()):
+            raise ControlError('SECRET_IN_DOCUMENT_URL')
+        if url == 'https://content.openalex.org/works/' + str(source.openalex_id) + '.pdf' and self.snapshot.get('openalex_archive_enabled'):
+            return
+        import json
+        for row in self.store.db.execute("SELECT kind,payload FROM control_audit WHERE research_id=? AND kind IN ('SEARCH_COMPLETED','SEARCH_FETCH_COMPLETED')", (self.rid,)):
+            record = json.loads(row['payload'])
+            entries = record.get('sources', []) if row['kind'] == 'SEARCH_COMPLETED' else [record]
+            if record.get('status') == 'COMPLETED' and any(
+                    v.get('oa_pdf_url') == url and (v.get('metadata_hash') == source.metadata_hash
+                        or source.doi and v.get('doi') == source.doi or source.openalex_id and v.get('openalex_id') == source.openalex_id) for v in entries):
+                return
+        raise ControlError('DOCUMENT_URL_UNAPPROVED')
+
+    async def fetch_document(self, url, client, *, headers=None):
+        if not self.snapshot.get('fulltext_enabled'):
+            raise ControlError('DOCUMENT_FETCH_DISABLED')
+        async def invoke():
+            return await client.get_bytes(url, headers=headers)
+        return await self._free_request('document', url, client, invoke)
+
+    async def archive_access(self, identity, client):
+        from .source_documents import PublicDocumentClient
+        key = self.credentials.get('OPENALEX_API_KEY')
+        if not key:
+            raise ControlError('OPENALEX_KEY_REQUIRED')
+        quota_client = PublicDocumentClient(transport=client.transport)
+        async def check():
+            return await quota_client.get_json('https://api.openalex.org/rate-limit', headers={'Authorization': 'Bearer ' + key})
+        quota = await self._free_request('quota', identity, quota_client, check)
+        try:
+            info = quota.get('rate_limit', quota)
+            free = Decimal(str(info['daily_remaining_usd']))
+            prepaid = Decimal(str(info['prepaid_balance_usd']))
+            cost = Decimal(str(info['endpoint_costs_usd']['content']))
+            if (not free.is_finite() or not prepaid.is_finite() or not cost.is_finite()
+                    or not Decimal(0) < cost <= Decimal('.01') or free < cost or prepaid != 0):
+                raise ValueError()
+        except (KeyError, ValueError, ArithmeticError):
+            raise ControlError('OPENALEX_FREE_ALLOWANCE_UNVERIFIED') from None
+        return 'https://content.openalex.org/works/' + identity + '.pdf', {'Authorization': 'Bearer ' + key}
 
 
 def qualified_literature(state, rid):
@@ -228,38 +431,115 @@ def qualified_literature(state, rid):
     for row in state._db.execute("SELECT * FROM evidence WHERE research_id=? AND source_type='LITERATURE' AND status='VERIFIED'", (rid,)):
         source = state._db.execute("SELECT * FROM sources WHERE research_id=? AND source_id=?", (rid, row["source_id"])).fetchone()
         if source is not None:
-            _validate_literature_provenance(dict(source), dict(row))
+            _validate_literature_provenance(dict(source), dict(row), state=state)
             return True
     return False
 
 
-async def run_search(state, store, credentials, rid, snapshot, *, provider=None, price=None, price_source=None, before_dispatch=None):
+async def run_search(state, store, credentials, rid, snapshot, *, provider=None, price=None, price_source=None, before_dispatch=None, queries=None, document_client=None):
     if qualified_literature(state, rid):
         return
     from .product_policy import completion_budget
-    status = decision(snapshot, budget_ok=completion_budget(store, rid, snapshot)['can_complete'],
-                      protected=credentials.active_secrets(c.get('credential_env_name') for c in store.configs('connection')))
+    status = decision(snapshot, budget_ok=provider is None or price == 0 or completion_budget(store, rid, snapshot)['can_complete'],
+                      protected=credentials.active_secrets([c.get('credential_env_name') for c in store.configs('connection')] + ['OPENALEX_API_KEY']))
     if status != 'SEARCH_ALLOWED':
         store.audit(rid, 'SEARCH_POLICY_DECISION', {'status': status, 'search_policy': snapshot.get('search_policy', 'DISABLED')})
         if snapshot.get('search_required'):
             raise ControlError(status)
         return
-    from .literature import LiteratureCoordinator, LiteratureConfig, default_intents
+    from .literature import LiteratureCoordinator, LiteratureConfig, default_intents, topic_concepts
+    from .scholarly import SearchIntent, ScholarlyError, source_from_row
+    snapshot = dict(snapshot, research_id=rid, public_search_query=public_query(snapshot)[:400])
+    fallback = None
     if provider is None:
-        from datetime import datetime
-        from .scholarly import CrossrefProvider
-        provider = CrossrefProvider(mailto='')
-        fresh = 0 <= (utc_now() - datetime.fromisoformat(CROSSREF_PRICE_CHECKED_AT)).total_seconds() <= 30 * 86400
-        price, price_source = Decimal(0) if fresh else None, 'https://www.crossref.org/services/metadata-retrieval/'
+        from .scholarly import CrossrefProvider, OpenAlexProvider, ScholarlyHTTPClient
+        provider = OpenAlexProvider(ScholarlyHTTPClient(retries=0), api_key='')
+        fallback = CrossrefProvider(ScholarlyHTTPClient(retries=0), mailto='')
+        price, price_source = free_search_price(provider.name)
     policy = PolicyProvider(provider, store, credentials, snapshot, price=price, price_source=price_source, before_dispatch=before_dispatch)
-    limit = 3 if snapshot.get('performance_profile') in {'DEEP', 'MAX'} else 2
-    intents = default_intents(snapshot['public_search_query'])
-    plan = [intents[0], intents[2]] if limit == 2 else intents
+    supplement = PolicyProvider(fallback, store, credentials, snapshot, price=free_search_price(fallback.name)[0],
+        price_source=free_search_price(fallback.name)[1], before_dispatch=before_dispatch) if fallback else None
+    academic_limit = min(store.defaults().search_attempt_limit, snapshot.get('search_attempt_limit', 10))
+    if snapshot.get('searxng_url') and academic_limit > 2:
+        slots = min(4 if snapshot.get('fulltext_enabled') else 3, academic_limit - 2)
+        policy.snapshot = dict(snapshot, search_attempt_limit=academic_limit - slots)
+        if supplement:
+            supplement.snapshot = policy.snapshot
+    question = snapshot['question']
+    if queries:
+        protected = policy.protected()
+        if len(queries) > 3 or any(not isinstance(q, str) or not 2 <= len(q.strip()) <= 400 or private_query(q, protected) for q in queries):
+            raise ControlError('SEARCH_PRIVATE_QUERY_BLOCKED')
+    base = snapshot['public_search_query'].strip().translate(str.maketrans('₀₁₂₃₄₅₆₇₈₉', '0123456789'))
+    phrases = list(dict.fromkeys([base, *((q.strip().translate(str.maketrans('₀₁₂₃₄₅₆₇₈₉', '0123456789'))) for q in (queries or []))]))
+    english = next((q for q in phrases if re.search('[a-zA-Z]{4,}', q) and not re.search('[가-힣]', q)), None)
+    if not english and {'co2','release'} <= topic_concepts(question + ' ' + base):
+        english = 'CO2 release rate temperature carbonated beverages'
+        phrases.append(english)
+    core = phrases if len(phrases) > 1 else [base, default_intents(base)[1].query]
+    if english:
+        core = list(dict.fromkeys([base, english, *core]))
+    mechanism = 'CO2 degassing temperature carbonated water' if {'co2','release'} <= topic_concepts(question + ' ' + base) else (
+        phrases[2] if len(phrases) > 2 else (english or base) + ' mechanism')
+    plan = [SearchIntent(kind='CORE', query=q) for q in core]
+    plan += [SearchIntent(kind='MECHANISM', query=mechanism),
+             SearchIntent(kind='CONTRADICTION', query='null effect conflicting evidence ' + (english or base))]
+    question += ' ' + ' '.join(core[1:])
+
+    async def enrich(source_id):
+        source = source_from_row(state._one('SELECT * FROM sources WHERE research_id=? AND source_id=?', (rid, source_id)))
+        for backend in [p for p in (policy, supplement) if p is not None and p.name != source.provider]:
+            if source.abstract:
+                break
+            identity = source.doi or (source.openalex_id if backend.name == 'scholarly.openalex' else None)
+            if not identity:
+                continue
+            try:
+                replacement = await backend.get_work(identity)
+                state.upsert_source(rid, replacement)
+                source = source_from_row(state._one('SELECT * FROM sources WHERE research_id=? AND source_id=?', (rid, source_id)))
+            except ScholarlyError:
+                continue
+            except ControlError as exc:
+                if exc.code == 'SEARCH_ATTEMPT_LIMIT':
+                    return
+                if exc.code not in {'SEARCH_FETCH_NOT_APPROVED','SEARCH_FETCH_IDENTITY_MISMATCH'}:
+                    raise
+        if not source.abstract and snapshot.get('fulltext_enabled'):
+            from .source_documents import acquire_document
+            await acquire_document(state, policy, source_id, client=document_client)
+    state.runtime_event(rid, 'LITERATURE_SEARCH_STARTED', {'query_count': len(plan)})
     try:
-        await LiteratureCoordinator(state, policy, config=LiteratureConfig(max_queries=limit, max_results_per_query=5)).run(rid, snapshot['public_search_query'], plan)
+        coordinator = LiteratureCoordinator(state, policy, fallback=supplement,
+            config=LiteratureConfig(max_queries=4, max_results_per_query=5), enricher=enrich)
+        await coordinator.run_adaptive(rid, question, plan)
     except ControlError as exc:
         if exc.code not in {"SEARCH_ATTEMPT_LIMIT", "COMPLETION_RESERVE_BLOCKED"}:
             raise
         store.audit(rid, "SEARCH_ATTEMPT_LIMIT_REACHED", {"limit":snapshot.get("search_attempt_limit", 5), "reason": exc.code})
+    if snapshot.get('searxng_url') and not qualified_literature(state, rid):
+        policy.snapshot = snapshot
+        if supplement:
+            supplement.snapshot = snapshot
+        from .scholarly import SearXNGProvider
+        searx = SearXNGProvider(snapshot['searxng_url'])
+        web_policy = PolicyProvider(searx, store, credentials, snapshot, price=free_search_price(searx.name)[0],
+            price_source=free_search_price(searx.name)[1], before_dispatch=before_dispatch)
+        request = SearchRequest(research_id=rid, query=english or base, limit=5)
+        try:
+            found = await coordinator._cached_search(web_policy, request)
+            for candidate in found.sources:
+                source_id, _ = state.upsert_source(rid, candidate)
+                if state._one('SELECT status FROM sources WHERE source_id=?', (source_id,))[0] == 'DISCOVERED':
+                    from .literature import screen_source
+                    state.set_source_relevance(rid, screen_source(source_id, candidate, question))
+                if state._one('SELECT status FROM sources WHERE source_id=?', (source_id,))[0] not in {'IRRELEVANT','INVALIDATED'}:
+                    await enrich(source_id)
+            await coordinator.review_enriched(rid, question, fetch=False)
+            from .literature import synthesize_literature
+            state.save_literature_synthesis(rid, synthesize_literature(state, rid))
+        except (ScholarlyError, ControlError) as exc:
+            state.runtime_event(rid, 'SEARXNG_UNAVAILABLE', {'code':exc.code})
+
     if snapshot.get('search_required') and not qualified_literature(state, rid):
         raise ControlError('SEARCH_REQUIRED_EVIDENCE_MISSING')

@@ -119,6 +119,12 @@ def validate_report_snapshot(state: StateService, research_id: str) -> dict[str,
                 raise ReleaseExportError("scientific artifact hash mismatch")
         conclusion = build_final_conclusion(state, research_id)
         validate_final_conclusion(state, research_id, conclusion)
+        from .research_report import report_record
+        ai_report = report_record(state, research_id)
+        if ai_report:
+            saved_ai = state.workspace.path(research_id, "research_output/ai_report.json")
+            if "ai_report.json" not in manifest["files"] or from_json(saved_ai.read_text(encoding="utf-8", errors="strict")) != ai_report:
+                raise ReleaseExportError("AI 보고서가 현재 근거·수정본과 다릅니다.")
         report = state.workspace.path(research_id, "research_output/final_report.md")
         if report.read_text(encoding="utf-8", errors="strict") != _render_report(state, research_id, conclusion):
             raise ReleaseExportError("final report differs from canonical state")
@@ -337,6 +343,27 @@ def _export_release(state: StateService, research_id: str, output: str | Path) -
     files = _copy_research_output(state, research_id, output)
     files.extend(_copy_skill_artifacts(state, research_id, output))
     files.extend(_copy_repair_artifacts(state, research_id, output))
+    if state._db.execute("SELECT 1 FROM sqlite_master WHERE name='control_configs'").fetchone():
+        from .source_documents import checked_document
+        documents = []
+        for row in state._db.execute("SELECT id,payload FROM control_configs WHERE kind='source_document' AND json_extract(payload,'$.research_id')=? ORDER BY id", (research_id,)):
+            record = from_json(row["payload"])
+            if record["status"] != "READY":
+                continue
+            record, _ = checked_document(state, research_id, row["id"])
+            for key in ("pdf", "text"):
+                item = record[key]
+                data = state.workspace.path(research_id, item["relative_path"]).read_bytes()
+                relative = "source_documents/" + Path(item["relative_path"]).name
+                if not _secret_free(relative, data) or sha256_bytes(data) != item["sha256"]:
+                    raise ReleaseExportError("공개 원문의 무결성 또는 비밀 값 검사 실패")
+                target = output / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(data)
+                files.append({"path": relative, "sha256": item["sha256"], "size_bytes": len(data)})
+            documents.append(record)
+        if documents:
+            files.append(_write_text(output, "source_documents/index.json", to_json(documents) + "\n"))
     if state._db.execute("SELECT 1 FROM sqlite_master WHERE name='control_audit'").fetchone():
         searches = [dict(row) for row in state._db.execute("SELECT kind,payload,created_at FROM control_audit WHERE research_id=? AND kind LIKE 'SEARCH_%' ORDER BY seq", (research_id,))]
         if searches:

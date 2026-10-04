@@ -11,6 +11,8 @@ def research_list(api):
     def grouped(query):
         return {r['research_id']: dict(r) for r in db.execute(query)}
     controls = grouped('SELECT * FROM control_runs')
+    reports = {r['id']: json.loads(r['payload']) for r in db.execute("SELECT id,payload FROM control_configs WHERE kind='ai_report'")}
+    pending_claims = {r[0] for r in db.execute("SELECT DISTINCT research_id FROM claim_revisions WHERE current=1 AND json_extract(payload_json,'$.support_state')='NEEDS_REVALIDATION'")} if db.execute("SELECT 1 FROM sqlite_master WHERE name='claim_revisions'").fetchone() else set()
     evidence = grouped("SELECT research_id,COUNT(*) AS n FROM evidence WHERE status='VERIFIED' GROUP BY research_id")
     experiments = grouped("SELECT research_id,COUNT(*) AS n FROM experiments WHERE status='VERIFIED' GROUP BY research_id")
     actions = grouped('SELECT research_id,COUNT(*) AS n FROM research_actions GROUP BY research_id')
@@ -50,7 +52,15 @@ def research_list(api):
                             'spent': money(cost.get('spent', 0)) if cost or control else actor.get('cost'),
                             'reserved': money(cost.get('reserved', 0)), 'unresolved': money(cost.get('unresolved', 0))}
         life = lifecycle(api, rid)
-        output.append({**overview,'title':life.get('title') or (control['title'] if control else overview['question']),'control_status':control['status'] if control else overview['status'],
+        from .research_screen import saved_report_stale, status_badge
+        from .research_flow import observed_control
+        observed = observed_control(api, rid, control)
+        displayed_status = observed['status'] if observed else overview['status']
+        report = reports.get(rid, {})
+        stale = rid in pending_claims or saved_report_stale(api.read._state, rid, raw['state_version'])
+        official_status = status_badge(displayed_status, design_only=overview['stop_reason']=='LITERATURE_DESIGN_COMPLETED',
+                                      stale=stale, partial=report.get('status')=='PARTIAL')
+        output.append({**overview,'title':life.get('title') or (control['title'] if control else overview['question']),'control_status':displayed_status,'official_status':official_status,
                        'control_version':control['version'] if control else None,'research_depth':snapshot.get('research_depth'),
                        'last_action':event.get('event_type',stage),'updated_at':life.get('updated_at') or event.get('created_at',raw['created_at']),'controlled':bool(control),
                        'lifecycle':life})
@@ -61,7 +71,7 @@ def item_page(api, rid, kind, *, limit=50, offset=0):
     if not 1 <= limit <= 100 or not 0 <= offset <= 100000:
         raise ControlError('PAGE_INVALID')
     definitions = {
-        'evidence': ("SELECT e.evidence_id,e.claim,e.status,e.polarity,e.source_ref,e.source_id,e.experiment_id,e.limitations_json,s.title AS source_title FROM evidence e LEFT JOIN sources s ON s.source_id=e.source_id WHERE e.research_id=? ORDER BY e.rowid", 'evidence'),
+        'evidence': ("SELECT e.evidence_id,e.claim,e.status,e.polarity,e.source_ref,e.source_id,e.experiment_id,e.text_field,e.evidence_location,e.limitations_json,COALESCE(json_extract(e.provenance_json,'$.relevance'),json_extract(s.relevance_json,'$.relevance')) AS source_scope,s.title AS source_title FROM evidence e LEFT JOIN sources s ON s.source_id=e.source_id WHERE e.research_id=? ORDER BY e.rowid", 'evidence'),
         'experiments': ("SELECT e.experiment_id,e.method,e.status,e.dataset_id,d.row_count AS sample_size FROM experiments e LEFT JOIN datasets d ON d.dataset_id=e.dataset_id WHERE e.research_id=? ORDER BY e.rowid", 'experiments'),
         'verification': ("SELECT mutation_id AS item_id,COALESCE(json_extract(payload_json,'$.scientific.experiment_id'),mutation_id) AS subject_id,status,json_extract(verification_json,'$.verdict') AS verdict,COALESCE(json_array_length(verification_json,'$.checks'),0) AS checks_total,(SELECT COUNT(*) FROM json_each(verification_json,'$.checks') WHERE json_extract(value,'$.passed')=1) AS checks_passed FROM staged_mutations WHERE research_id=? AND verification_json IS NOT NULL ORDER BY rowid", 'staged_mutations')}
     if kind not in definitions:
@@ -96,7 +106,7 @@ def list_page(rows, query):
     elif group == 'completed':
         rows = [r for r in rows if r['control_status']=='COMPLETED']
     rows.sort(key=lambda r:r['title'] if query.get('sort',['date'])[0]=='name' else r['updated_at'],reverse=query.get('sort',['date'])[0]!='name')
-    fields = {'research_id','title','question','mode','control_status','last_action','research_depth','estimated_cost_usd','cost','updated_at'}
+    fields = {'research_id','title','question','mode','control_status','official_status','stop_reason','last_action','research_depth','estimated_cost_usd','cost','updated_at'}
     return {'items':[{k:v for k,v in r.items() if k in fields} for r in rows[offset:offset+limit]],'total':len(rows),'offset':offset,'limit':limit,'next_offset':offset+limit if len(rows)>offset+limit else None}
 
 

@@ -161,8 +161,18 @@ def render_pdf(state, rid, *, protected_values=(), include_preview=False):
                     escaped = html.escape(url, quote=True)
                     story.append(Paragraph('<link href="' + escaped + '">' + escaped + '</link>', base))
             story.append(table(["산출물","SHA-256"], sorted(manifest["files"].items()), [width*.35,width*.65]))
+    class ReportDocument(SimpleDocTemplate):
+        def afterFlowable(self, flowable):
+            key = getattr(flowable, "report_bookmark", None)
+            if key:
+                self.canv.bookmarkPage(key)
+                self.canv.addOutlineEntry(flowable.getPlainText(), key, 0)
+                self.notify('TOCEntry', (0, flowable.getPlainText(), self.page, key))
+    if view.get("ai_report"):
+        from .report_composition import compose
+        story = compose(state, rid, view, paragraph, table, base, title, heading, width, font_name)
     output = io.BytesIO()
-    document = SimpleDocTemplate(output,pagesize=A4,leftMargin=44,rightMargin=44,topMargin=42,bottomMargin=46,
+    document = ReportDocument(output,pagesize=A4,leftMargin=44,rightMargin=44,topMargin=42,bottomMargin=46,
                                   title="H-TRSA 연구 결과",author="H-TRSA",pageCompression=0)
     def footer(pdf, doc):
         pdf.setFont(font_name, 8)
@@ -173,7 +183,10 @@ def render_pdf(state, rid, *, protected_values=(), include_preview=False):
             kwargs["invariant"] = True
             super().__init__(*args,**kwargs)
     try:
-        document.build(story,onFirstPage=footer,onLaterPages=footer,canvasmaker=StableCanvas)
+        if view.get("ai_report"):
+            document.multiBuild(story,onFirstPage=footer,onLaterPages=footer,canvasmaker=StableCanvas)
+        else:
+            document.build(story,onFirstPage=footer,onLaterPages=footer,canvasmaker=StableCanvas)
     except ControlError:
         raise
     except Exception:

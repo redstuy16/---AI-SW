@@ -21,16 +21,16 @@ async function main(){
  await page.addInitScript(()=>{window.previewPolicyFailures=[];document.addEventListener('securitypolicyviolation',e=>window.previewPolicyFailures.push(e.effectiveDirective));});
  check('인증 없는 PDF 조회 차단',(await fetch(origin+'/api/control/research/unknown/report.pdf')).status===401);
  await page.goto(url);await page.locator('#research-table').waitFor();if(await page.locator('#tutorial-skip').count())await page.locator('#tutorial-skip').click();
- await page.locator('[data-run]').first().click();await page.locator('.conclusion-card').waitFor();await page.locator('#normal-report').click();await page.locator('[data-pdf]').waitFor();
+ await page.locator('[data-run]').first().click();await page.locator('.conclusion-card').waitFor();await page.locator('[data-primary-tab=report]').click();await page.locator('[data-pdf]').waitFor();
  const rid=JSON.parse(fs.readFileSync(path.join(folder,'execution.json'),'utf8')).research_id;
  const downloading=page.waitForEvent('download');await page.locator('[data-pdf]').click();const download=await downloading;await download.saveAs(path.join(folder,'before.pdf'));
  check('현재 결론 PDF 실제 다운로드',fs.readFileSync(path.join(folder,'before.pdf')).subarray(0,5).toString()==='%PDF-');
- await page.locator('#preview-pdf').click();await page.locator('#inspector[open] .friendly-report').waitFor();check('검증된 보고서 내용 미리보기',await page.locator('#inspector .friendly-report section h2').count()===9&&(await page.locator('#inspector .friendly-report').innerText()).includes('0.405')&&await page.locator('#inspector iframe').count()===0);await page.locator('#inspector').screenshot({path:path.join(folder,'current-preview.png')});await page.locator('#inspector-close').click();
+ await page.locator('#pdf-reopen').click();await page.waitForFunction(()=>document.querySelector('#pdf-viewer')?.dataset.ready==='true');const preview=await page.evaluate(id=>api('/api/control/research/'+id+'/report-preview'),rid);const pdfText=await page.locator('#pdf-text').textContent();check('검증된 보고서 내용 미리보기',preview.view.titles.length===9&&pdfText.replace(/\s+/g,'').includes('0.405')&&await page.locator('iframe').count()===0);await page.locator('#pdf-viewer').screenshot({path:path.join(folder,'current-preview.png')});
  await page.locator('#profile-amend').click();await page.locator('#profile-question-form textarea').fill('1986~1995년과 2011~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.');await page.locator('#profile-question-form button.primary').click();await page.getByText('다시 확인 필요',{exact:true}).waitFor();
  check('질문 변경 후 현재 결론 해제',(await page.locator('.conclusion-card').innerText()).includes('변경한 질문 · 재확인 대기'));
  const priorPdf=requests.filter(u=>u.endsWith('/report.pdf')).length;
  await page.locator('[data-pdf]').click();await page.locator('#notice').filter({hasText:actionMessage}).waitFor();check('PDF 저장에 실제 재확인 조치 안내',await page.locator('#notice').innerText()===actionMessage);
- await page.locator('#preview-pdf').click();await page.locator('#notice').filter({hasText:actionMessage}).waitFor();check('PDF 미리보기에 같은 조치 안내',await page.locator('#notice').innerText()===actionMessage&&await page.locator('#inspector[open]').count()===0);
+ await page.locator('#pdf-reopen').click();await page.locator('#notice').filter({hasText:actionMessage}).waitFor();check('PDF 미리보기에 같은 조치 안내',await page.locator('#notice').innerText()===actionMessage&&await page.locator('#inspector[open]').count()===0);
  check('재확인 전 PDF 생성 요청 생략',requests.filter(u=>u.endsWith('/report.pdf')).length===priorPdf);
  const blocked=await page.evaluate(async id=>(await fetch('/api/control/research/'+id+'/report.pdf',{credentials:'same-origin'})).status,rid);check('직접 PDF 요청의 서버 검증 차단 유지',blocked===409);
  await page.screenshot({path:path.join(folder,'stale-action.png'),fullPage:true});
@@ -41,7 +41,7 @@ async function main(){
  check('저장 상태 변경 후 이전 화면 상태 유지',await page.getByText('현재 결론',{exact:true}).count()===1);
  await page.locator('[data-pdf]').click();await page.locator('#notice').filter({hasText:actionMessage}).waitFor();check('이전 화면에서도 최신 현재성 조회로 차단',await page.locator('#notice').innerText()===actionMessage);
  await page.locator('#profile-recalculate').click();await page.getByText('현재 결론',{exact:true}).waitFor();
- await page.waitForFunction(()=>!document.querySelector('#profile-recalculate').disabled);
+ await page.waitForFunction(()=>document.querySelector('#profile-recalculate')&&!document.querySelector('#profile-recalculate').disabled);
  reportPath=path.join(folder,'workspace',rid,'research_output/final_report.md');originalReport=fs.readFileSync(reportPath);fs.writeFileSync(reportPath,Buffer.concat([originalReport,Buffer.from('\n검사 중 보고서 변조\n','utf8')]));
  const current=await page.evaluate(id=>api('/api/control/research/'+id+'/conclusion-card'),rid);check('파일 변조 검사는 현재성 검사와 별도로 유지',current.current===true);
  const response=page.waitForResponse(r=>r.url().endsWith('/report.pdf'));await page.locator('[data-pdf]').click();check('현재 결론이어도 변조 보고서 생성 차단',(await response).status()===409);

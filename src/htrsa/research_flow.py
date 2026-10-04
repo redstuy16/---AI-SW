@@ -45,19 +45,28 @@ def display_status(value):
             'REJECTED': 'FAILED', 'WEAKENED': 'NEEDS_REVIEW', 'SHORTLISTED': 'QUEUED'}.get(value, value or 'UNKNOWN')
 
 
-def project_flow(api, rid, *, view='current', limit=100, offset=0, selected=None):
+def observed_control(api, rid, control):
+    """실행 프로세스 상태를 조회에만 반영한다."""
+    value = dict(control) if control else None
+    if value and value['status'] in {'RUNNING','STARTING','RESUMING','PAUSE_REQUESTED','STOP_REQUESTED'} and value.get('pid'):
+        from .control_plane import process_alive
+        if not process_alive(value['pid']):
+            uncertain = api.store.db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('DISPATCHED','UNRESOLVED')", (rid,)).fetchone()
+            value['status'] = 'NEEDS_RECONCILIATION' if uncertain else 'PAUSED'
+    return value
+
+
+def project_flow(api, rid, *, view='current', limit=100, offset=0, selected=None, lane=None):
+    requested_lane = lane
     if view not in {'current', 'all', 'recovery', 'verification'} or not 1 <= limit <= 150 or not 0 <= offset <= 100000:
+        raise ControlError('PAGE_INVALID')
+    if requested_lane is not None and requested_lane not in LANES:
         raise ControlError('PAGE_INVALID')
     db = api.store.db
     api.read._research(rid)
     run = dict(db.execute('SELECT * FROM research_runs WHERE research_id=?', (rid,)).fetchone())
     control_row = db.execute('SELECT status,version,pid FROM control_runs WHERE research_id=?', (rid,)).fetchone()
-    control = dict(control_row) if control_row else None
-    if control and control['status'] in {'RUNNING','STARTING','RESUMING','PAUSE_REQUESTED','STOP_REQUESTED'} and control['pid']:
-        from .control_plane import process_alive
-        if not process_alive(control['pid']):
-            uncertain = db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('DISPATCHED','UNRESOLVED')",(rid,)).fetchone()
-            control['status'] = 'NEEDS_RECONCILIATION' if uncertain else 'PAUSED'
+    control = observed_control(api, rid, control_row)
     nodes, edges, task_contracts = {}, {}, {}
     def key(kind, identity):
         return f'{kind}:{identity}'
@@ -292,6 +301,8 @@ def project_flow(api, rid, *, view='current', limit=100, offset=0, selected=None
     selected_neighbors = ({selected} | neighbors.get(selected, set())) if selected else set()
     visible = set(nodes) if view == 'all' else closure(issues | {k for k,n in nodes.items() if n['title'] in TITLES.values() and n['lane'] == 'verification'}) if view == 'recovery' else closure({k for k,n in nodes.items() if n['lane'] == 'verification'}) if view == 'verification' else path or {root}
     visible |= selected_neighbors
+    if requested_lane:
+        visible = {k for k in visible if nodes[k]['lane'] == requested_lane}
     ordered = sorted(visible, key=lambda k: (nodes[k]['level'], list(LANES).index(nodes[k]['lane']), k))
     page = set(ordered[offset:offset + limit])
     # 완료된 복구 자료의 무결성은 표시할 때도 실제 파일로 확인한다.
@@ -334,7 +345,7 @@ def project_flow(api, rid, *, view='current', limit=100, offset=0, selected=None
     structure = sha256(to_json({'nodes': [(n['id'], n['lane'], n['level']) for n in nodes.values() if n['id'] in page], 'edges': [e['id'] for e in edges.values() if e['source'] in page and e['target'] in page]}).encode('utf-8', errors='strict')).hexdigest()
     return {'research_id': rid, 'state_version': run['state_version'], 'status': run['run_status'], 'stop_reason': run['stop_reason'],
             'control_status':control['status'] if control else run['run_status'], 'control_version':control['version'] if control else None,
-            'lanes': LANES, 'lane_order':list(LANES), 'view': view, 'layout_revision': structure, 'nodes': [nodes[k] for k in ordered[offset:offset + limit]],
+            'lanes': LANES, 'lane_order':[requested_lane] if requested_lane else list(LANES), 'view': view, 'lane': requested_lane, 'layout_revision': structure, 'nodes': [nodes[k] for k in ordered[offset:offset + limit]],
             'edges': [e for e in edges.values() if e['source'] in page and e['target'] in page], 'total_nodes': len(nodes),
             'visible_total': len(ordered), 'boundary_edges': sum((e['source'] in page) != (e['target'] in page) for e in edges.values()),
             'offset': offset, 'limit': limit, 'next_offset': offset + limit if len(ordered) > offset + limit else None,
@@ -446,6 +457,7 @@ def flow_node(api, rid, identity):
         result['title'] = value['title']
         detail.update({k:value[k] for k in ('title','doi','openalex_id','url','publication_year','source_name','retrieved_at','metadata_hash')})
         detail['authors'] = json.loads(value['authors_json'])
+        detail['abstract'] = value.get('abstract') or '초록 없음 · 서지정보만 확보'
     elif kind == 'tool':
         result['title'] = value['tool_name']
         record = json.loads(value['result_json'])

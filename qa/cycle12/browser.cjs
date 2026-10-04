@@ -34,7 +34,7 @@ function check(name,ok){results.push({name,passed:!!ok});if(!ok)throw Error(name
   check('선택 관측값 40개 조회',await page.locator('#profile-selected-content tbody tr').count()===40);
   const gap=await page.locator('#profile-refresh').evaluate(button=>{const a=button.getBoundingClientRect(),b=button.nextElementSibling.getBoundingClientRect();return b.left-a.right;});check('동작 버튼 사이 간격',gap>=8);
   await page.screenshot({path:path.join(folder,'source.png'),fullPage:true});
-  await page.locator('#profile-amend').click();await page.locator('#profile-question-form').waitFor();
+  await page.evaluate(async()=>{await window.ResearchWorkspace.refresh();await window.ResearchWorkspace.refresh();});await page.locator('#profile-amend').click();await page.locator('#profile-question-form').waitFor();
   const question='1986~1995년과 2011~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.';
   await page.locator('#profile-question-form textarea').fill(question);await page.locator('#profile-question-form button.primary').click();
   await page.getByText('다시 확인 필요',{exact:true}).waitFor();
@@ -56,7 +56,7 @@ function check(name,ok){results.push({name,passed:!!ok});if(!ok)throw Error(name
   check('실제 평균과 차이 비교',card.changes.values.length===3);
   check('API 연구 설정 스위치 추가 없음',await page.locator('[name="secondary_required"]').count()===0);
   check('Live 효능 미검증',card.live_efficacy==='NOT_VALIDATED');
-  await page.locator('#normal-report').click();const downloading=page.waitForEvent('download');await page.locator('[data-pdf]').click();const download=await downloading;await download.saveAs(path.join(folder,'report.pdf'));
+  await page.locator('[data-primary-tab=report]').click();const downloading=page.waitForEvent('download');await page.locator('[data-pdf]').click();const download=await downloading;await download.saveAs(path.join(folder,'report.pdf'));
   check('실제 PDF 저장',fs.readFileSync(path.join(folder,'report.pdf')).subarray(0,5).toString()==='%PDF-');
   await page.screenshot({path:path.join(folder,'changed-result.png'),fullPage:true});
   await page.setViewportSize({width:420,height:860});

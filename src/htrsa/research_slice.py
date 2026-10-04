@@ -197,24 +197,30 @@ class ResearchSlice:
                     if declared and (any(r.review_status != "APPROVED" or r.target_hash != b.target_hash for r in declared)
                                      or claim.scope.get("source_semantics") != {r.record_id: digest(r) for r in declared}):
                         raise ValueError("SOURCE_SEMANTIC_REVALIDATION_REQUIRED")
-                # 현재 출처 검증은 수집한 초록만 지원한다.
-                if (loc.get("access_level") != "ABSTRACT" or loc.get("field") != "abstract"
+                fulltext = loc.get("access_level") == "FULLTEXT" and loc.get("field") == "fulltext"
+                if (not fulltext and (loc.get("access_level") != "ABSTRACT" or loc.get("field") != "abstract")
                         or loc.get("url") != target["url"] or loc.get("doi") != target["doi"]
                         or loc.get("retrieved_at") != target["retrieved_at"]):
                     raise ValueError("SOURCE_ACCESS_OR_METADATA_MISMATCH")
                 span = loc.get("span")
                 evidence = self.db.execute("SELECT * FROM evidence WHERE research_id=? AND evidence_id=? AND source_id=? AND status='VERIFIED'", (claim.research_id, loc.get("evidence_id"), b.target_id)).fetchone()
+                text = target["abstract"]
+                if fulltext:
+                    from .source_documents import document_span
+                    text, proof = document_span(self.state, claim.research_id, b.target_id, loc.get("section", ""), proof=loc.get("document"))
+                    if evidence is None or from_json(evidence["provenance_json"]).get("document") != proof:
+                        raise ValueError("SOURCE_DOCUMENT_PROOF_MISMATCH")
                 relation = {"SUPPORT": "SUPPORTS", "CONTRADICT": "CONTRADICTS", "NEUTRAL": "QUALIFIES"}
                 origin = self.db.execute("SELECT claim,target_hypothesis_id FROM evidence WHERE research_id=? AND evidence_id=? AND status='VERIFIED'", (claim.research_id, claim.created_from)).fetchone()
                 scoped_contradiction = (b.relation == "CONTRADICTS" and evidence is not None and origin is not None
                                         and origin["claim"] == claim.text and origin["target_hypothesis_id"] is not None
                                         and origin["target_hypothesis_id"] == evidence["target_hypothesis_id"] == claim.scope.get("hypothesis_id"))
-                if (not span or not target["abstract"] or span not in target["abstract"] or evidence is None
+                if (not span or not text or span not in text or evidence is None
                         or span != evidence["evidence_text"] or (claim.text != evidence["claim"] and not scoped_contradiction)
                         or evidence["source_metadata_hash"] != b.target_hash
                         or relation.get(evidence["polarity"]) != b.relation):
                     raise ValueError("SOURCE_DOES_NOT_SUPPORT_CLAIM")
-                if "abstract_only" not in b.assumptions:
+                if ("fulltext_partial" if fulltext else "abstract_only") not in b.assumptions:
                     raise ValueError("MISSING_ABSTRACT_LIMITATION")
             else:
                 if b.usage_type != "NUMERIC_RESULT" or not b.verification_record_ids:
@@ -383,7 +389,9 @@ class ResearchSlice:
         e = self.state._one("SELECT * FROM evidence WHERE research_id=? AND evidence_id=?", (rid, evidence_id))
         s = self.state._one("SELECT * FROM sources WHERE research_id=? AND source_id=?", (rid, e["source_id"]))
         cid = identity("CL", evidence_id)
-        scope = {"access_level": "ABSTRACT", "source_id": s["source_id"], "hypothesis_id": e["target_hypothesis_id"], "limitations": from_json(e["limitations_json"])}
+        fulltext = e["text_field"] == "fulltext"
+        access = "FULLTEXT" if fulltext else "ABSTRACT"
+        scope = {"access_level": access, "source_id": s["source_id"], "hypothesis_id": e["target_hypothesis_id"], "limitations": from_json(e["limitations_json"])}
         if self.state.cycle5.enabled(rid):
             declared = [r for r in self.state.cycle5.records(rid, "source") if r.target_kind == "source" and r.target_id == s["source_id"]]
             if declared:
@@ -392,13 +400,19 @@ class ResearchSlice:
         binding = EvidenceBinding(binding_id=identity("EB", evidence_id), claim_id=cid, claim_revision=1,
             evidence_kind="source", target_id=s["source_id"], target_revision=s["metadata_hash"], target_hash=s["metadata_hash"],
             relation={"SUPPORT": "SUPPORTS", "CONTRADICT": "CONTRADICTS", "NEUTRAL": "QUALIFIES"}[e["polarity"]],
-            usage_type="SOURCE_SPAN", locator={"field": "abstract", "span": e["evidence_text"], "section": e["evidence_location"],
-                "page": None, "access_level": "ABSTRACT", "url": s["url"], "doi": s["doi"], "retrieved_at": s["retrieved_at"],
+            usage_type="SOURCE_SPAN", locator={"field": e["text_field"], "span": e["evidence_text"], "section": e["evidence_location"],
+                "page": int(e["evidence_location"].split()[-1]) if fulltext else None, "access_level": access, "url": s["url"], "doi": s["doi"], "retrieved_at": s["retrieved_at"],
                 "evidence_id": evidence_id, "source_snapshot": {k: s[k] for k in ("title", "abstract", "url", "doi", "retrieved_at", "metadata_hash")}},
-            scope=scope, assumptions=["abstract_only"], verification_record_ids=[evidence_id])
+            scope=scope, assumptions=["fulltext_partial" if fulltext else "abstract_only"], verification_record_ids=[evidence_id])
+        if fulltext:
+            binding.locator["document"] = from_json(e["provenance_json"])["document"]
         self.validate(claim, [binding])
         claim.support_state = support_state([binding])
         self._insert(claim, [binding])
+        if fulltext:
+            for item in binding.locator["document"].values():
+                if isinstance(item, dict) and item.get("artifact_id"):
+                    self._edge(rid, "claim", f"{cid}@1", "artifact", item["artifact_id"])
 
     def _next_revision(self, claim, bindings):
         revised = claim.model_copy(deep=True)

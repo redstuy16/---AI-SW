@@ -20,7 +20,7 @@ async function main(){
   if(await page.locator('#research-advanced').evaluate(e=>e.open))throw Error('고급 기본 펼침');if(!await page.locator('[name="adaptive_budget"]').isChecked())throw Error('자동 예산 기본 OFF');
   await capture('01-simple-'+suffix);await page.locator('#quick-recommended').click();await page.locator('#performance').focus();await page.keyboard.press('ArrowRight');if(await page.locator('#performance').inputValue()!=='2')throw Error('성능 키보드 조작 실패');
   await page.locator('#research-advanced>summary').click();await page.locator('[name="manual_role_override"]').check();await capture('02-advanced-'+suffix);await page.keyboard.press('Escape');
-  await page.locator('#help-open').click();await page.locator('#help-topic').selectOption('adaptive');await capture('03-help-'+suffix);await page.locator('#inspector-close').click();
+  await page.locator('#help-open').click();await page.locator('#guide-search').fill('예산');await page.locator('[data-guide-step=budget]').click();await capture('03-help-'+suffix);await page.locator('#inspector-close').click();
   await settings();if(await page.locator('#settings-2,#settings-3,#gpt-setup').count())throw Error('중복 모델 설정');await capture('04-catalog-'+suffix);
   await page.locator('#settings-tab-connections').click();await page.locator('[data-key="qa-gpt"]').click();await page.locator('#key-form').waitFor();await capture('05-key-'+suffix);await page.keyboard.press('Escape');
   await run(fixture.controlled_research_id,'overview');await page.locator('#research-settings').click();await page.locator('#run-settings-form').waitFor();await capture('06-research-settings-'+suffix);await page.locator('#run-settings-form #research-advanced>summary').click();await page.getByRole('heading',{name:'연구 완료에 필요한 예산'}).scrollIntoViewIfNeeded();await capture('07-completion-budget-'+suffix);await page.keyboard.press('Escape');
@@ -29,8 +29,8 @@ async function main(){
  }
  const styleRoute=`**/api/control/research/${fixture.research_id}/report-view`;
  await page.route(styleRoute,async route=>{const response=await route.fetch();const view=await response.json();view.report_style='technical';await route.fulfill({response,json:view});});
- await run(fixture.research_id,'overview');await run(fixture.research_id,'report');await page.locator('.technical-report').waitFor();
- if(!(await page.locator('.technical-report').innerText()))throw Error('기술 원문 선택 미반영');await page.unroute(styleRoute);
+ await run(fixture.research_id,'overview');await run(fixture.research_id,'report');await page.locator('.friendly-report').waitFor();
+ if(await page.locator('[data-pdf]').count()!==1||await page.locator('.technical-report').count())throw Error('PDF 고정 형식 미반영');await page.unroute(styleRoute);
  await settings();await page.locator('#settings-tab-connections').click();await page.locator('[data-key="qa-gpt"]').click();const canary='browser-canary-not-a-real-key-0123456789';await page.locator('#key-form [name="value"]').fill(canary);await page.locator('#key-form button.primary').click();
  await page.waitForFunction(()=>document.querySelector('#key-form input')?.value==='');if((await page.locator('body').innerText()).includes(canary)||logs.some(v=>v.includes(canary)))throw Error('키 노출');
  const storage=await page.evaluate(()=>({local:localStorage.length,session:sessionStorage.length}));if(storage.local||storage.session)throw Error('브라우저 비밀 저장소 사용');await page.keyboard.press('Escape');
@@ -38,7 +38,7 @@ async function main(){
  // 200% CSS 확대와 좁은 레이아웃을 직접 검사하며 브라우저 OS 확대 검증으로 기록하지 않는다.
  await page.setViewportSize({width:1280,height:900});await settings();await page.evaluate(()=>document.documentElement.style.zoom='2');await capture('10-css-200-percent');await page.evaluate(()=>document.documentElement.style.zoom='');
  if(errors.length||egress.length)throw Error(JSON.stringify({errors,egress}));
- const result={screenshots:shots,checks,errors,unexpected_network:egress,keyboard_slider:true,focus,advanced_collapsed:true,adaptive_default_on:true,report_sections:9,technical_report_choice:true,key_failure_input_cleared:true,covered_canary_exposures:0,browser_storage:storage,paid_calls:0,mode:'DEMO',live_efficacy:'NOT_VALIDATED',zoom:'실제 CSS zoom 200% + 390px 재배치 · OS 브라우저 확대는 미검증'};
+ const result={screenshots:shots,checks,errors,unexpected_network:egress,keyboard_slider:true,focus,advanced_collapsed:true,adaptive_default_on:true,report_sections:9,pdf_download_choice:true,legacy_technical_metadata_compatible:true,key_failure_input_cleared:true,covered_canary_exposures:0,browser_storage:storage,paid_calls:0,mode:'DEMO',live_efficacy:'NOT_VALIDATED',zoom:'실제 CSS zoom 200% + 390px 재배치 · OS 브라우저 확대는 미검증'};
  const text=JSON.stringify(result,null,2)+'\n';if(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(text))throw Error('UTF-8 불가');fs.writeFileSync(path.join(root,'qa/results/product_visual_results.json'),Buffer.from(text,'utf8'));console.log(JSON.stringify({screenshots:shots.length,checks:checks.length,paid_calls:0,canary_exposures:0}));
 }
 main().catch(e=>{console.error(e.message);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();server.kill();});

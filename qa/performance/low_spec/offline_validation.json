@@ -1,0 +1,380 @@
+{
+  "source_fingerprint": "fda080d1c695e2bc574a853f1d1c76f30b60381a665ab8436141d72187930b18",
+  "stress": {
+    "pytest": {
+      "passed": true,
+      "exit_code": 0,
+      "passed_count": 116,
+      "skipped_count": 0,
+      "deselected_count": 0,
+      "duration_sec": 190.962,
+      "xml": "build/qa-day1/run-0c9c43960513/stress.xml",
+      "log": "build/qa-day1/run-0c9c43960513/stress.log"
+    },
+    "scenarios": {
+      "QA-01 Early Fact Recall": {
+        "status": "PASS",
+        "tests": {
+          "test_mandatory_early_fact_and_recent_events": 1
+        }
+      },
+      "QA-02 Evidence Invalidation": {
+        "status": "PASS",
+        "tests": {
+          "test_invalidated_committed_experiment_cannot_be_reused": 1,
+          "test_qa_invalidation_and_dashboard_match_canonical_state": 1
+        }
+      },
+      "QA-03 Dependency Recall": {
+        "status": "PASS",
+        "tests": {
+          "test_direct_dependency_survives_low_semantic_similarity": 1
+        }
+      },
+      "QA-04 Context Distractor": {
+        "status": "PASS",
+        "tests": {
+          "test_context_budget_drops_semantic_but_preserves_mandatory": 1
+        }
+      },
+      "QA-05 Handoff Preservation": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_handoff_must_preserve_survives_fresh_database_open": 1
+        }
+      },
+      "QA-06 Rollback / State Recovery": {
+        "status": "PASS",
+        "tests": {
+          "test_checkpoint_and_rollback": 1,
+          "test_forged_numeric_output_blocks_commit": 1
+        }
+      },
+      "QA-07 Python Failure Recovery": {
+        "status": "PASS",
+        "tests": {
+          "test_transient_stats_tool_failure_retries_without_manager_recall": 1,
+          "test_retry_exhaustion_reaches_coordinator_without_manager_recall": 1
+        }
+      },
+      "QA-09 Artifact Corruption": {
+        "status": "PASS",
+        "tests": {
+          "test_corrupted_stats_artifact_blocks_commit": 1,
+          "test_qa_release_rejects_post_commit_artifact_corruption": 1
+        }
+      },
+      "QA-10 Dataset Corruption": {
+        "status": "PASS",
+        "tests": {
+          "test_dataset_tamper_after_stage_blocks_commit": 1,
+          "test_qa_release_rejects_post_import_dataset_corruption": 1
+        }
+      },
+      "QA-11 Scientific Method Trap": {
+        "status": "PASS",
+        "tests": {
+          "test_constant_pearson_rejected": 1,
+          "test_high_severity_final_critic_blocks_answered_conclusion": 1
+        }
+      },
+      "QA-12 API / Budget Failure": {
+        "status": "PASS",
+        "tests": {
+          "test_fake_provider_failures_are_bounded_and_noncanonical": 5,
+          "test_soft_budget_warns_and_hard_budget_blocks": 1,
+          "test_unknown_price_call_and_token_caps_block_new_invocation": 3
+        }
+      },
+      "QA-13 Loop / Idempotency": {
+        "status": "PASS",
+        "tests": {
+          "test_action_fingerprint_count_survives_restart": 1,
+          "test_resume_replays_completed_tool_without_side_effect": 1
+        }
+      },
+      "QA-14 Crash After Commit": {
+        "status": "PASS",
+        "tests": {
+          "test_resume_recovers_commit_before_completion_checkpoint": 1
+        }
+      },
+      "QA-15 Crash During Critic/Replan": {
+        "status": "PASS",
+        "tests": {
+          "test_each_crash_boundary_resumes_without_duplicate_effects": 11
+        }
+      },
+      "QA-16 Literature Provenance Tampering": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_literature_metadata_and_abstract_tampering_blocks_report": 1
+        }
+      },
+      "QA-17 Contradictory Evidence Preservation": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_contradiction_survives_synthesis_and_report": 1
+        }
+      },
+      "QA-18 Search Rate Limit": {
+        "status": "PASS",
+        "tests": {
+          "test_429_is_mapped_to_rate_limited_and_bounded": 1
+        }
+      },
+      "QA-19 Report Hallucination": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_report_hallucinated_ids_doi_and_numbers_are_rejected": 1,
+          "test_qa_release_rejects_stale_or_forged_report": 1
+        }
+      },
+      "QA-20 Secret Leakage": {
+        "status": "PASS",
+        "tests": {
+          "test_release_secret_exclusion": 1,
+          "test_qa_release_omits_local_absolute_paths": 1
+        }
+      },
+      "QA-08 Sandbox Escape": {
+        "status": "NOT_VALIDATED",
+        "reason": "DOCKER_UNAVAILABLE"
+      }
+    },
+    "all_executable_passed": true
+  },
+  "demo_repeatability": {
+    "runs": {
+      "A": [
+        {
+          "iteration": 1,
+          "research_id": "R-e6a2ddb6aa2342179177012f3ee525d1",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.86
+        },
+        {
+          "iteration": 2,
+          "research_id": "R-985d327067194d95ac1cd443d09dd642",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.208
+        },
+        {
+          "iteration": 3,
+          "research_id": "R-2ca2ee7c113b4fd5bfbf83d0d051cb56",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.707
+        },
+        {
+          "iteration": 4,
+          "research_id": "R-849723ab3f414fcab0934ba01d7e6d08",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.251
+        },
+        {
+          "iteration": 5,
+          "research_id": "R-57e230b998dc4f24ae6a8e9cd1f8ca05",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.401
+        }
+      ],
+      "B": [
+        {
+          "iteration": 1,
+          "research_id": "R-8193ba7256c94a8d91cc4f37bb896515",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.136
+        },
+        {
+          "iteration": 2,
+          "research_id": "R-af454c9bed8140dfbcc34a49d6a20ab0",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.527
+        },
+        {
+          "iteration": 3,
+          "research_id": "R-65709a870d434362804a5782823fdd1b",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.555
+        },
+        {
+          "iteration": 4,
+          "research_id": "R-a5d2381e7b274b7ba1bf26cacf048ac5",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.664
+        },
+        {
+          "iteration": 5,
+          "research_id": "R-32ef223431ac481884c4e21fcc11a105",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.351
+        }
+      ]
+    },
+    "passed": {
+      "A": true,
+      "B": true
+    },
+    "failures": 0,
+    "random_seed": null
+  },
+  "fresh_process_resume": {
+    "passed": true,
+    "counts": {
+      "experiments": 2,
+      "evidence": 2,
+      "state_events": 2,
+      "stats_calls": 2
+    },
+    "new_process": true
+  },
+  "release": {
+    "passed": true,
+    "file_count": 17,
+    "hash_mismatches": [],
+    "missing_artifacts": [],
+    "secret_files": [],
+    "unresolved_refs": 0,
+    "manifest": "build/qa-day1/run-0c9c43960513/clean-release/manifests/release_manifest.json",
+    "manifest_sha256": "84296ebcdccac314fe703848a039d53b4695749b5709ff6e07091a5e2e0c5cb3",
+    "clean_database": "build/qa-day1/run-0c9c43960513/demo-a-1/state.sqlite"
+  },
+  "environment": {
+    "docker": {
+      "cli_present": false,
+      "daemon_reachable": false,
+      "image_present": false,
+      "image": "htrsa-sandbox:3.13",
+      "image_id": null,
+      "isolation_probe_passed": false,
+      "available": false,
+      "isolation_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "provider": {
+      "api_key_present": false,
+      "manager_model_configured": false,
+      "provider_importable": true,
+      "structured_output_available": true,
+      "configured": false,
+      "live_smoke_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "search": {
+      "status": "UNCONFIGURED",
+      "validated": false,
+      "provider": null,
+      "error_code": null
+    },
+    "sandbox": {
+      "fail_closed": true
+    },
+    "gates": {
+      "CORE_TESTS_PASS": false,
+      "STRESS_TESTS_PASS": true,
+      "ARTIFACT_VALIDATION_PASS": true,
+      "DOCKER_ISOLATION_PASS": false,
+      "LIVE_API_SMOKE_PASS": false,
+      "LIVE_SEARCH_PASS": false,
+      "DEMO_A_PASS": true,
+      "DEMO_B_PASS": true
+    },
+    "demo_ready": false,
+    "release_ready": false,
+    "productization": {
+      "windows_key": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:06:34.146634+00:00",
+        "error_code": "WINDOWS_ERROR_1312"
+      },
+      "default_browser": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:07:01.150073+00:00",
+        "error_code": null
+      }
+    },
+    "product_release_ready": false
+  }
+}

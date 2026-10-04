@@ -1,0 +1,44 @@
+{
+  "recorded_at": "2026-10-03T06:24:42.144185+00:00",
+  "source_fingerprint": "b819e9b02805d843ea1f2cb8a0938e3800562d66d8af69b63ec037709398a6a0",
+  "baseline": {
+    "recorded_at": "2026-10-03T06:10:28.788145+00:00",
+    "source_fingerprint": "3fe7e775c2eead497dd035934ef8ee0c1e6e942d2ba8b27b6c95b4ddb8d495b4",
+    "command": ".venv/Scripts/python.exe -X utf8 -m pytest tests/test_product_ux.py tests/test_ui_start_unblock.py tests/test_ui_unblock_policy_files.py tests/test_ui_unblock_search_pdf.py tests/test_beginner_v4.py -q -p no:cacheprovider --basetemp build/wizard-baseline-tests --junitxml build/wizard-baseline.xml",
+    "passed": 144,
+    "skipped": 1,
+    "seconds": 73.23
+  },
+  "relevant_regression": {
+    "passed": 168,
+    "skipped": 1,
+    "failures": 0,
+    "errors": 0,
+    "seconds": 90.547,
+    "xml": "build/wizard-final.xml"
+  },
+  "browser": [
+    {
+      "name": "wizard",
+      "passed": 38,
+      "evidence": "build/research-wizard/browser/ec7a1aa1-3438-4e8a-b7d1-0e4d9157b903/result.json",
+      "execution": "REAL_CHROME_OFFLINE_FIXTURE"
+    },
+    {
+      "name": "beginner_v4",
+      "passed": 35,
+      "evidence": "qa/beginner_v4_browser_results.json",
+      "execution": "REAL_CHROME_WITH_MOCK_HTTP"
+    },
+    {
+      "name": "ui_unblock",
+      "passed": 53,
+      "evidence": "build/ui_start_unblock/browser_results.json",
+      "execution": "OFFLINE_EXPLICIT_MOCK_TRANSPORT_REAL_CHROME"
+    }
+  ],
+  "db_migration": false,
+  "new_dependency": false,
+  "live_calls_this_task": 0,
+  "previous_core_interrupted_for_ui_race_fix": true
+}

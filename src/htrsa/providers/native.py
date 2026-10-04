@@ -65,6 +65,10 @@ def normalized_error(status, body):
     # 알려진 오류 코드만 읽고 제공사 메시지는 노출하지 않는다.
     error = body.get("error", {}) if isinstance(body, dict) else {}
     code = str(error.get("code", error.get("type", ""))) if isinstance(error, dict) else ""
+    message = str(error.get('message', '')) if isinstance(error, dict) else str(error)
+    if status >= 400 and (code.lower() in {'oom', 'out_of_memory', 'resource_exhausted', 'cuda_out_of_memory'}
+                         or any(term in message.lower() for term in ('out of memory', 'insufficient memory', 'cuda oom'))):
+        return 'RESOURCE_EXHAUSTED'
     if any(word in code.lower() for word in ("quota", "spend", "billing", "credit")):
         return "SPEND_LIMIT"
     if "context" in code.lower(): return "CONTEXT_LIMIT"

@@ -6,6 +6,7 @@
 
 | 문서 | 내용 |
 |---|---|
+| [사용 안내](guides/BEGINNER_GUIDE.md) | API 발급 → 앱 연결 → 새 연구 → 항목 입력의 화살표 안내·검색·오류 해결 |
 | [작업대](guides/WORKBENCH.md) | 연구 만들기·실행 제어·자료·결과 조회 |
 | [제품 실행](guides/PRODUCTIZATION.md) | Windows 실행·온보딩·연결 검사 |
 | [첫 API 검사](guides/LIVE_API_TEST.md) | 예산 상한·선택 검사·사용량·증거 패키지 |

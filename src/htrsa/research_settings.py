@@ -5,11 +5,11 @@ from decimal import Decimal
 import json
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, StrictInt
 
 from .control_plane import ControlError, ModelProfile, ROLES, resolved_depth
 from .database import to_json
-from .product_policy import PRESETS, apply_reasoning, effective_snapshot
+from .product_policy import PRESETS, apply_reasoning, effective_snapshot, workflow_compatible
 from .providers.normalized import ReasoningPolicy
 from .schemas import StrictModel, utc_now
 
@@ -29,7 +29,13 @@ class ResearchSettings(StrictModel):
     approved_worker_profiles: list[str] = Field(default_factory=list, max_length=8)
     search_policy: Literal['AUTO', 'DISABLED', 'ALLOWED'] | None = None
     public_search_query: str | None = Field(default=None, max_length=500)
+    public_search_consent: bool | None = None
     search_required: bool | None = None
+    search_attempt_limit: StrictInt | None = Field(default=None, ge=0, le=20)
+    advanced_performance_profile: Literal["FAST", "BALANCED", "DEEP", "MAX"] | None = None
+    model_reasoning: ReasoningPolicy | None = None
+    sampling_mode: Literal["provider_default", "profile"] | None = None
+    report_format: Literal["pdf"] = "pdf"
 
 
 def projection(store, rid):
@@ -53,14 +59,15 @@ def queue(store, rid, body):
         raise ControlError("STATE_COMMAND_BLOCKED")
     settings = ResearchSettings.model_validate(body["value"])
     effective = effective_snapshot(store, rid)
-    updated = settings.model_dump(mode="json", exclude_none=True)
+    updated = settings.model_dump(mode="json", exclude_none=True, exclude_unset=True)
     if set(settings.role_reasoning) - set(ROLES):
         raise ControlError("REASONING_ROLE_INVALID")
     models, connections, revisions = effective["models"], effective["connections"], effective["profile_revisions"]
     if settings.model_profile_id:
         profile = store.config("model", settings.model_profile_id)
         conn = store.config("connection", profile["connection_id"])
-        if not conn["enabled"] or not conn["destination_approved"] or profile["capability_status"] != "supported":
+        compatible = workflow_compatible(ModelProfile.model_validate(profile)) if effective.get("settings_version",1) >= 2 else profile["capability_status"] == "supported"
+        if not conn["enabled"] or not conn["destination_approved"] or not compatible:
             raise ControlError("CAPABILITY_NOT_VALIDATED")
         models = {role: dict(profile) for role in ROLES}
         connections = {profile["connection_id"]: conn}
@@ -70,17 +77,38 @@ def queue(store, rid, body):
             raise ControlError("REASONING_ROLE_INVALID")
         profile = store.config("model", identity)
         conn = store.config("connection", profile["connection_id"])
-        if not conn["enabled"] or not conn["destination_approved"] or profile["capability_status"] != "supported":
+        compatible = workflow_compatible(ModelProfile.model_validate(profile)) if effective.get("settings_version",1) >= 2 else profile["capability_status"] == "supported"
+        if not conn["enabled"] or not conn["destination_approved"] or not compatible:
             raise ControlError("CAPABILITY_NOT_VALIDATED")
         models[role] = dict(profile)
         connections[profile["connection_id"]] = conn
         revisions[profile["profile_id"]] = next(x["revision"] for x in store.configs("model") if x["profile_id"] == profile["profile_id"])
     candidate = {**effective, **updated, "models": models, "connections": connections, "profile_revisions": revisions}
+    if effective.get("settings_version", 1) >= 2:
+        from .control_plane import NewResearch
+        from .product_policy import resolve_effective_settings
+        requested = {k:v for k,v in candidate.items() if k in NewResearch.model_fields}
+        for key in ("advanced_performance_profile","model_reasoning"):
+            if key in settings.model_fields_set:
+                requested[key] = getattr(settings, key)
+        resolved, sources = resolve_effective_settings(store, requested)
+        candidate.update(resolved, field_sources=sources)
+        models, connections, revisions = {}, {}, {}
+        for role, identity in resolved["routing"].items():
+            model = store.config("model", identity)
+            connection = store.config("connection", model["connection_id"])
+            if not connection["enabled"] or not connection["destination_approved"] or not workflow_compatible(ModelProfile.model_validate(model)):
+                raise ControlError("CAPABILITY_NOT_VALIDATED")
+            models[role] = dict(model)
+            connections[model["connection_id"]] = connection
+            revisions[identity] = next(item["revision"] for item in store.configs("model") if item["profile_id"] == identity)
+        candidate.update(models=models, connections=connections, profile_revisions=revisions)
+        updated.update({k:candidate[k] for k in ("performance_profile","advanced_performance_profile","model_reasoning","search_attempt_limit","report_format")})
     candidate["routing"] = {role: model["profile_id"] for role, model in models.items()}
     candidate["manual_role_override"] = settings.manual_role_override if settings.manual_role_override is not None else (
         True if settings.routing or settings.role_reasoning else effective.get("manual_role_override", False))
-    if settings.performance_profile:
-        candidate["research_depth"] = PRESETS[settings.performance_profile]["depth"]
+    if candidate.get("performance_profile"):
+        candidate["research_depth"] = PRESETS[candidate["performance_profile"]]["depth"]
         candidate["depth_limits"] = resolved_depth(candidate["research_depth"])
     candidate["depth_limits"]["reviews"] = min(candidate["depth_limits"]["reviews"], settings.max_followups)
     apply_reasoning(candidate)

@@ -256,6 +256,10 @@ class ContextCompiler:
                 (research_id,))]
         if recent_failure:
             active["recent_failure"] = recent_failure
+        from .research_design import design_context
+        design = design_context(self.state, research_id, role)
+        if design:
+            active["research_design"] = design
         if self.state.cycle5.enabled(research_id) and contract.task_type != "verification_repair_decision":
             sources = self.state.cycle5.records(research_id, "source")
             targets = {(r.type.value, r.id) for r in contract.inputs}

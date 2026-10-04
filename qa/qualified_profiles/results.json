@@ -1,0 +1,5502 @@
+{
+  "execution": "OFFLINE_LOCAL_TOOLS_WITH_SCRIPTED_AGENT",
+  "recorded_at": "2026-10-03T05:08:24.995200+00:00",
+  "cases": [
+    {
+      "id": "58bb129a639b4fe4820d708e8aba401e",
+      "category": "normal",
+      "case": "comparison",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": null,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.3235
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 0.7285
+            }
+          ],
+          "difference": 0.405,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "2fd06c88de35415a353f7129472c344a955b2e258cefe55f988c174ec88977b9",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 1.814,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "ddd40b4a47554465bb04dce2fc020dcd",
+      "category": "normal",
+      "case": "fahrenheit",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요. 화씨 편차로 표시해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.7289999999999999,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.5823,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 1.3113,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": null,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.5823
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 1.3113
+            }
+          ],
+          "difference": 0.7289999999999999,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "8f94422a7131e9592c084006759e44ffa25b8862bb467287a055872854965aea",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 1.931,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "43d362de4ebc49e39c0854ee6ff0d388",
+      "category": "normal",
+      "case": "baseline",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "기준 기간을 1961~1990년으로 바꾸고 1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.22383333333333333,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.6288333333333334,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": null,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.22383333333333333
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 0.6288333333333334
+            }
+          ],
+          "difference": 0.405,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "a47e8d1602e7ab6e753f8a98def659b715fcc6eee14af027cc3a7bedd66c10fc",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 1.999,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "a39b38504f704822987a418b4164591e",
+      "category": "normal",
+      "case": "partial",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "1981~1990년과 2001~2010년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.355,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 20,
+        "periods": [
+          {
+            "end": 1990,
+            "mean": 0.266,
+            "n": 10,
+            "start": 1981
+          },
+          {
+            "end": 2010,
+            "mean": 0.621,
+            "n": 10,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": null,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 20,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 1990,
+              "n": 10,
+              "mean": 0.266
+            },
+            {
+              "start": 2001,
+              "end": 2010,
+              "n": 10,
+              "mean": 0.621
+            }
+          ],
+          "difference": 0.355,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "20901574e4bd644d301e3060aee830fdbc58fd272b7cb266b4f81f85b48ae999",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 1.86,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "2cd5414dac984de1ae4788486e48330e",
+      "category": "fault",
+      "case": "absolute_offset",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 32.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 32.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": false
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": false
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": false
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": false
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": false
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "PROFILE_VERIFICATION_FAILED",
+      "elapsed_seconds": 1.365,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "1e1679cd8ddc4c30b8280de5ee771267",
+      "category": "fault",
+      "case": "storage",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [],
+      "model_calls": 0,
+      "tool_result": null,
+      "checks": [],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "공식 제품·단위·기준 기간을 확인할 수 없습니다.",
+      "elapsed_seconds": 0.08,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "fd7766f0a2954fde86b1d2ef28a4b8ae",
+      "category": "fault",
+      "case": "local_claim",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": false
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "PROFILE_VERIFICATION_FAILED",
+      "elapsed_seconds": 1.228,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "036db927ddd641b688a0d586b6674b54",
+      "category": "fault",
+      "case": "wrong_period",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": false
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": false
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "PROFILE_VERIFICATION_FAILED",
+      "elapsed_seconds": 1.315,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "100664f48a5240309861fe883fcff0b0",
+      "category": "fault",
+      "case": "missing_duplicate",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [],
+      "model_calls": 0,
+      "tool_result": null,
+      "checks": [],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "원본에 중복된 연도가 있습니다.",
+      "elapsed_seconds": 0.084,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "ef86e3f5655e4132953c75f06466bb28",
+      "category": "fault",
+      "case": "causal_claim",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": false
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "PROFILE_VERIFICATION_FAILED",
+      "elapsed_seconds": 1.537,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "9579cb8b973643a8b54fa20f524a0545",
+      "category": "change",
+      "case": "used",
+      "expected": "REVALIDATED",
+      "observed": "REVALIDATED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.41000000000000003,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7335,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CURRENTNESS",
+          "details": {},
+          "message": "최근 확인한 자료에서도 이 결론의 의존 값과 의미가 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 2,
+      "before_current": true,
+      "after_current": true,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.3235
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 0.7335
+            }
+          ],
+          "difference": 0.41000000000000003,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "8b4ebf5c5595425d6ca6f01b5ae646e4dbc4c74465c95b90496738da76838faf",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 3.2,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "9bcd97569c654b419e8eb9e210a93de8",
+      "category": "change",
+      "case": "semantic",
+      "expected": "CLARIFICATION_REQUIRED",
+      "observed": "CLARIFICATION_REQUIRED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": false,
+      "replay": null,
+      "failure": null,
+      "elapsed_seconds": 1.786,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "38f6d1ca53c04ddda56fa012c927bf26",
+      "category": "change",
+      "case": "unused",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": true,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.3235
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 0.7285
+            }
+          ],
+          "difference": 0.405,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "a2c3bbcf56f220ec5dc2c2faa7050fcd1281125ecc23a8c9ce7c050274e84e4f",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 2.017,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "155670df010d4109a308483438342776",
+      "category": "ambiguous",
+      "case": "ambiguous",
+      "expected": "CLARIFICATION_REQUIRED",
+      "observed": "CLARIFICATION_REQUIRED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": false,
+      "replay": null,
+      "failure": null,
+      "elapsed_seconds": 1.777,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "b6909660239340e289dfc865b14d7e2f",
+      "category": "ambiguous",
+      "case": "forecast",
+      "expected": "CLARIFICATION_REQUIRED",
+      "observed": "CLARIFICATION_REQUIRED",
+      "correct": true,
+      "question": "전 지구 기온의 미래를 예측해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [],
+      "model_calls": 0,
+      "tool_result": null,
+      "checks": [],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": null,
+      "elapsed_seconds": 0.001,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "0d97a99d4a314005b8de6f5bb32b5337",
+      "category": "ambiguous",
+      "case": "causal",
+      "expected": "CLARIFICATION_REQUIRED",
+      "observed": "CLARIFICATION_REQUIRED",
+      "correct": true,
+      "question": "전 지구 기온 상승의 원인을 식별해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [],
+      "model_calls": 0,
+      "tool_result": null,
+      "checks": [],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": null,
+      "elapsed_seconds": 0.001,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    }
+  ],
+  "source_scale_pair": {
+    "txt_scale": "0.01",
+    "csv_scale": "1",
+    "all_finite_annual_values_match": true
+  },
+  "representative_cases": [
+    {
+      "id": "58bb129a639b4fe4820d708e8aba401e",
+      "category": "normal",
+      "case": "comparison",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": null,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.3235
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 0.7285
+            }
+          ],
+          "difference": 0.405,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "2fd06c88de35415a353f7129472c344a955b2e258cefe55f988c174ec88977b9",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 1.814,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "1e1679cd8ddc4c30b8280de5ee771267",
+      "category": "fault",
+      "case": "storage",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [],
+      "model_calls": 0,
+      "tool_result": null,
+      "checks": [],
+      "commit_count": 0,
+      "before_current": null,
+      "after_current": null,
+      "replay": null,
+      "failure": "공식 제품·단위·기준 기간을 확인할 수 없습니다.",
+      "elapsed_seconds": 0.08,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "155670df010d4109a308483438342776",
+      "category": "ambiguous",
+      "case": "ambiguous",
+      "expected": "CLARIFICATION_REQUIRED",
+      "observed": "CLARIFICATION_REQUIRED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.405,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7285,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": false,
+      "replay": null,
+      "failure": null,
+      "elapsed_seconds": 1.777,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "9579cb8b973643a8b54fa20f524a0545",
+      "category": "change",
+      "case": "used",
+      "expected": "REVALIDATED",
+      "observed": "REVALIDATED",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.41000000000000003,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.3235,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 0.7335,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CURRENTNESS",
+          "details": {},
+          "message": "최근 확인한 자료에서도 이 결론의 의존 값과 의미가 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 2,
+      "before_current": true,
+      "after_current": true,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.3235
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 0.7335
+            }
+          ],
+          "difference": 0.41000000000000003,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "8b4ebf5c5595425d6ca6f01b5ae646e4dbc4c74465c95b90496738da76838faf",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 3.2,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    },
+    {
+      "id": "ddd40b4a47554465bb04dce2fc020dcd",
+      "category": "normal",
+      "case": "fahrenheit",
+      "expected": "CURRENT",
+      "observed": "CURRENT",
+      "correct": true,
+      "question": "1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요. 화씨 편차로 표시해 주세요.",
+      "config": {
+        "model": "manual-id",
+        "provider": "fake",
+        "run_limit_usd": "0.10",
+        "profile_mode": "AUTO",
+        "source_sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418"
+      },
+      "agent_decisions": [
+        {
+          "decision": "PROCEED",
+          "execution": "SCRIPTED_FAKE_PROVIDER"
+        }
+      ],
+      "model_calls": 1,
+      "tool_result": {
+        "difference": 0.7289999999999999,
+        "limitations": [
+          "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        ],
+        "method": "two_period_comparison",
+        "n": 40,
+        "periods": [
+          {
+            "end": 2000,
+            "mean": 0.5823,
+            "n": 20,
+            "start": 1981
+          },
+          {
+            "end": 2020,
+            "mean": 1.3113,
+            "n": 20,
+            "start": 2001
+          }
+        ]
+      },
+      "checks": [
+        {
+          "check_id": "schema",
+          "details": {},
+          "message": "contract and staged payload parse as Pydantic models",
+          "passed": true
+        },
+        {
+          "check_id": "contract_exists",
+          "details": {},
+          "message": "contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "research_exists",
+          "details": {},
+          "message": "research exists",
+          "passed": true
+        },
+        {
+          "check_id": "task_exists",
+          "details": {},
+          "message": "contract task exists",
+          "passed": true
+        },
+        {
+          "check_id": "pending",
+          "details": {},
+          "message": "mutation has not been committed or rolled back",
+          "passed": true
+        },
+        {
+          "check_id": "duplicate",
+          "details": {},
+          "message": "no prior commit event",
+          "passed": true
+        },
+        {
+          "check_id": "state_version",
+          "details": {},
+          "message": "base state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "RESEARCH_SLICE_POLICY",
+          "details": {},
+          "message": "staged opt-in policy is frozen across verification and commit",
+          "passed": true
+        },
+        {
+          "check_id": "contract_identity",
+          "details": {},
+          "message": "result belongs to contract and research",
+          "passed": true
+        },
+        {
+          "check_id": "actor",
+          "details": {},
+          "message": "assigned actor submitted result",
+          "passed": true
+        },
+        {
+          "check_id": "task_identity",
+          "details": {},
+          "message": "tool request belongs to task",
+          "passed": true
+        },
+        {
+          "check_id": "allowed_tool",
+          "details": {},
+          "message": "tool is allowed by contract",
+          "passed": true
+        },
+        {
+          "check_id": "tool_success",
+          "details": {},
+          "message": "tool reports success",
+          "passed": true
+        },
+        {
+          "check_id": "tool_result",
+          "details": {},
+          "message": "matching tool result is present",
+          "passed": true
+        },
+        {
+          "check_id": "execution_trace",
+          "details": {},
+          "message": "recorded execution matches staged result",
+          "passed": true
+        },
+        {
+          "check_id": "tool_budget",
+          "details": {},
+          "message": "agent run used only allowed tools within its call budget",
+          "passed": true
+        },
+        {
+          "check_id": "artifact_refs",
+          "details": {},
+          "message": "declared artifact references resolve",
+          "passed": true
+        },
+        {
+          "check_id": "result_output",
+          "details": {},
+          "message": "completed result matches tool output",
+          "passed": true
+        },
+        {
+          "check_id": "QUALIFIED_PROFILE_BINDING",
+          "details": {},
+          "message": "저장된 질문·절차·출처에 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_GOAL_BINDING",
+          "details": {},
+          "message": "결론의 질문·의미·변경 이력이 고정한 계약과 일치합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_HASH",
+          "details": {},
+          "message": "공개 원본의 해시가 수집 당시와 같습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_DEPENDENCY",
+          "details": {},
+          "message": "사용한 연도와 기준 변환의 관측값이 연결됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_NORMALIZATION",
+          "details": {},
+          "message": "원본의 저장 배율과 의미 보존 변환만 적용되었습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_QUESTION",
+          "details": {},
+          "message": "원래 질문이 유지됩니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_METHOD",
+          "details": {},
+          "message": "승인된 두 기간과 연간 열만 계산합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_INDEPENDENT_CALCULATION",
+          "details": {},
+          "message": "독립 합계 계산으로 두 평균과 차이를 확인합니다.",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_CLAIM_SCOPE",
+          "details": {},
+          "message": "관측 편차 비교의 범위를 넘는 결론을 승인하지 않습니다.",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_EXISTS",
+          "details": {},
+          "message": "scientific contract exists",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_ALLOWED",
+          "details": {},
+          "message": "scientific tool is explicitly allowed",
+          "passed": true
+        },
+        {
+          "check_id": "TOOL_SUCCESS",
+          "details": {},
+          "message": "stats tool succeeded",
+          "passed": true
+        },
+        {
+          "check_id": "CONTRACT_TOOL_HISTORY",
+          "details": {},
+          "message": "all recorded contract tools are allowed and within budget",
+          "passed": true
+        },
+        {
+          "check_id": "STATE_VERSION_MATCH",
+          "details": {},
+          "message": "state version is current",
+          "passed": true
+        },
+        {
+          "check_id": "NO_DUPLICATE_COMMIT",
+          "details": {},
+          "message": "mutation has no commit event",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_EXISTS",
+          "details": {},
+          "message": "dataset record exists",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_ACTIVE",
+          "details": {},
+          "message": "dataset is not invalidated",
+          "passed": true
+        },
+        {
+          "check_id": "DATASET_HASH_MATCH",
+          "details": {},
+          "message": "stored dataset matches SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_EXISTS",
+          "details": {},
+          "message": "profile and new scientific artifacts are pending",
+          "passed": true
+        },
+        {
+          "check_id": "ARTIFACT_HASH_MATCH",
+          "details": {},
+          "message": "all file artifacts match registered SHA-256 and size",
+          "passed": true
+        },
+        {
+          "check_id": "PROFILE_SOURCE_MATCH",
+          "details": {},
+          "message": "profile artifact identifies the registered dataset and row count",
+          "passed": true
+        },
+        {
+          "check_id": "RESULT_FIELD_MATCH",
+          "details": {},
+          "message": "agent and tool fields match trusted stats artifact",
+          "passed": true
+        },
+        {
+          "check_id": "NUMERIC_PROVENANCE",
+          "details": {},
+          "message": "every numeric output field resolves to stats artifact, call, and dataset",
+          "passed": true
+        },
+        {
+          "check_id": "SAMPLE_SIZE_PRESENT",
+          "details": {},
+          "message": "stats artifact contains a positive sample size",
+          "passed": true
+        },
+        {
+          "check_id": "PENDING_ENTITIES",
+          "details": {},
+          "message": "experiment and evidence are pending until commit",
+          "passed": true
+        }
+      ],
+      "commit_count": 1,
+      "before_current": true,
+      "after_current": null,
+      "replay": {
+        "result": {
+          "method": "two_period_comparison",
+          "n": 40,
+          "periods": [
+            {
+              "start": 1981,
+              "end": 2000,
+              "n": 20,
+              "mean": 0.5823
+            },
+            {
+              "start": 2001,
+              "end": 2020,
+              "n": 20,
+              "mean": 1.3113
+            }
+          ],
+          "difference": 0.7289999999999999,
+          "limitations": [
+            "두 기간의 관측 평균 차이입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+          ]
+        },
+        "status": "LOCAL_RECALCULATION_PASS",
+        "paid_calls": 0,
+        "manifest_sha256": "8f94422a7131e9592c084006759e44ffa25b8862bb467287a055872854965aea",
+        "limitation": "내보낸 해시에 대한 계산 재현입니다. 독립적인 진위 인증이나 과학적 참의 보장이 아닙니다."
+      },
+      "failure": null,
+      "elapsed_seconds": 1.931,
+      "limitations": [
+        "공개 원본을 사용한 실제 로컬 도구 실행입니다.",
+        "Agent 결정은 모의 응답입니다. Live 판단 성능이 아닙니다.",
+        "변경·충돌 사례는 결함 주입이며 실제 NASA의 해당 수정 사건으로 주장하지 않습니다."
+      ]
+    }
+  ],
+  "adoption_criteria": {
+    "live_required": true,
+    "normal_completion_max_drop": 0.05,
+    "wrong_approval_must_improve": true,
+    "false_hold_max_rate": 0.1,
+    "used_revision_stale_required": true,
+    "unused_revision_preserved_required": true,
+    "offline_is_not_live_efficacy": true
+  },
+  "live_architecture_comparison": "NOT_VALIDATED",
+  "native_products": "NOT_VALIDATED",
+  "usability": "NOT_VALIDATED",
+  "ablation": {
+    "semantic_goal_off_on": "NOT_VALIDATED",
+    "claim_change_off_on": "NOT_VALIDATED",
+    "repair_off_on": "기존 F3-P 평가와 구분합니다. 새 기능의 기여도 평가는 미실행입니다.",
+    "qualified_off_on": "NOT_VALIDATED"
+  },
+  "limitations": [
+    "16개는 같은 공개 자료의 변형입니다. 독립된 과학 연구 16건이 아닙니다."
+  ],
+  "all_passed": true,
+  "output_dir": "build/beginner-v4/evaluation/a074e047bc6340d9a6e8e8835651a4d3"
+}

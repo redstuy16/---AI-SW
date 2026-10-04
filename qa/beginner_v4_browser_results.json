@@ -1,0 +1,151 @@
+{
+  "execution": "REAL_CHROME_WITH_MOCK_HTTP",
+  "checks": [
+    {
+      "name": "자동 인증 및 티켓 제거",
+      "passed": true
+    },
+    {
+      "name": "상단 새 연구 제거",
+      "passed": true
+    },
+    {
+      "name": "연구 메뉴",
+      "passed": true
+    },
+    {
+      "name": "설명 선택 먼저 표시",
+      "passed": true
+    },
+    {
+      "name": "첫 장 고급 설정 숨김",
+      "passed": true
+    },
+    {
+      "name": "자동 모델 선택",
+      "passed": true
+    },
+    {
+      "name": "기본 예산 실제 값",
+      "passed": true
+    },
+    {
+      "name": "연구 입력에는 설명 대신 필수 항목만 표시",
+      "passed": true
+    },
+    {
+      "name": "보고서 형식 선택 없음",
+      "passed": true
+    },
+    {
+      "name": "선택 모델 제공사 그룹 복귀",
+      "passed": true
+    },
+    {
+      "name": "고정 중복 없음",
+      "passed": true
+    },
+    {
+      "name": "전체 모델 선택 행 중복 없음",
+      "passed": true
+    },
+    {
+      "name": "접으면 선택 모델 고정",
+      "passed": true
+    },
+    {
+      "name": "질문만 실제 모의 전송",
+      "passed": true
+    },
+    {
+      "name": "근거 부족 정직한 상태",
+      "passed": true
+    },
+    {
+      "name": "안내 다시 묻지 않기 저장",
+      "passed": true
+    },
+    {
+      "name": "한정 프로필 결론 카드",
+      "passed": true
+    },
+    {
+      "name": "현재 결론",
+      "passed": true
+    },
+    {
+      "name": "계산 확인 유료 호출 없음",
+      "passed": true
+    },
+    {
+      "name": "오프라인 원본 수정 주입",
+      "passed": true
+    },
+    {
+      "name": "변경 영향 표시",
+      "passed": true
+    },
+    {
+      "name": "다시 검증한 현재 결론",
+      "passed": true
+    },
+    {
+      "name": "이전 결론 보존",
+      "passed": true
+    },
+    {
+      "name": "재검증도 모의 API 추가 없음",
+      "passed": true
+    },
+    {
+      "name": "실제 PDF 생성",
+      "passed": true
+    },
+    {
+      "name": "휴지통 이동",
+      "passed": true
+    },
+    {
+      "name": "복원 후 휴지통 비어 있음",
+      "passed": true
+    },
+    {
+      "name": "기본 설정에 호출별 단가 한도 없음",
+      "passed": true
+    },
+    {
+      "name": "설명 표시 변경 가능",
+      "passed": true
+    },
+    {
+      "name": "연결 검사 연구 설정 없음",
+      "passed": true
+    },
+    {
+      "name": "독립 연결 검사 성공",
+      "passed": true
+    },
+    {
+      "name": "튜토리얼 다시 보기",
+      "passed": true
+    },
+    {
+      "name": "전체 사용 안내",
+      "passed": true
+    },
+    {
+      "name": "200% 확대 가로 넘침 없음",
+      "passed": true
+    },
+    {
+      "name": "브라우저 오류·외부 전송 없음",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "shots": [
+    "output/playwright/beginner_v4/conclusion.png",
+    "output/playwright/beginner_v4/settings-200.png"
+  ],
+  "folder": "build/beginner-v4/browser/0c37e8ff-dde3-4bb1-9397-d9cc52fe970c"
+}

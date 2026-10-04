@@ -1,0 +1,59 @@
+{
+  "execution": "SYNTHETIC_OFFLINE_CHROME",
+  "live_efficacy": "NOT_VALIDATED",
+  "initial_map_render_ms": 92.88200000000006,
+  "total_nodes": 939,
+  "source_fingerprint": "0c910ccae44ad439a41f94d4fbcece05c6c798fe5f7914dbcb7b41bd8618bce8",
+  "edge_lower_bound": 596,
+  "full_graph_render_ms": 110.99139999999989,
+  "update_single_node_ms": 92.78420000000006,
+  "current_path_render_ms": 47.48100000000022,
+  "rendered_nodes": 15,
+  "rendered_edges": 30,
+  "idle_seconds": 60.014382000001206,
+  "idle_cpu_with_map": 0.045119184931371036,
+  "map_memory_mb": 2.459991455078125,
+  "memory_scope": "Chrome renderer JS heap · 전체 Chrome RSS/GPU 제외",
+  "checks": [
+    {
+      "name": "100개 이상의 실제·합성 저장 노드",
+      "passed": true
+    },
+    {
+      "name": "복구 분기를 포함한 다섯 역할",
+      "passed": true
+    },
+    {
+      "name": "갱신할 가설 표시",
+      "passed": true
+    },
+    {
+      "name": "정본 서비스로 상태 변경",
+      "passed": true
+    },
+    {
+      "name": "단일 상태 변경은 전체 배치 유지",
+      "passed": true
+    },
+    {
+      "name": "단일 상태 변경은 노드 DOM 유지",
+      "passed": true
+    },
+    {
+      "name": "페이지 노드 120개 이하",
+      "passed": true
+    },
+    {
+      "name": "유휴 60초 검사",
+      "passed": true
+    },
+    {
+      "name": "지속 애니메이션 없음",
+      "passed": true
+    },
+    {
+      "name": "브라우저 오류·외부 전송 없음",
+      "passed": true
+    }
+  ]
+}

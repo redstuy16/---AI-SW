@@ -4,6 +4,15 @@
 
 | 작업 | 구현 보고서 | 최종 결과 |
 |---|---|---|
+| 등록 API 실행 시도·API 로직 검사 | [보고서](api_live_logic_check_report.md) | [JSON](api_live_logic_check_results.json) |
+| 도움말 정리·API 연결 확인 | [보고서](help_api_unblock_report.md) | [JSON](help_api_unblock_results.json) |
+| 연구별 비용 표시·캐시 정리 | [보고서](research_cost_display_report.md) | [JSON](research_cost_display_results.json) |
+| 튜토리얼·연구 입력 방식과 스크롤 안내 | [보고서](tutorial_research_mode_report.md) | [JSON](tutorial_research_mode_results.json) |
+| 선택 연구 설계 v6 | [보고서](research_design_implementation_report.md) | [JSON](research_design_results.json) |
+| 튜토리얼 4개 과정·제공사별 발급·화살표 안내 | [보고서](tutorial_compact_report.md) | [JSON](tutorial_compact_results.json) |
+| 튜토리얼·사용 안내 전면 개편 | [보고서](tutorial_implementation_report.md) | [JSON](tutorial_final_validation.json) |
+| 직접 화면 테스트·PDF 오류 수정 | [보고서](ui_direct_test_report.md) | [JSON](ui_direct_test_results.json) |
+| 모델 활성화·연결 교체 | [보고서](model_activation_fix_report.md) | [JSON](model_activation_fix_results.json) |
 | 한국어 UI·알림·성능 이름 | — | [JSON](korean_ui_validation.json) |
 | API 연결·모델·간격 | [보고서](connection_ux_implementation_report.md) | [JSON](connection_ux_validation.json) |
 | README·폴더 정리 | [구성 안내](../../docs/development/REPOSITORY.md) | [JSON](repository_cleanup_validation.json) |

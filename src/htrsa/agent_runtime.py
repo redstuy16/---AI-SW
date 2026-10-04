@@ -26,7 +26,7 @@ from .verification_repair import CheckerQualification
 from .schemas import (AgentResult, Constraints, ContextPolicy, ContextRef, NumericProvenance,
                       RefType, ResearchContract, ScientificMutation, StagedResult, ToolRequest, new_id)
 from .scientific_verifier import numeric_fields
-from .service import ContractViolationError, StateConflictError, StateService
+from .service import ContractViolationError, EntityNotFoundError, StateConflictError, StateService
 
 
 class RuntimeFailure(Exception):
@@ -228,9 +228,16 @@ class AgentRuntime:
             raise RuntimeFailure(error.code, 2)
         raise AssertionError("unreachable retry state")
 
-    def _registry(self, contract_id: str) -> ToolRegistry:
+    def _registry(self, contract_id: str, *, import_source_paths=None) -> ToolRegistry:
         registry = ToolRegistry(self.state)
-        for tool in (DataImportTool(self.state), DataProfileTool(self.state, contract_id),
+        try:
+            contract, _ = self.state.contract(contract_id)
+        except EntityNotFoundError:
+            import_source_paths = []
+        else:
+            if contract.task_type == "QualifiedProfileImport" and import_source_paths is None:
+                import_source_paths = []
+        for tool in (DataImportTool(self.state, allowed_source_paths=import_source_paths), DataProfileTool(self.state, contract_id),
                      StatsTool(self.state, contract_id), VisualizationTool(self.state, contract_id),
                      EvidenceTool(self.state)):
             registry.register(tool)
@@ -284,6 +291,8 @@ class AgentRuntime:
             self._remaining_runtime(contract)
             if result.ok:
                 return request, result
+            if result.error == 'RESOURCE_EXHAUSTED':
+                raise RuntimeFailure('RESOURCE_EXHAUSTED', 2)
             if name == "analysis.skill" and result.error and result.error.startswith("SKILL_"):
                 raise RuntimeFailure(result.error, 2)
             failure = FailureEvent(code="TOOL_FAILURE", severity="MEDIUM", source_role=contract.assigned_role,

@@ -1,0 +1,89 @@
+{
+  "execution": "OFFLINE_PREPARATION_INTEGRITY_CHECK",
+  "checks": [
+    {
+      "id": "a83dab0749444877aea7b0e5d53c7aeb",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "95aa2e418f5e44b39ce22a4222190bbd",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "e8c3b7c68a9d4e92a09a63d261676f47",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "3b52522f78d94b40bd83385cff937c0e",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "253e921ecf844f01ac9a672271d8e073",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "1a73acf0b28c4401ab2af8b1de1c488d",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "206d03353a604595b4480458ee05fdd0",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "1d1315c4fa1a42738a3969dbd6d1d8f7",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "463a96e81b5c42b28a30ea0e2adcfb3c",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "e931c6d1fe8946d0b0ac321ea632d0b3",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "e6a3348212f2446ab275b9095ea742a7",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "4d3ff15106724a93abaadfc7b037eeb1",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "09ab066309084e2fa4681641a78b7da5",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "010f9fb0e46a4359a686eb45fa0758a3",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "d9886cb3b9354f9293556eb6755e0c72",
+      "same_inputs": true,
+      "oracle_hidden": true
+    },
+    {
+      "id": "9e99ef93ec4f4a5197aa9a46542b5f01",
+      "same_inputs": true,
+      "oracle_hidden": true
+    }
+  ],
+  "coverage_rejection": "CASE_COVERAGE_MISMATCH",
+  "non_live_rejection": "FAIRNESS_OR_LIVE_EVIDENCE_REQUIRED",
+  "passed": true,
+  "live_efficacy": "NOT_VALIDATED"
+}

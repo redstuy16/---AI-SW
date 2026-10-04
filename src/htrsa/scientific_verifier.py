@@ -25,6 +25,12 @@ def verify_scientific(state, mutation_row, payload, contract, check) -> None:
     research_id = mutation_row["research_id"]
     request, tool, agent = payload.tool_request, payload.tool_result, payload.agent_result
     db = state._db
+    from .research_design import verify_design
+    for item in verify_design(state, payload):
+        check(item["check_id"], item["passed"], item["message"])
+    from .qualified_profiles import verify_profile
+    for item in verify_profile(state, payload):
+        check(item["check_id"], item["passed"], item["message"])
     for item in state.cycle5.checks(research_id, payload):
         check(item["check_id"], item["passed"], item["message"])
 

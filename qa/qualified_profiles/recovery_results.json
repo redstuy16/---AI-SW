@@ -1,0 +1,23 @@
+{
+  "boundaries": [
+    {
+      "boundary": "profile_after_verify",
+      "resume_model_calls": 0,
+      "commit_count": 1,
+      "current": true,
+      "fresh_process": true,
+      "passed": true,
+      "execution": "OFFLINE_FAKE_AGENT_REAL_PROCESS"
+    },
+    {
+      "boundary": "profile_after_commit",
+      "resume_model_calls": 0,
+      "commit_count": 1,
+      "current": true,
+      "fresh_process": true,
+      "passed": true,
+      "execution": "OFFLINE_FAKE_AGENT_REAL_PROCESS"
+    }
+  ],
+  "all_passed": true
+}

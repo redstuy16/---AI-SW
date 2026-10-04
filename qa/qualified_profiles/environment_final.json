@@ -1,0 +1,58 @@
+{
+  "docker": {
+    "cli_present": false,
+    "daemon_reachable": false,
+    "image_present": false,
+    "image": "htrsa-sandbox:3.13",
+    "image_id": null,
+    "isolation_probe_passed": false,
+    "available": false,
+    "isolation_validated": false,
+    "status": "NOT_VALIDATED"
+  },
+  "provider": {
+    "api_key_present": false,
+    "manager_model_configured": false,
+    "provider_importable": true,
+    "structured_output_available": true,
+    "configured": false,
+    "live_smoke_validated": false,
+    "status": "NOT_VALIDATED"
+  },
+  "search": {
+    "status": "UNCONFIGURED",
+    "validated": false,
+    "provider": null,
+    "error_code": null
+  },
+  "sandbox": {
+    "fail_closed": true
+  },
+  "gates": {
+    "CORE_TESTS_PASS": true,
+    "STRESS_TESTS_PASS": true,
+    "ARTIFACT_VALIDATION_PASS": true,
+    "DOCKER_ISOLATION_PASS": false,
+    "LIVE_API_SMOKE_PASS": false,
+    "LIVE_SEARCH_PASS": false,
+    "DEMO_A_PASS": true,
+    "DEMO_B_PASS": true
+  },
+  "demo_ready": true,
+  "release_ready": false,
+  "productization": {
+    "windows_key": {
+      "status": "NOT_VALIDATED",
+      "passed": false,
+      "checked_at": "2026-10-02T10:06:34.146634+00:00",
+      "error_code": "WINDOWS_ERROR_1312"
+    },
+    "default_browser": {
+      "status": "NOT_VALIDATED",
+      "passed": false,
+      "checked_at": "2026-10-02T10:07:01.150073+00:00",
+      "error_code": null
+    }
+  },
+  "product_release_ready": false
+}

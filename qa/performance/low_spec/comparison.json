@@ -1,0 +1,887 @@
+{
+  "baseline_source_fingerprint": "947125269c0bf8245830fc15da6a7db32aabad61de5718550989d7ceaecc01ce",
+  "after_source_fingerprint": "fda080d1c695e2bc574a853f1d1c76f30b60381a665ab8436141d72187930b18",
+  "metrics": {
+    "startup_time_ms": {
+      "before": {
+        "median": 523.4903999953531,
+        "min": 513.5531999985687,
+        "max": 545.7339999993565,
+        "samples": [
+          545.7339999993565,
+          513.5531999985687,
+          523.4903999953531
+        ]
+      },
+      "after": {
+        "median": 488.54230000142707,
+        "min": 484.34480000287294,
+        "max": 587.5975999952061,
+        "samples": [
+          587.5975999952061,
+          484.34480000287294,
+          488.54230000142707
+        ]
+      },
+      "scope": "별도 Python 프로세스 3회 · OS 파일 캐시는 초기화하지 않음"
+    },
+    "backend_ready_ms": {
+      "before": {
+        "median": 523.4903999953531,
+        "min": 513.5531999985687,
+        "max": 545.7339999993565,
+        "samples": [
+          545.7339999993565,
+          513.5531999985687,
+          523.4903999953531
+        ]
+      },
+      "after": {
+        "median": 488.54230000142707,
+        "min": 484.34480000287294,
+        "max": 587.5975999952061,
+        "samples": [
+          587.5975999952061,
+          484.34480000287294,
+          488.54230000142707
+        ]
+      },
+      "scope": "별도 Python 프로세스 3회 · OS 파일 캐시는 초기화하지 않음"
+    },
+    "browser_ready_ms": {
+      "before": {
+        "median": 890.9103,
+        "min": 882.2271000000001,
+        "max": 1045.308,
+        "samples": [
+          1045.308,
+          882.2271000000001,
+          890.9103
+        ]
+      },
+      "after": {
+        "median": 720.4776999999999,
+        "min": 711.7861,
+        "max": 734.8235,
+        "samples": [
+          734.8235,
+          711.7861,
+          720.4776999999999
+        ]
+      },
+      "scope": "실제 인증·Chrome headless 3회 · 기존 전체 목록과 새 첫 페이지의 화면 준비 시간"
+    },
+    "idle_ram_mb": {
+      "before": 56.287109375,
+      "after": 56.505859375,
+      "scope": "Python 본체 60초 유휴 · 브라우저·외부 모델 제외"
+    },
+    "idle_cpu_percent": {
+      "before": 0.0,
+      "after": 0.0,
+      "scope": "Python 본체 60초 유휴 · 브라우저·외부 모델 제외"
+    },
+    "process_count": {
+      "before": 1,
+      "after": 1,
+      "scope": "Python 본체 60초 유휴 · 브라우저·외부 모델 제외"
+    },
+    "research_list_ms": {
+      "before": {
+        "median": 73.18870000017341,
+        "min": 72.87309999810532,
+        "max": 73.82099999813363,
+        "samples": [
+          73.82099999813363,
+          72.87309999810532,
+          73.18870000017341,
+          73.57060000504134,
+          72.92310000048019
+        ]
+      },
+      "after": {
+        "median": 68.77739999617916,
+        "min": 67.83690000156639,
+        "max": 71.13399999798276,
+        "samples": [
+          68.13669999974081,
+          69.42490000074031,
+          71.13399999798276,
+          68.77739999617916,
+          67.83690000156639
+        ]
+      },
+      "scope": "동일 전체 응답 API · 첫 조회 별도, 이후 5회"
+    },
+    "activity_view_ms": {
+      "before": {
+        "median": 7.990100006281864,
+        "min": 7.526800000050571,
+        "max": 12.403900000208523,
+        "samples": [
+          7.526800000050571,
+          12.403900000208523,
+          8.064800000283867,
+          7.947900005092379,
+          7.990100006281864
+        ]
+      },
+      "after": {
+        "median": 8.488700004818384,
+        "min": 8.390299997699913,
+        "max": 8.64039999578381,
+        "samples": [
+          8.390299997699913,
+          8.64039999578381,
+          8.483400000841357,
+          8.623200003057718,
+          8.488700004818384
+        ]
+      },
+      "scope": "동일 전체 응답 API · 첫 조회 별도, 이후 5회"
+    },
+    "verification_view_ms": {
+      "before": {
+        "median": 124.86879999778466,
+        "min": 122.54359999496955,
+        "max": 132.01040000421926,
+        "samples": [
+          124.36339999840129,
+          122.54359999496955,
+          124.86879999778466,
+          132.01040000421926,
+          130.75709999975516
+        ]
+      },
+      "after": {
+        "median": 83.1395999994129,
+        "min": 82.02699999674223,
+        "max": 84.16240000224207,
+        "samples": [
+          84.16240000224207,
+          83.1395999994129,
+          82.02699999674223,
+          83.00909999525174,
+          84.01510000112467
+        ]
+      },
+      "scope": "동일 전체 응답 API · 첫 조회 별도, 이후 5회"
+    },
+    "report_open_ms": {
+      "before": {
+        "median": 1.476999997976236,
+        "min": 1.3772000020253472,
+        "max": 1.8727999995462596,
+        "samples": [
+          1.8727999995462596,
+          1.476999997976236,
+          1.3795999984722584,
+          1.3772000020253472,
+          1.5043000021250919
+        ]
+      },
+      "after": {
+        "median": 1.6896000015549362,
+        "min": 1.4457999932346866,
+        "max": 1.799399993615225,
+        "samples": [
+          1.799399993615225,
+          1.7551999990246259,
+          1.4457999932346866,
+          1.6896000015549362,
+          1.4759000041522086
+        ]
+      },
+      "scope": "동일 전체 응답 API · 첫 조회 별도, 이후 5회"
+    },
+    "experiments_view_ms": {
+      "before": {
+        "median": 287.58340000058524,
+        "min": 286.50119999656454,
+        "max": 288.4953000029782,
+        "samples": [
+          287.10019999562064,
+          287.58340000058524,
+          288.4953000029782,
+          286.50119999656454,
+          287.8839999975753
+        ]
+      },
+      "after": {
+        "median": 191.7597999999998,
+        "min": 187.901299999794,
+        "max": 194.64290000178153,
+        "samples": [
+          193.96750000305474,
+          191.7597999999998,
+          194.64290000178153,
+          189.1140000006999,
+          187.901299999794
+        ]
+      },
+      "scope": "동일 전체 응답 API · 첫 조회 별도, 이후 5회"
+    },
+    "evidence_view_ms": {
+      "before": {
+        "median": 486.65629999595694,
+        "min": 474.77729999809526,
+        "max": 493.53590000100667,
+        "samples": [
+          486.65629999595694,
+          493.53590000100667,
+          486.8646000031731,
+          477.723000003607,
+          474.77729999809526
+        ]
+      },
+      "after": {
+        "median": 471.49580000404967,
+        "min": 470.65200000361074,
+        "max": 477.40150000026915,
+        "samples": [
+          470.7750999950804,
+          474.3276000008336,
+          470.65200000361074,
+          471.49580000404967,
+          477.40150000026915
+        ]
+      },
+      "scope": "동일 전체 응답 API · 첫 조회 별도, 이후 5회"
+    },
+    "sqlite_size_mb": {
+      "before": 2.5390625,
+      "after": 2.5546875,
+      "scope": "동일 고정 합성 자료 · 1MiB=1024² bytes"
+    },
+    "trace_size_mb": {
+      "before": 0.05487823486328125,
+      "after": 0.05487823486328125,
+      "scope": "동일 고정 합성 자료 · 1MiB=1024² bytes"
+    },
+    "workspace_size_mb": {
+      "before": 0.22086238861083984,
+      "after": 0.22086238861083984,
+      "scope": "동일 고정 합성 자료 · 1MiB=1024² bytes"
+    },
+    "peak_ram_mb": {
+      "before": {
+        "A": {
+          "median": 158.50390625,
+          "min": 158.3203125,
+          "max": 158.75390625,
+          "samples": [
+            158.3203125,
+            158.50390625,
+            158.75390625
+          ]
+        },
+        "B": {
+          "median": 160.1953125,
+          "min": 160.0625,
+          "max": 160.69921875,
+          "samples": [
+            160.0625,
+            160.69921875,
+            160.1953125
+          ]
+        }
+      },
+      "after": {
+        "A": {
+          "median": 159.125,
+          "min": 158.61328125,
+          "max": 159.1484375,
+          "samples": [
+            159.1484375,
+            158.61328125,
+            159.125
+          ]
+        },
+        "B": {
+          "median": 160.63671875,
+          "min": 160.171875,
+          "max": 160.83984375,
+          "samples": [
+            160.171875,
+            160.63671875,
+            160.83984375
+          ]
+        }
+      },
+      "scope": "각 Demo 3회 · Python+자식 RSS · CPU는 한 코어 100%, 100ms 표본"
+    },
+    "peak_cpu_percent": {
+      "before": {
+        "A": {
+          "median": 109.1,
+          "min": 103.4,
+          "max": 114.9,
+          "samples": [
+            114.9,
+            109.1,
+            103.4
+          ]
+        },
+        "B": {
+          "median": 103.6,
+          "min": 99.1,
+          "max": 113.0,
+          "samples": [
+            103.6,
+            99.1,
+            113.0
+          ]
+        }
+      },
+      "after": {
+        "A": {
+          "median": 108.6,
+          "min": 106.3,
+          "max": 115.6,
+          "samples": [
+            108.6,
+            115.6,
+            106.3
+          ]
+        },
+        "B": {
+          "median": 105.3,
+          "min": 104.0,
+          "max": 110.8,
+          "samples": [
+            104.0,
+            110.8,
+            105.3
+          ]
+        }
+      },
+      "scope": "각 Demo 3회 · Python+자식 RSS · CPU는 한 코어 100%, 100ms 표본"
+    }
+  },
+  "decisions": [
+    {
+      "optimization_id": "LIST_BULK",
+      "baseline": {
+        "median": 73.18870000017341,
+        "min": 72.87309999810532,
+        "max": 73.82099999813363,
+        "samples": [
+          73.82099999813363,
+          72.87309999810532,
+          73.18870000017341,
+          73.57060000504134,
+          72.92310000048019
+        ]
+      },
+      "change": "전체 목록의 개별 Overview 반복을 일괄 SQL로 대체",
+      "after": {
+        "median": 68.77739999617916,
+        "min": 67.83690000156639,
+        "max": 71.13399999798276,
+        "samples": [
+          68.13669999974081,
+          69.42490000074031,
+          71.13399999798276,
+          68.77739999617916,
+          67.83690000156639
+        ]
+      },
+      "complexity_risk": "읽기 범위·판정 동등성 검사 필요 · 과학 캐시 없음",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "VERIFICATION_BULK",
+      "baseline": {
+        "median": 124.86879999778466,
+        "min": 122.54359999496955,
+        "max": 132.01040000421926,
+        "samples": [
+          124.36339999840129,
+          122.54359999496955,
+          124.86879999778466,
+          132.01040000421926,
+          130.75709999975516
+        ]
+      },
+      "change": "검증·무효화·메타데이터 조회를 묶고 기존 판정을 유지",
+      "after": {
+        "median": 83.1395999994129,
+        "min": 82.02699999674223,
+        "max": 84.16240000224207,
+        "samples": [
+          84.16240000224207,
+          83.1395999994129,
+          82.02699999674223,
+          83.00909999525174,
+          84.01510000112467
+        ]
+      },
+      "complexity_risk": "읽기 범위·판정 동등성 검사 필요 · 과학 캐시 없음",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "EXPERIMENT_BULK",
+      "baseline": {
+        "median": 287.58340000058524,
+        "min": 286.50119999656454,
+        "max": 288.4953000029782,
+        "samples": [
+          287.10019999562064,
+          287.58340000058524,
+          288.4953000029782,
+          286.50119999656454,
+          287.8839999975753
+        ]
+      },
+      "change": "자료·의존·산출물 조회를 묶고 실제 파일 해시 검사를 유지",
+      "after": {
+        "median": 191.7597999999998,
+        "min": 187.901299999794,
+        "max": 194.64290000178153,
+        "samples": [
+          193.96750000305474,
+          191.7597999999998,
+          194.64290000178153,
+          189.1140000006999,
+          187.901299999794
+        ]
+      },
+      "complexity_risk": "읽기 범위·판정 동등성 검사 필요 · 과학 캐시 없음",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "STARTUP_IMPORT",
+      "baseline": [
+        {
+          "cold_start_ms": 545.7339999993565,
+          "backend_ready_ms": 545.7339999993565,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.287109375,
+          "idle_seconds": 60,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 513.5531999985687,
+          "backend_ready_ms": 513.5531999985687,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.16015625,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 523.4903999953531,
+          "backend_ready_ms": 523.4903999953531,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.09375,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        }
+      ],
+      "change": "기준선에서도 무거운 라이브러리를 읽지 않아 기존 경계를 유지",
+      "after": [
+        {
+          "cold_start_ms": 587.5975999952061,
+          "backend_ready_ms": 587.5975999952061,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.505859375,
+          "idle_seconds": 60,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 484.34480000287294,
+          "backend_ready_ms": 484.34480000287294,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.2890625,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 488.54230000142707,
+          "backend_ready_ms": 488.54230000142707,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.30859375,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        }
+      ],
+      "complexity_risk": "읽기 범위·판정 동등성 검사 필요 · 과학 캐시 없음",
+      "decision": "NO_MEANINGFUL_GAIN"
+    },
+    {
+      "optimization_id": "IDLE",
+      "baseline": [
+        {
+          "cold_start_ms": 545.7339999993565,
+          "backend_ready_ms": 545.7339999993565,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.287109375,
+          "idle_seconds": 60,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 513.5531999985687,
+          "backend_ready_ms": 513.5531999985687,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.16015625,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 523.4903999953531,
+          "backend_ready_ms": 523.4903999953531,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.09375,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        }
+      ],
+      "change": "기준선·수정 후 모두 유휴 CPU 0% · 개선 주장 없음",
+      "after": [
+        {
+          "cold_start_ms": 587.5975999952061,
+          "backend_ready_ms": 587.5975999952061,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.505859375,
+          "idle_seconds": 60,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 484.34480000287294,
+          "backend_ready_ms": 484.34480000287294,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.2890625,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        },
+        {
+          "cold_start_ms": 488.54230000142707,
+          "backend_ready_ms": 488.54230000142707,
+          "idle_cpu_percent": 0.0,
+          "idle_cpu_max_percent": 0.0,
+          "idle_ram_mb": 56.30859375,
+          "idle_seconds": 0,
+          "process_count": 1,
+          "heavy_modules": []
+        }
+      ],
+      "complexity_risk": "읽기 범위·판정 동등성 검사 필요 · 과학 캐시 없음",
+      "decision": "NO_MEANINGFUL_GAIN"
+    },
+    {
+      "optimization_id": "UI_PAGING",
+      "baseline": "전체 근거·실험·검증·활동·자료 상세를 읽음",
+      "change": "조회 페이지와 선택 상세를 분리",
+      "after": {
+        "ui_research_list_first_ms": 11.369899999408517,
+        "ui_research_list_repeat_ms": {
+          "median": 10.73059999907855,
+          "min": 10.302800001227297,
+          "max": 11.293699993984774,
+          "samples": [
+            11.293699993984774,
+            10.447199994814582,
+            10.73059999907855,
+            10.744200000772253,
+            10.302800001227297
+          ]
+        },
+        "ui_verification_first_ms": 10.262000003422145,
+        "ui_verification_repeat_ms": {
+          "median": 8.994800002255943,
+          "min": 8.798899994872045,
+          "max": 9.398199996212497,
+          "samples": [
+            8.798899994872045,
+            8.994800002255943,
+            9.324700004071929,
+            8.882900001481175,
+            9.398199996212497
+          ]
+        },
+        "ui_experiments_first_ms": 5.555799994908739,
+        "ui_experiments_repeat_ms": {
+          "median": 5.872100002306979,
+          "min": 5.519999998796266,
+          "max": 6.278499997279141,
+          "samples": [
+            5.625700003292877,
+            6.278499997279141,
+            5.934400003752671,
+            5.872100002306979,
+            5.519999998796266
+          ]
+        },
+        "ui_evidence_first_ms": 7.504900000640191,
+        "ui_evidence_repeat_ms": {
+          "median": 7.221400002890732,
+          "min": 6.891299999551848,
+          "max": 7.7478999955928884,
+          "samples": [
+            7.516300000133924,
+            6.891299999551848,
+            7.221400002890732,
+            7.006300002103671,
+            7.7478999955928884
+          ]
+        },
+        "ui_activity_first_ms": 8.506300000590272,
+        "ui_activity_repeat_ms": {
+          "median": 7.99850000475999,
+          "min": 7.730100005574059,
+          "max": 8.157700001902413,
+          "samples": [
+            7.99850000475999,
+            7.730100005574059,
+            8.153399998263922,
+            7.835600001271814,
+            8.157700001902413
+          ]
+        }
+      },
+      "complexity_risk": "요약과 실제 재검증을 구분 · 응답 범위 차이를 개선율로 사용하지 않음",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "EVIDENCE_INDEX",
+      "baseline": "EXPLAIN: SCAN evidence",
+      "change": "기존 운영 초기화에서 연구/실험 복합 인덱스 1개 추가",
+      "after": [
+        [
+          3,
+          0,
+          61,
+          "SEARCH evidence USING INDEX idx_ui_evidence_experiment (research_id=? AND experiment_id=?)"
+        ]
+      ],
+      "complexity_risk": "추가 디스크 공간 · migration 6개 유지",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "SHARED_RESOURCE_QUEUE",
+      "baseline": "연결별 예산 예약 제한 · 공유 자원 대기 정보 없음",
+      "change": "기존 운영 설정·감사와 BEGIN IMMEDIATE로 원자적 자원 획득",
+      "after": "실제 별도 프로세스/취소/timeout/불확실 비용/모드 동등성 테스트",
+      "complexity_risk": "동일 앱 DB 범위 · 외부 서버 실측 없음",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "FIGURE_FINALLY",
+      "baseline": "저장 실패 경로에 close() 없음 · 코드 관찰",
+      "change": "생성한 그림을 finally에서 닫음",
+      "after": "OSError/MemoryError × 일반/Skills: 4 PASS",
+      "complexity_risk": "기존 과학 출력과 다른 그림은 유지",
+      "decision": "KEEP"
+    },
+    {
+      "optimization_id": "BOUNDED_FLOW",
+      "baseline": "NOT_AVAILABLE",
+      "change": "제한된 DOM과 안정된 배치·지연 상세·닫기 해제",
+      "after": {
+        "execution": "SYNTHETIC_OFFLINE_CHROME",
+        "live_efficacy": "NOT_VALIDATED",
+        "initial_map_render_ms": 92.88200000000006,
+        "total_nodes": 939,
+        "source_fingerprint": "0c910ccae44ad439a41f94d4fbcece05c6c798fe5f7914dbcb7b41bd8618bce8",
+        "edge_lower_bound": 596,
+        "full_graph_render_ms": 110.99139999999989,
+        "update_single_node_ms": 92.78420000000006,
+        "current_path_render_ms": 47.48100000000022,
+        "rendered_nodes": 15,
+        "rendered_edges": 30,
+        "idle_seconds": 60.014382000001206,
+        "idle_cpu_with_map": 0.045119184931371036,
+        "map_memory_mb": 2.459991455078125,
+        "memory_scope": "Chrome renderer JS heap · 전체 Chrome RSS/GPU 제외",
+        "checks": [
+          {
+            "name": "100개 이상의 실제·합성 저장 노드",
+            "passed": true
+          },
+          {
+            "name": "복구 분기를 포함한 다섯 역할",
+            "passed": true
+          },
+          {
+            "name": "갱신할 가설 표시",
+            "passed": true
+          },
+          {
+            "name": "정본 서비스로 상태 변경",
+            "passed": true
+          },
+          {
+            "name": "단일 상태 변경은 전체 배치 유지",
+            "passed": true
+          },
+          {
+            "name": "단일 상태 변경은 노드 DOM 유지",
+            "passed": true
+          },
+          {
+            "name": "페이지 노드 120개 이하",
+            "passed": true
+          },
+          {
+            "name": "유휴 60초 검사",
+            "passed": true
+          },
+          {
+            "name": "지속 애니메이션 없음",
+            "passed": true
+          },
+          {
+            "name": "브라우저 오류·외부 전송 없음",
+            "passed": true
+          }
+        ]
+      },
+      "complexity_risk": "새 화면의 측정 · 전체 Chrome RSS나 Live Agent 성능 아님",
+      "decision": "KEEP"
+    }
+  ],
+  "fixture_counts": {
+    "research_runs": 103,
+    "runtime_events": 5129,
+    "experiments": 305,
+    "evidence": 309,
+    "staged_mutations": 305
+  },
+  "ui_page_metrics": {
+    "ui_research_list_first_ms": 11.369899999408517,
+    "ui_research_list_repeat_ms": {
+      "median": 10.73059999907855,
+      "min": 10.302800001227297,
+      "max": 11.293699993984774,
+      "samples": [
+        11.293699993984774,
+        10.447199994814582,
+        10.73059999907855,
+        10.744200000772253,
+        10.302800001227297
+      ]
+    },
+    "ui_verification_first_ms": 10.262000003422145,
+    "ui_verification_repeat_ms": {
+      "median": 8.994800002255943,
+      "min": 8.798899994872045,
+      "max": 9.398199996212497,
+      "samples": [
+        8.798899994872045,
+        8.994800002255943,
+        9.324700004071929,
+        8.882900001481175,
+        9.398199996212497
+      ]
+    },
+    "ui_experiments_first_ms": 5.555799994908739,
+    "ui_experiments_repeat_ms": {
+      "median": 5.872100002306979,
+      "min": 5.519999998796266,
+      "max": 6.278499997279141,
+      "samples": [
+        5.625700003292877,
+        6.278499997279141,
+        5.934400003752671,
+        5.872100002306979,
+        5.519999998796266
+      ]
+    },
+    "ui_evidence_first_ms": 7.504900000640191,
+    "ui_evidence_repeat_ms": {
+      "median": 7.221400002890732,
+      "min": 6.891299999551848,
+      "max": 7.7478999955928884,
+      "samples": [
+        7.516300000133924,
+        6.891299999551848,
+        7.221400002890732,
+        7.006300002103671,
+        7.7478999955928884
+      ]
+    },
+    "ui_activity_first_ms": 8.506300000590272,
+    "ui_activity_repeat_ms": {
+      "median": 7.99850000475999,
+      "min": 7.730100005574059,
+      "max": 8.157700001902413,
+      "samples": [
+        7.99850000475999,
+        7.730100005574059,
+        8.153399998263922,
+        7.835600001271814,
+        8.157700001902413
+      ]
+    }
+  },
+  "browser_payload": {
+    "before": [
+      {
+        "browser_ready_ms": 1045.308,
+        "requests": 11,
+        "response_bytes": 100636
+      },
+      {
+        "browser_ready_ms": 882.2271000000001,
+        "requests": 11,
+        "response_bytes": 100919
+      },
+      {
+        "browser_ready_ms": 890.9103,
+        "requests": 11,
+        "response_bytes": 98458
+      }
+    ],
+    "after": [
+      {
+        "browser_ready_ms": 734.8235,
+        "requests": 11,
+        "response_bytes_at_ready": 52944,
+        "completed_response_bytes": 52944
+      },
+      {
+        "browser_ready_ms": 711.7861,
+        "requests": 11,
+        "response_bytes_at_ready": 36660,
+        "completed_response_bytes": 36660
+      },
+      {
+        "browser_ready_ms": 720.4776999999999,
+        "requests": 11,
+        "response_bytes_at_ready": 55405,
+        "completed_response_bytes": 55405
+      }
+    ],
+    "comparison_limit": "조회 범위가 전체에서 첫 페이지로 바뀜. 기준선 bytes는 준비 시점의 미완료 비동기 카운터로 정확한 총 전송량 비교 불가"
+  },
+  "live_agent_performance": "NOT_VALIDATED",
+  "local_model_throughput": "NOT_VALIDATED",
+  "regression_evidence": "최종 결과는 final_validation.json 참조 · 중간 실행을 통과로 합산하지 않음",
+  "limits": [
+    "단일 Windows 호스트 관측",
+    "실제 저사양 하드웨어·GPU·외부 로컬 서버 미검증",
+    "최초 브라우저 기준선은 API 측정과 잠시 겹침",
+    "짧은 작업은 100ms 표본 사이의 최고 RSS/CPU를 놓칠 수 있음"
+  ]
+}

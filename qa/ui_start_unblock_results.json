@@ -1,0 +1,1052 @@
+{
+  "recorded_at": "2026-10-03T12:25:26.275628+09:00",
+  "execution": "OFFLINE_CORRECTNESS_REAL_CHROME_EXPLICIT_MOCK_TRANSPORT",
+  "source_fingerprint": "fec5bab3fb293173c22914135af5a756b27cc9c4b8f79a8139202df9618788c2",
+  "baseline": {
+    "passed": 847,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 5,
+    "deselected": 2,
+    "console_duration_sec": 529.24,
+    "started_at": "2026-10-03T11:17:26.928877+09:00",
+    "junit": "build/unblock-baseline.xml"
+  },
+  "first_reproduction": {
+    "observed": "400 INVALID_REQUEST",
+    "failed_test_count": 1,
+    "junit": "build/unblock-reproduction.xml"
+  },
+  "focused": {
+    "passed": 44,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "deselected": 0,
+    "console_duration_sec": 15.71,
+    "started_at": "2026-10-03T11:57:03.882974+09:00",
+    "junit": "build/unblock-new-fixed.xml"
+  },
+  "regression": {
+    "passed": 891,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 5,
+    "deselected": 2,
+    "console_duration_sec": 746.47,
+    "started_at": "2026-10-03T12:02:08.791201+09:00",
+    "junit": "build/unblock-final-regression.xml"
+  },
+  "core": {
+    "error_code": null,
+    "image_id": null,
+    "manager_model": null,
+    "passed": true,
+    "passed_count": 891,
+    "provider": null,
+    "source_fingerprint": "fec5bab3fb293173c22914135af5a756b27cc9c4b8f79a8139202df9618788c2",
+    "status": null
+  },
+  "defaults": {
+    "path": "qa/ui_start_unblock_defaults.json",
+    "fields": 43,
+    "role_sub_controls": 8
+  },
+  "browsers": [
+    {
+      "command": "node qa/ui_unblock_browser.cjs",
+      "checks": 53,
+      "passed": true,
+      "screenshots": [
+        "output/playwright/ui_start_unblock/01-defaults-desktop.png",
+        "output/playwright/ui_start_unblock/02-model-picker.png",
+        "output/playwright/ui_start_unblock/03-advanced.png",
+        "output/playwright/ui_start_unblock/04-attachments.png",
+        "output/playwright/ui_start_unblock/05-narrow.png",
+        "output/playwright/ui_start_unblock/06-zoom-200.png",
+        "output/playwright/ui_start_unblock/07-smoke.png",
+        "output/playwright/ui_start_unblock/08-start-flow.png"
+      ]
+    },
+    {
+      "command": "node qa/connection_ux_visual_qa.cjs",
+      "checks": 67,
+      "passed": true,
+      "result": "qa/results/connection_ux_visual_results.json",
+      "paid_calls": 0,
+      "screenshots": [
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\models-more-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\connection-error-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\inline-key-openai-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\inline-key-anthropic-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\keys-deleted-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\connection-form-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\model-selection-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\connection-form-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\model-selection-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\connection-css-200.png",
+        "C:\\경남 AI SW\\output\\playwright\\connection-ux\\models-duplicate-profile-1440.png"
+      ]
+    },
+    {
+      "command": "node qa/hardening_visual_qa.cjs",
+      "checks": 41,
+      "passed": true,
+      "result": "qa/prepublish/usability_visual_validation.json",
+      "paid_calls": 0,
+      "screenshots": [
+        "output/playwright/hardening/research-advanced-desktop.png",
+        "output/playwright/hardening/research-slider-desktop.png",
+        "output/playwright/hardening/research-slider-mobile.png",
+        "output/playwright/hardening/help-mobile.png",
+        "output/playwright/hardening/offline-report.png"
+      ]
+    },
+    {
+      "command": "node qa/live_api_recording_visual_qa.cjs --settings-layout",
+      "checks": 70,
+      "passed": true,
+      "result": "qa/results/settings_layout_visual_results.json",
+      "paid_calls": 0,
+      "screenshots": [
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\initial-model-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\onboarding-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\onboarding-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\connections-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\checks-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\advanced-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\environment-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\connections-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\checks-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\advanced-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\environment-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\settings-layout\\onboarding-css-200.png"
+      ]
+    },
+    {
+      "command": "node qa/live_api_recording_visual_qa.cjs",
+      "checks": 33,
+      "passed": true,
+      "result": "qa/results/live_api_recording_visual_results.json",
+      "paid_calls": 0,
+      "screenshots": [
+        "C:\\경남 AI SW\\output\\playwright\\live-api-recording\\onboarding-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\live-api-recording\\onboarding-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\live-api-recording\\onboarding-css-200.png"
+      ]
+    },
+    {
+      "command": "node qa/productization_visual_qa.cjs",
+      "checks": 21,
+      "passed": true,
+      "result": "qa/results/productization_visual_results.json",
+      "paid_calls": 0,
+      "screenshots": [
+        "C:\\경남 AI SW\\output\\playwright\\productization\\onboarding-1440.png",
+        "C:\\경남 AI SW\\output\\playwright\\productization\\onboarding-390.png",
+        "C:\\경남 AI SW\\output\\playwright\\productization\\onboarding-css-200.png"
+      ]
+    },
+    {
+      "command": "node qa/multi_provider_visual_qa.cjs",
+      "checks": 7,
+      "passed": true,
+      "result": "qa/results/multi_provider_visual_results.json",
+      "paid_calls": 0,
+      "screenshots": []
+    },
+    {
+      "command": "node qa/product_visual_qa.cjs",
+      "checks": 19,
+      "passed": true,
+      "result": "qa/results/product_visual_results.json",
+      "paid_calls": 0,
+      "screenshots": [
+        "C:\\경남 AI SW\\output\\playwright\\product\\01-simple-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\02-advanced-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\03-help-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\04-catalog-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\05-key-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\06-research-settings-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\07-completion-budget-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\08-report-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\09-limitations-desktop.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\01-simple-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\02-advanced-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\03-help-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\04-catalog-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\05-key-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\06-research-settings-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\07-completion-budget-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\08-report-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\09-limitations-narrow.png",
+        "C:\\경남 AI SW\\output\\playwright\\product\\10-css-200-percent.png"
+      ]
+    }
+  ],
+  "browser_total_checks": 311,
+  "observed_mock_requests": [
+    {
+      "body_keys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream"
+      ],
+      "contract_request": false,
+      "model": "manual-m2",
+      "reasoning": null,
+      "structured": false,
+      "temperature": null
+    },
+    {
+      "body_keys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream"
+      ],
+      "contract_request": true,
+      "model": "manual-m",
+      "reasoning": null,
+      "structured": false,
+      "temperature": null
+    }
+  ],
+  "external_requests": 0,
+  "paid_calls": 0,
+  "secret_exposure": 0,
+  "stress": {
+    "pytest": {
+      "passed": true,
+      "exit_code": 0,
+      "passed_count": 116,
+      "skipped_count": 0,
+      "deselected_count": 0,
+      "duration_sec": 191.719,
+      "xml": "build/qa-day1/run-6e9fc4eb044e/stress.xml",
+      "log": "build/qa-day1/run-6e9fc4eb044e/stress.log"
+    },
+    "scenarios": {
+      "QA-01 Early Fact Recall": {
+        "status": "PASS",
+        "tests": {
+          "test_mandatory_early_fact_and_recent_events": 1
+        }
+      },
+      "QA-02 Evidence Invalidation": {
+        "status": "PASS",
+        "tests": {
+          "test_invalidated_committed_experiment_cannot_be_reused": 1,
+          "test_qa_invalidation_and_dashboard_match_canonical_state": 1
+        }
+      },
+      "QA-03 Dependency Recall": {
+        "status": "PASS",
+        "tests": {
+          "test_direct_dependency_survives_low_semantic_similarity": 1
+        }
+      },
+      "QA-04 Context Distractor": {
+        "status": "PASS",
+        "tests": {
+          "test_context_budget_drops_semantic_but_preserves_mandatory": 1
+        }
+      },
+      "QA-05 Handoff Preservation": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_handoff_must_preserve_survives_fresh_database_open": 1
+        }
+      },
+      "QA-06 Rollback / State Recovery": {
+        "status": "PASS",
+        "tests": {
+          "test_checkpoint_and_rollback": 1,
+          "test_forged_numeric_output_blocks_commit": 1
+        }
+      },
+      "QA-07 Python Failure Recovery": {
+        "status": "PASS",
+        "tests": {
+          "test_transient_stats_tool_failure_retries_without_manager_recall": 1,
+          "test_retry_exhaustion_reaches_coordinator_without_manager_recall": 1
+        }
+      },
+      "QA-09 Artifact Corruption": {
+        "status": "PASS",
+        "tests": {
+          "test_corrupted_stats_artifact_blocks_commit": 1,
+          "test_qa_release_rejects_post_commit_artifact_corruption": 1
+        }
+      },
+      "QA-10 Dataset Corruption": {
+        "status": "PASS",
+        "tests": {
+          "test_dataset_tamper_after_stage_blocks_commit": 1,
+          "test_qa_release_rejects_post_import_dataset_corruption": 1
+        }
+      },
+      "QA-11 Scientific Method Trap": {
+        "status": "PASS",
+        "tests": {
+          "test_constant_pearson_rejected": 1,
+          "test_high_severity_final_critic_blocks_answered_conclusion": 1
+        }
+      },
+      "QA-12 API / Budget Failure": {
+        "status": "PASS",
+        "tests": {
+          "test_fake_provider_failures_are_bounded_and_noncanonical": 5,
+          "test_soft_budget_warns_and_hard_budget_blocks": 1,
+          "test_unknown_price_call_and_token_caps_block_new_invocation": 3
+        }
+      },
+      "QA-13 Loop / Idempotency": {
+        "status": "PASS",
+        "tests": {
+          "test_action_fingerprint_count_survives_restart": 1,
+          "test_resume_replays_completed_tool_without_side_effect": 1
+        }
+      },
+      "QA-14 Crash After Commit": {
+        "status": "PASS",
+        "tests": {
+          "test_resume_recovers_commit_before_completion_checkpoint": 1
+        }
+      },
+      "QA-15 Crash During Critic/Replan": {
+        "status": "PASS",
+        "tests": {
+          "test_each_crash_boundary_resumes_without_duplicate_effects": 11
+        }
+      },
+      "QA-16 Literature Provenance Tampering": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_literature_metadata_and_abstract_tampering_blocks_report": 1
+        }
+      },
+      "QA-17 Contradictory Evidence Preservation": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_contradiction_survives_synthesis_and_report": 1
+        }
+      },
+      "QA-18 Search Rate Limit": {
+        "status": "PASS",
+        "tests": {
+          "test_429_is_mapped_to_rate_limited_and_bounded": 1
+        }
+      },
+      "QA-19 Report Hallucination": {
+        "status": "PASS",
+        "tests": {
+          "test_qa_report_hallucinated_ids_doi_and_numbers_are_rejected": 1,
+          "test_qa_release_rejects_stale_or_forged_report": 1
+        }
+      },
+      "QA-20 Secret Leakage": {
+        "status": "PASS",
+        "tests": {
+          "test_release_secret_exclusion": 1,
+          "test_qa_release_omits_local_absolute_paths": 1
+        }
+      },
+      "QA-08 Sandbox Escape": {
+        "status": "NOT_VALIDATED",
+        "reason": "DOCKER_UNAVAILABLE"
+      }
+    },
+    "all_executable_passed": true
+  },
+  "demo_repeatability": {
+    "runs": {
+      "A": [
+        {
+          "iteration": 1,
+          "research_id": "R-7481820e5cf04c5ba4e7bd8f632ca6e0",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.975
+        },
+        {
+          "iteration": 2,
+          "research_id": "R-9e88357aef8e4d0c8bb45053c3b6b3fc",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.389
+        },
+        {
+          "iteration": 3,
+          "research_id": "R-1be7528051444c739b32fdf7259a9a92",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.654
+        },
+        {
+          "iteration": 4,
+          "research_id": "R-ccbcaf6d65a14c43b8ad5f5bb35cf4ef",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.734
+        },
+        {
+          "iteration": 5,
+          "research_id": "R-31982781e50c4bb7826589a52ec5705b",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 0,
+          "action_count": 25,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 5.738
+        }
+      ],
+      "B": [
+        {
+          "iteration": 1,
+          "research_id": "R-a6a57e050e114846aec81035209f5fb2",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.642
+        },
+        {
+          "iteration": 2,
+          "research_id": "R-b4d962d6b15040b58b86089b592d1af3",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.13
+        },
+        {
+          "iteration": 3,
+          "research_id": "R-685fd59a699d4e1eb140d98db80ff97f",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 7.038
+        },
+        {
+          "iteration": 4,
+          "research_id": "R-6cab85aba43d43629aec4bcaeacaa551",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.789
+        },
+        {
+          "iteration": 5,
+          "research_id": "R-f1f4d136aa8a4c47a2a8e750484bd01c",
+          "run_status": "COMPLETED",
+          "stop_reason": "GOAL_ANSWERED",
+          "hypothesis_status": "SUPPORTED",
+          "verified_experiment_count": 2,
+          "invalidated_count": 1,
+          "action_count": 31,
+          "duplicate_logical_actions": 0,
+          "unresolved_refs": false,
+          "report_exists": true,
+          "duration_sec": 6.296
+        }
+      ]
+    },
+    "passed": {
+      "A": true,
+      "B": true
+    },
+    "failures": 0,
+    "random_seed": null
+  },
+  "fresh_process_resume": {
+    "passed": true,
+    "counts": {
+      "experiments": 2,
+      "evidence": 2,
+      "state_events": 2,
+      "stats_calls": 2
+    },
+    "new_process": true
+  },
+  "release": {
+    "passed": true,
+    "file_count": 17,
+    "hash_mismatches": [],
+    "missing_artifacts": [],
+    "secret_files": [],
+    "unresolved_refs": 0,
+    "manifest": "build/qa-day1/run-6e9fc4eb044e/clean-release/manifests/release_manifest.json",
+    "manifest_sha256": "6eb0a3f14cb0ee6195ee07e413f4d2f2c8a5c6a6d1330a3812a13f4a9e2a615a",
+    "clean_database": "build/qa-day1/run-6e9fc4eb044e/demo-a-1/state.sqlite"
+  },
+  "f3p_faults": [
+    {
+      "id": "single_repairable",
+      "expected": "PASS",
+      "observed": "PASS",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": true,
+      "committed": 1,
+      "repair_attempts": 1,
+      "analysis_executions": 2,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 4,
+      "local_execution_ms": 671.875,
+      "wall_clock_ms": 2862.652,
+      "release_file_count": 28
+    },
+    {
+      "id": "compound_defect",
+      "expected": "REPAIR_INCOMPLETE",
+      "observed": "REPAIR_INCOMPLETE",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 2,
+      "analysis_executions": 3,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 5,
+      "local_execution_ms": 640.625,
+      "wall_clock_ms": 3732.532,
+      "release_file_count": null
+    },
+    {
+      "id": "faulty_checker",
+      "expected": "CHECKER_QUALIFICATION_FAILED",
+      "observed": "CHECKER_QUALIFICATION_FAILED",
+      "fixture_correct": true,
+      "initially_correct": true,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 3,
+      "local_execution_ms": 218.75,
+      "wall_clock_ms": 1521.536,
+      "release_file_count": null
+    },
+    {
+      "id": "shared_wrong",
+      "expected": "REPAIR_INCOMPLETE",
+      "observed": "REPAIR_INCOMPLETE",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 2,
+      "analysis_executions": 3,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 5,
+      "local_execution_ms": 734.375,
+      "wall_clock_ms": 3845.929,
+      "release_file_count": null
+    },
+    {
+      "id": "semantic_mutation",
+      "expected": "REPAIR_CONTRACT_MUTATION_BLOCKED",
+      "observed": "REPAIR_CONTRACT_MUTATION_BLOCKED",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 4,
+      "local_execution_ms": 390.625,
+      "wall_clock_ms": 2129.977,
+      "release_file_count": null
+    },
+    {
+      "id": "insufficient_budget",
+      "expected": "REPAIR_NOT_STARTED_BUDGET",
+      "observed": "REPAIR_NOT_STARTED_BUDGET",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 3,
+      "local_execution_ms": 328.125,
+      "wall_clock_ms": 1886.355,
+      "release_file_count": null
+    },
+    {
+      "id": "unsupported_repair",
+      "expected": "REPAIR_UNRESOLVED",
+      "observed": "REPAIR_UNRESOLVED",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": false,
+      "committed": 0,
+      "repair_attempts": 0,
+      "analysis_executions": 1,
+      "verification_executions": 1,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 3,
+      "local_execution_ms": 234.375,
+      "wall_clock_ms": 1688.533,
+      "release_file_count": null
+    },
+    {
+      "id": "successful_legacy_repair",
+      "expected": "PASS",
+      "observed": "PASS",
+      "fixture_correct": true,
+      "initially_correct": false,
+      "final_correct": true,
+      "committed": 1,
+      "repair_attempts": 1,
+      "analysis_executions": 2,
+      "verification_executions": 3,
+      "api_calls": 0,
+      "api_tokens": null,
+      "api_cost_usd": null,
+      "fake_provider_calls": 4,
+      "local_execution_ms": 718.75,
+      "wall_clock_ms": 3076.321,
+      "release_file_count": 24
+    }
+  ],
+  "f3p_recovery": [
+    {
+      "boundary": "AFTER_FAILURE_EVIDENCE",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 1,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "AFTER_REPAIR_DECISION",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "AFTER_REPAIRED_EXECUTION",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "DURING_REVALIDATION",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "BEFORE_REPAIR_COMMIT",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    },
+    {
+      "boundary": "AFTER_REPAIR_COMMIT",
+      "counts": {
+        "analysis_executions": 2,
+        "commits": 1,
+        "verified_evidence": 1
+      },
+      "model_calls_after_resume": 0,
+      "new_process": true,
+      "outcome": "PASS",
+      "passed": true
+    }
+  ],
+  "f3p_exports": [
+    {
+      "clean": false,
+      "result": {
+        "all_passed": true,
+        "canary_present_in_environment": true,
+        "live_api_calls": 0,
+        "cases": [
+          {
+            "case": "single_repairable",
+            "manifest": "build/ui_start_unblock/offline/5cbaffd6383d4d5d9e71d2162dcac8fb/f3p-evaluation/cases/single_repairable/release-canary-6ff073ba/manifests/release_manifest.json",
+            "file_count": 28,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          },
+          {
+            "case": "successful_legacy_repair",
+            "manifest": "build/ui_start_unblock/offline/5cbaffd6383d4d5d9e71d2162dcac8fb/f3p-evaluation/cases/successful_legacy_repair/release-canary-92c92241/manifests/release_manifest.json",
+            "file_count": 24,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          }
+        ]
+      }
+    },
+    {
+      "clean": true,
+      "result": {
+        "all_passed": true,
+        "canary_present_in_environment": false,
+        "live_api_calls": 0,
+        "cases": [
+          {
+            "case": "single_repairable",
+            "manifest": "build/ui_start_unblock/offline/5cbaffd6383d4d5d9e71d2162dcac8fb/f3p-evaluation/cases/single_repairable/release-clean-75c243d4/manifests/release_manifest.json",
+            "file_count": 28,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          },
+          {
+            "case": "successful_legacy_repair",
+            "manifest": "build/ui_start_unblock/offline/5cbaffd6383d4d5d9e71d2162dcac8fb/f3p-evaluation/cases/successful_legacy_repair/release-clean-adc53eeb/manifests/release_manifest.json",
+            "file_count": 24,
+            "hash_mismatches": [],
+            "missing_artifacts": [],
+            "secrets": [],
+            "absolute_paths": [],
+            "unresolved_refs": [],
+            "db_canary_leaks": [],
+            "dashboard_canary_leaks": [],
+            "passed": true
+          }
+        ]
+      }
+    }
+  ],
+  "pdf": [
+    {
+      "kind": "normal",
+      "support_level": "PARTIALLY_SUPPORTED",
+      "path": "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/normal.pdf",
+      "pages": 4,
+      "sha256": "97d20d1b96075f7183a5dd1f58423c645178313b48bf59f6bef99778b823239b",
+      "state_version": 18,
+      "korean_text": true,
+      "embedded_unicode_font": true,
+      "rendered_pages": [
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/normal-page-1.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/normal-page-2.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/normal-page-3.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/normal-page-4.png"
+      ],
+      "visual_review": "PASS"
+    },
+    {
+      "kind": "inconclusive",
+      "support_level": "INCONCLUSIVE",
+      "path": "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/inconclusive.pdf",
+      "pages": 4,
+      "sha256": "1c87a2c8a6b26bf8858f5431eaba82b72da0fbb442e8e886345957fc94ac1a19",
+      "state_version": 2,
+      "korean_text": true,
+      "embedded_unicode_font": true,
+      "rendered_pages": [
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/inconclusive-page-1.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/inconclusive-page-2.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/inconclusive-page-3.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/inconclusive-page-4.png"
+      ],
+      "visual_review": "PASS"
+    },
+    {
+      "kind": "partial",
+      "support_level": "INCONCLUSIVE",
+      "path": "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/partial.pdf",
+      "pages": 2,
+      "sha256": "f49c1c3c8c028c4aac1c12a664a50d5bb8f689764d9969497575eac74e232caf",
+      "state_version": 1,
+      "korean_text": true,
+      "embedded_unicode_font": true,
+      "rendered_pages": [
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/partial-page-1.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/partial-page-2.png"
+      ],
+      "visual_review": "PASS"
+    },
+    {
+      "kind": "repaired",
+      "support_level": "INCONCLUSIVE",
+      "path": "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/repaired.pdf",
+      "pages": 4,
+      "sha256": "087bd1b1a5eefed67a834ee4e459c53b64e83b3b5086b7248585648e7744be12",
+      "state_version": 2,
+      "korean_text": true,
+      "embedded_unicode_font": true,
+      "rendered_pages": [
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/repaired-page-1.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/repaired-page-2.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/repaired-page-3.png",
+        "build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/repaired-page-4.png"
+      ],
+      "visual_review": "PASS"
+    }
+  ],
+  "environment": {
+    "docker": {
+      "cli_present": false,
+      "daemon_reachable": false,
+      "image_present": false,
+      "image": "htrsa-sandbox:3.13",
+      "image_id": null,
+      "isolation_probe_passed": false,
+      "available": false,
+      "isolation_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "provider": {
+      "api_key_present": false,
+      "manager_model_configured": false,
+      "provider_importable": true,
+      "structured_output_available": true,
+      "configured": false,
+      "live_smoke_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "search": {
+      "status": "UNCONFIGURED",
+      "validated": false,
+      "provider": null,
+      "error_code": null
+    },
+    "sandbox": {
+      "fail_closed": true
+    },
+    "gates": {
+      "CORE_TESTS_PASS": true,
+      "STRESS_TESTS_PASS": true,
+      "ARTIFACT_VALIDATION_PASS": true,
+      "DOCKER_ISOLATION_PASS": false,
+      "LIVE_API_SMOKE_PASS": false,
+      "LIVE_SEARCH_PASS": false,
+      "DEMO_A_PASS": true,
+      "DEMO_B_PASS": true
+    },
+    "demo_ready": true,
+    "release_ready": false,
+    "productization": {
+      "windows_key": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:06:34.146634+00:00",
+        "error_code": "WINDOWS_ERROR_1312"
+      },
+      "default_browser": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:07:01.150073+00:00",
+        "error_code": null
+      }
+    },
+    "product_release_ready": false
+  },
+  "live_efficacy": {
+    "skills": "NOT_VALIDATED",
+    "f3p": "NOT_VALIDATED",
+    "paid_provider": "NOT_VALIDATED"
+  },
+  "synthetic_scanner": {
+    "reviewed_exact_hash_only": true,
+    "active_value_still_blocked": true,
+    "unknown_value_still_blocked": true,
+    "checks_passed": 3
+  },
+  "changed_from_initial_inventory": [
+    "src/htrsa/autonomous_loop.py",
+    "src/htrsa/control_plane.py",
+    "src/htrsa/control_runtime.py",
+    "src/htrsa/input_upload.py",
+    "src/htrsa/product_policy.py",
+    "src/htrsa/provider_checks.py",
+    "src/htrsa/release.py",
+    "src/htrsa/research_settings.py",
+    "src/htrsa/resource_policy.py",
+    "src/htrsa/scholarly.py",
+    "src/htrsa/search_policy.py",
+    "src/htrsa/service.py",
+    "src/htrsa/workbench.py",
+    "src/htrsa/workbench_static/product_ux.js",
+    "src/htrsa/workbench_static/workbench.css",
+    "tests/test_ui_start_unblock.py",
+    "qa/connection_ux_visual_qa.cjs",
+    "qa/hardening_visual_qa.cjs",
+    "qa/live_api_recording_visual_qa.cjs",
+    "qa/multi_provider_visual_qa.cjs",
+    "qa/prepublish_check.py",
+    "qa/productization_visual_qa.cjs",
+    "qa/product_visual_qa.cjs",
+    "qa/README.md",
+    "qa/prepublish/usability_visual_validation.json",
+    "docs/development/FEATURE_FREEZE.md",
+    "docs/history/연구일지.md"
+  ],
+  "added_since_initial_inventory": [
+    "src/htrsa/report_pdf.py",
+    "tests/test_ui_unblock_policy_files.py",
+    "tests/test_ui_unblock_search_pdf.py",
+    "qa/ui_start_unblock_defaults.json",
+    "qa/ui_start_unblock_report.md",
+    "qa/ui_unblock_browser.cjs",
+    "qa/ui_unblock_browser_fixture.py",
+    "qa/ui_unblock_defaults.py",
+    "qa/ui_unblock_offline_validation.py",
+    "qa/ui_unblock_pdf_checks.py"
+  ],
+  "also_changed": [
+    "README.md",
+    "pyproject.toml",
+    "docs/history/연구일지.md"
+  ],
+  "migration_added": false,
+  "dependencies": {
+    "reportlab": "4.5.1",
+    "pypdf": "6.19.0",
+    "pypdfium2": "5.13.0"
+  },
+  "publication": {
+    "publication_status": "BLOCKED",
+    "blockers": [
+      "LICENSE_PENDING_OWNER_CHOICE"
+    ],
+    "public_candidate_files": 293,
+    "suspected_secrets": 0,
+    "git_status": "VALIDATED",
+    "history_status": "VALIDATED",
+    "history_objects_scanned": 285,
+    "tracked_sensitive_files": [],
+    "ignored_required_source_files": [],
+    "core_regression": {
+      "status": "PASS",
+      "passed": true,
+      "current_source": true
+    }
+  },
+  "also_generated": [
+    "qa/ui_start_unblock_report.md",
+    "qa/ui_start_unblock_defaults.json",
+    "qa/ui_start_unblock_results.json"
+  ]
+}

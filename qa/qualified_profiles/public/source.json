@@ -1,0 +1,20 @@
+{
+  "url": "https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.txt",
+  "retrieved_at": "2026-10-03T04:08:10.663276+00:00",
+  "sha256": "f2cda52e1dce11e0c94915ac67159f4f02ec5de0d754a548145d2854f8383418",
+  "semantics": {
+    "product": "NASA GISTEMP v4 L-OTI",
+    "quantity_kind": "temperature_anomaly",
+    "unit": "degC",
+    "storage_scale": "0.01",
+    "baseline": [
+      1951,
+      1980
+    ],
+    "spatial_scope": "global",
+    "temporal_resolution": "annual",
+    "value_column": "J-D"
+  },
+  "execution": "REAL_PUBLIC_HTTP_FETCH",
+  "rows": 147
+}

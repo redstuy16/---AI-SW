@@ -402,6 +402,15 @@ class AutonomousResearchLoop(AgentRuntime):
                      refs=[decision_ref], logical_key="refine_question")
         self._save_cursor(research_id, "QUESTION_READY")
 
+        acquire = getattr(self, "evidence_acquisition", None)
+        supported = await acquire() if acquire is not None else True
+        if not supported or csv_source is None:
+            self.state.runtime_event(research_id, "RESEARCH_INPUT_LIMITATION",
+                {"reason": getattr(self, "input_limitation", "LITERATURE_EVIDENCE_MISSING") if not supported else "ANALYSIS_DATA_REQUIRED"})
+            self.state.stop_research(research_id, StopReason.INSUFFICIENT_DATA)
+            self._save_cursor(research_id, "STOPPED")
+            return {"research_id": research_id, "stop_reason": StopReason.INSUFFICIENT_DATA.value}
+
         shortlist_contract, _ = self._role_contract(
             research_id, "manager", "Generate up to three testable hypotheses for the research question",
             "HypothesisShortlist", parent_task_id=manager_task, inputs=[decision_ref], preserve=[decision_ref],

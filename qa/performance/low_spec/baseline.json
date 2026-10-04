@@ -1,0 +1,281 @@
+{
+  "research_list_first_ms": 77.2235999975237,
+  "research_list_repeat_ms": {
+    "median": 73.18870000017341,
+    "min": 72.87309999810532,
+    "max": 73.82099999813363,
+    "samples": [
+      73.82099999813363,
+      72.87309999810532,
+      73.18870000017341,
+      73.57060000504134,
+      72.92310000048019
+    ]
+  },
+  "research_detail_first_ms": 2.9817000031471252,
+  "research_detail_repeat_ms": {
+    "median": 2.4877999967429787,
+    "min": 2.448999999614898,
+    "max": 3.340200004458893,
+    "samples": [
+      3.340200004458893,
+      2.6433000020915642,
+      2.4828999958117492,
+      2.4877999967429787,
+      2.448999999614898
+    ]
+  },
+  "activity_view_small_first_ms": 11.10799999878509,
+  "activity_view_small_repeat_ms": {
+    "median": 7.6396000004024245,
+    "min": 7.348300001467578,
+    "max": 7.9377000001841225,
+    "samples": [
+      7.6396000004024245,
+      7.9377000001841225,
+      7.348300001467578,
+      7.725199997366872,
+      7.532999996328726
+    ]
+  },
+  "activity_view_large_first_ms": 7.9707999975653365,
+  "activity_view_large_repeat_ms": {
+    "median": 7.990100006281864,
+    "min": 7.526800000050571,
+    "max": 12.403900000208523,
+    "samples": [
+      7.526800000050571,
+      12.403900000208523,
+      8.064800000283867,
+      7.947900005092379,
+      7.990100006281864
+    ]
+  },
+  "verification_view_open_first_ms": 122.58509999810485,
+  "verification_view_open_repeat_ms": {
+    "median": 124.86879999778466,
+    "min": 122.54359999496955,
+    "max": 132.01040000421926,
+    "samples": [
+      124.36339999840129,
+      122.54359999496955,
+      124.86879999778466,
+      132.01040000421926,
+      130.75709999975516
+    ]
+  },
+  "report_open_first_ms": 4.014800004370045,
+  "report_open_repeat_ms": {
+    "median": 1.476999997976236,
+    "min": 1.3772000020253472,
+    "max": 1.8727999995462596,
+    "samples": [
+      1.8727999995462596,
+      1.476999997976236,
+      1.3795999984722584,
+      1.3772000020253472,
+      1.5043000021250919
+    ]
+  },
+  "experiments_view_open_first_ms": 289.75139999965904,
+  "experiments_view_open_repeat_ms": {
+    "median": 287.58340000058524,
+    "min": 286.50119999656454,
+    "max": 288.4953000029782,
+    "samples": [
+      287.10019999562064,
+      287.58340000058524,
+      288.4953000029782,
+      286.50119999656454,
+      287.8839999975753
+    ]
+  },
+  "evidence_view_open_first_ms": 502.07550000050105,
+  "evidence_view_open_repeat_ms": {
+    "median": 486.65629999595694,
+    "min": 474.77729999809526,
+    "max": 493.53590000100667,
+    "samples": [
+      486.65629999595694,
+      493.53590000100667,
+      486.8646000031731,
+      477.723000003607,
+      474.77729999809526
+    ]
+  },
+  "queries": {
+    "research_list": [
+      1447,
+      1447,
+      1447,
+      1447,
+      1447,
+      1447
+    ],
+    "research_detail": [
+      14,
+      14,
+      14,
+      14,
+      14,
+      14
+    ],
+    "activity_view_small": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "activity_view_large": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "verification_view_open": [
+      604,
+      604,
+      604,
+      604,
+      604,
+      604
+    ],
+    "report_open": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "experiments_view_open": [
+      1805,
+      1805,
+      1805,
+      1805,
+      1805,
+      1805
+    ],
+    "evidence_view_open": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ]
+  },
+  "fixture_counts": {
+    "research_runs": 103,
+    "runtime_events": 5129,
+    "experiments": 305,
+    "evidence": 309,
+    "staged_mutations": 305
+  },
+  "query_plan": [
+    [
+      5,
+      0,
+      62,
+      "SEARCH runtime_events USING INDEX idx_runtime_research_seq (research_id=?)"
+    ]
+  ],
+  "sqlite_size_mb": 2.5390625,
+  "trace_size_mb": 0.05487823486328125,
+  "workspace_size_mb": 0.22086238861083984,
+  "source_fingerprint": "947125269c0bf8245830fc15da6a7db32aabad61de5718550989d7ceaecc01ce",
+  "environment": {
+    "python": "3.14.7",
+    "os": "nt",
+    "logical_cpu": 20
+  },
+  "cold": [
+    {
+      "cold_start_ms": 545.7339999993565,
+      "backend_ready_ms": 545.7339999993565,
+      "idle_cpu_percent": 0.0,
+      "idle_cpu_max_percent": 0.0,
+      "idle_ram_mb": 56.287109375,
+      "idle_seconds": 60,
+      "process_count": 1,
+      "heavy_modules": []
+    },
+    {
+      "cold_start_ms": 513.5531999985687,
+      "backend_ready_ms": 513.5531999985687,
+      "idle_cpu_percent": 0.0,
+      "idle_cpu_max_percent": 0.0,
+      "idle_ram_mb": 56.16015625,
+      "idle_seconds": 0,
+      "process_count": 1,
+      "heavy_modules": []
+    },
+    {
+      "cold_start_ms": 523.4903999953531,
+      "backend_ready_ms": 523.4903999953531,
+      "idle_cpu_percent": 0.0,
+      "idle_cpu_max_percent": 0.0,
+      "idle_ram_mb": 56.09375,
+      "idle_seconds": 0,
+      "process_count": 1,
+      "heavy_modules": []
+    }
+  ],
+  "demos": {
+    "A": [
+      {
+        "duration_ms": 3806.8299000005936,
+        "passed": true,
+        "peak_ram_mb": 158.3203125,
+        "peak_cpu_percent": 114.9,
+        "peak_process_count": 1
+      },
+      {
+        "duration_ms": 4007.1100999994087,
+        "passed": true,
+        "peak_ram_mb": 158.50390625,
+        "peak_cpu_percent": 109.1,
+        "peak_process_count": 2
+      },
+      {
+        "duration_ms": 4057.038700004341,
+        "passed": true,
+        "peak_ram_mb": 158.75390625,
+        "peak_cpu_percent": 103.4,
+        "peak_process_count": 1
+      }
+    ],
+    "B": [
+      {
+        "duration_ms": 4815.319599998475,
+        "passed": true,
+        "peak_ram_mb": 160.0625,
+        "peak_cpu_percent": 103.6,
+        "peak_process_count": 1
+      },
+      {
+        "duration_ms": 5038.209899998037,
+        "passed": true,
+        "peak_ram_mb": 160.69921875,
+        "peak_cpu_percent": 99.1,
+        "peak_process_count": 1
+      },
+      {
+        "duration_ms": 5799.789600001532,
+        "passed": true,
+        "peak_ram_mb": 160.1953125,
+        "peak_cpu_percent": 113.0,
+        "peak_process_count": 1
+      }
+    ]
+  },
+  "local_model_metrics": "NOT_APPLICABLE",
+  "gpu_metrics": "NOT_APPLICABLE",
+  "browser_ready_ms": "MEASURE_SEPARATELY",
+  "scope": "별도 Python 본체+분석 자식 프로세스 · CPU는 한 코어 100% · 브라우저 RAM 제외",
+  "fixture": "build\\flow-opt-fixture"
+}

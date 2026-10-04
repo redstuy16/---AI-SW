@@ -1,0 +1,353 @@
+{
+  "recorded_at": "2026-10-03T05:20:33.929117+00:00",
+  "status": "COMPLETED_AVAILABLE_OFFLINE_WORK",
+  "source_fingerprint": "2086d74304e2a0c0eb771cee2125ab16af5bc6f3fbec64bdb488da0c313cadd2",
+  "source_same_start_end": true,
+  "core": {
+    "exit_code": 0,
+    "passed": true,
+    "passed_count": 939,
+    "skipped": false,
+    "elapsed_seconds": 870.2731862068176,
+    "source_before": "2086d74304e2a0c0eb771cee2125ab16af5bc6f3fbec64bdb488da0c313cadd2",
+    "source_after": "2086d74304e2a0c0eb771cee2125ab16af5bc6f3fbec64bdb488da0c313cadd2"
+  },
+  "baseline": {
+    "passed": 891,
+    "skipped": 5,
+    "deselected": 2,
+    "stdout_seconds": 561.01,
+    "xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "5",
+      "tests": "896",
+      "time": "560.924",
+      "timestamp": "2026-10-03T12:53:04.451641+09:00",
+      "hostname": "DESKTOP-RBLVP8C"
+    },
+    "evidence": "build/beginner-v4-baseline.xml"
+  },
+  "interim_full_regression": {
+    "passed": 934,
+    "skipped": 5,
+    "deselected": 2,
+    "stdout_seconds": 1072.07,
+    "xml": {
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "5",
+      "tests": "939",
+      "time": "1071.785",
+      "timestamp": "2026-10-03T13:35:29.451475+09:00",
+      "hostname": "DESKTOP-RBLVP8C"
+    },
+    "final_source": false
+  },
+  "new_tests": {
+    "passed": 48,
+    "stdout_seconds": 80.04,
+    "evidence": "build/beginner-v4-verified.xml"
+  },
+  "offline_validation": {
+    "source_fingerprint": "2086d74304e2a0c0eb771cee2125ab16af5bc6f3fbec64bdb488da0c313cadd2",
+    "stress": {
+      "passed": true,
+      "exit_code": 0,
+      "passed_count": 116,
+      "skipped_count": 0,
+      "deselected_count": 0,
+      "duration_sec": 216.319,
+      "xml": "build/qa-day1/run-8f576c6c943e/stress.xml",
+      "log": "build/qa-day1/run-8f576c6c943e/stress.log"
+    },
+    "all_executable_scenarios_passed": true,
+    "demo_A": true,
+    "demo_B": true,
+    "demo_runs_each": 5,
+    "fresh_process_resume": {
+      "passed": true,
+      "counts": {
+        "experiments": 2,
+        "evidence": 2,
+        "state_events": 2,
+        "stats_calls": 2
+      },
+      "new_process": true
+    },
+    "release": {
+      "passed": true,
+      "file_count": 17,
+      "hash_mismatches": [],
+      "missing_artifacts": [],
+      "secret_files": [],
+      "unresolved_refs": 0,
+      "manifest": "build/qa-day1/run-8f576c6c943e/clean-release/manifests/release_manifest.json",
+      "manifest_sha256": "ce23853f5f43e4c8e3ae8a3b197fa4ee6bb7e46beaa13c76363a5dead59cab9d",
+      "clean_database": "build/qa-day1/run-8f576c6c943e/demo-a-1/state.sqlite"
+    },
+    "f3p_faults": 8,
+    "f3p_all_expected": true,
+    "f3p_recovery_boundaries": 6,
+    "f3p_recovery_pass": true,
+    "f3p_exports_all_pass": true,
+    "evidence": "build/ui_start_unblock/offline_results.json"
+  },
+  "qualified_profile": {
+    "cases": 16,
+    "all_passed": true,
+    "execution": "OFFLINE_LOCAL_TOOLS_WITH_SCRIPTED_AGENT",
+    "evidence": "qa/qualified_profiles/results.json",
+    "source_scale_pair": {
+      "txt_scale": "0.01",
+      "csv_scale": "1",
+      "all_finite_annual_values_match": true
+    },
+    "fresh_process_recovery": {
+      "boundaries": [
+        {
+          "boundary": "profile_after_verify",
+          "resume_model_calls": 0,
+          "commit_count": 1,
+          "current": true,
+          "fresh_process": true,
+          "passed": true,
+          "execution": "OFFLINE_FAKE_AGENT_REAL_PROCESS"
+        },
+        {
+          "boundary": "profile_after_commit",
+          "resume_model_calls": 0,
+          "commit_count": 1,
+          "current": true,
+          "fresh_process": true,
+          "passed": true,
+          "execution": "OFFLINE_FAKE_AGENT_REAL_PROCESS"
+        }
+      ],
+      "all_passed": true
+    }
+  },
+  "browser": {
+    "v4_checks": 35,
+    "v4_passed": true,
+    "existing_start_checks": 53,
+    "hardening_checks": 41,
+    "local_auth_checks": 51,
+    "execution": "REAL_CHROME_WITH_MOCK_HTTP",
+    "actual_paid_requests": 0
+  },
+  "pdf": {
+    "execution": "ACTUAL_GENERATED_PDF_RENDER_AND_CONTACT_SHEET_REVIEW",
+    "qualified_pdf": "build/beginner-v4/browser/29f49164-2db8-4c1a-8216-f45137919840/report.pdf",
+    "qualified_pages": 4,
+    "legacy_pages": 14,
+    "contacts": [
+      "build/beginner-v4/pdf-final-contact.png",
+      "build/beginner-v4/pdf-legacy-contact.png"
+    ],
+    "layout_status": "PASS_CONTACT_SHEET",
+    "scope": "페이지 모음에서 잘림·겹침·한글 누락이 보이지 않았습니다. 수치와 출처의 검증은 해당 도구·manifest·테스트 결과에 따릅니다.",
+    "limitations": [
+      "PDF 시각 검토는 과학적 타당성이나 사용자 사용성 평가가 아닙니다."
+    ]
+  },
+  "benchmark_preparation": {
+    "execution": "OFFLINE_PREPARATION_INTEGRITY_CHECK",
+    "checks": [
+      {
+        "id": "a83dab0749444877aea7b0e5d53c7aeb",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "95aa2e418f5e44b39ce22a4222190bbd",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "e8c3b7c68a9d4e92a09a63d261676f47",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "3b52522f78d94b40bd83385cff937c0e",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "253e921ecf844f01ac9a672271d8e073",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "1a73acf0b28c4401ab2af8b1de1c488d",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "206d03353a604595b4480458ee05fdd0",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "1d1315c4fa1a42738a3969dbd6d1d8f7",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "463a96e81b5c42b28a30ea0e2adcfb3c",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "e931c6d1fe8946d0b0ac321ea632d0b3",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "e6a3348212f2446ab275b9095ea742a7",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "4d3ff15106724a93abaadfc7b037eeb1",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "09ab066309084e2fa4681641a78b7da5",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "010f9fb0e46a4359a686eb45fa0758a3",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "d9886cb3b9354f9293556eb6755e0c72",
+        "same_inputs": true,
+        "oracle_hidden": true
+      },
+      {
+        "id": "9e99ef93ec4f4a5197aa9a46542b5f01",
+        "same_inputs": true,
+        "oracle_hidden": true
+      }
+    ],
+    "coverage_rejection": "CASE_COVERAGE_MISMATCH",
+    "non_live_rejection": "FAIRNESS_OR_LIVE_EVIDENCE_REQUIRED",
+    "passed": true,
+    "live_efficacy": "NOT_VALIDATED"
+  },
+  "security": {
+    "publication_status": "BLOCKED",
+    "blockers": [
+      "LICENSE_PENDING_OWNER_CHOICE"
+    ],
+    "history_status": "VALIDATED",
+    "history_objects_scanned": 316,
+    "public_candidate_files": 325,
+    "suspected_secrets": 0,
+    "core_regression": {
+      "status": "PASS",
+      "passed": true,
+      "current_source": true
+    }
+  },
+  "environment": {
+    "docker": {
+      "cli_present": false,
+      "daemon_reachable": false,
+      "image_present": false,
+      "image": "htrsa-sandbox:3.13",
+      "image_id": null,
+      "isolation_probe_passed": false,
+      "available": false,
+      "isolation_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "provider": {
+      "api_key_present": false,
+      "manager_model_configured": false,
+      "provider_importable": true,
+      "structured_output_available": true,
+      "configured": false,
+      "live_smoke_validated": false,
+      "status": "NOT_VALIDATED"
+    },
+    "search": {
+      "status": "UNCONFIGURED",
+      "validated": false,
+      "provider": null,
+      "error_code": null
+    },
+    "sandbox": {
+      "fail_closed": true
+    },
+    "gates": {
+      "CORE_TESTS_PASS": true,
+      "STRESS_TESTS_PASS": true,
+      "ARTIFACT_VALIDATION_PASS": true,
+      "DOCKER_ISOLATION_PASS": false,
+      "LIVE_API_SMOKE_PASS": false,
+      "LIVE_SEARCH_PASS": false,
+      "DEMO_A_PASS": true,
+      "DEMO_B_PASS": true
+    },
+    "demo_ready": true,
+    "release_ready": false,
+    "productization": {
+      "windows_key": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:06:34.146634+00:00",
+        "error_code": "WINDOWS_ERROR_1312"
+      },
+      "default_browser": {
+        "status": "NOT_VALIDATED",
+        "passed": false,
+        "checked_at": "2026-10-02T10:07:01.150073+00:00",
+        "error_code": null
+      }
+    },
+    "product_release_ready": false
+  },
+  "db_migrations_added": 0,
+  "dependencies_added_in_v4": [],
+  "paid_api_calls": 0,
+  "live_efficacy": "NOT_VALIDATED",
+  "native_products": "NOT_VALIDATED",
+  "usability": "NOT_VALIDATED",
+  "ablation": "NOT_VALIDATED",
+  "known_regressions": [],
+  "unsupported": [
+    "지역·절대 기온",
+    "인과 식별·미래 예측·확증적 유의성",
+    "임의 자료의 자동 의미 추론",
+    "다른 분야의 한정 실행 어댑터",
+    "two_period_comparison의 기존 F3-P repair 템플릿"
+  ],
+  "command_corrections": [
+    {
+      "attempt": "htrsa.preflight validate-api",
+      "exit_code": 2,
+      "shell_observed_exit_code": 1,
+      "correct_command": "htrsa.preflight smoke-api",
+      "observed": "SKIPPED/API_UNCONFIGURED"
+    }
+  ],
+  "observed_time": {
+    "start": "2026-10-03T12:53:04.451641+09:00",
+    "end": "2026-10-03T05:20:33.929117+00:00",
+    "seconds": 5249.477,
+    "scope": "기준선·구현·테스트·수정·대기·문서 기록이 포함된 관측 구간. 순수 구현 시간이나 성능 개선 수치가 아닙니다."
+  },
+  "github_update": {
+    "status": "NOT_EXECUTED",
+    "reason": "GIT_METADATA_READ_ONLY",
+    "publication_gate": "LICENSE_PENDING_OWNER_CHOICE"
+  }
+}

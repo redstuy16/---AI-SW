@@ -17,6 +17,7 @@ from .schemas import ContextRef, RefType, ToolRequest, ToolResult, new_id, utc_n
 from .service import StateService, ContractViolationError
 from .storage import sha256_file, sha256_bytes, write_json, DatasetIntegrityError, ArtifactIntegrityError
 from .analysis_skills import SkillApplicabilityError, SkillRequest, execute_skill
+from .period_comparison import SelectedDataError
 
 
 class ToolNotAllowedError(Exception):
@@ -67,9 +68,10 @@ class DataImportTool:
     name = "data.import"
     version = "1.0"
 
-    def __init__(self, state: StateService, max_size_bytes: int = 10_000_000):
+    def __init__(self, state: StateService, max_size_bytes: int = 10_000_000, *, allowed_source_paths=None):
         self.state = state
         self.max_size_bytes = max_size_bytes
+        self.allowed_source_paths = None if allowed_source_paths is None else {Path(p).resolve() for p in allowed_source_paths}
 
     def run(self, request: ToolRequest) -> ToolResult:
         try:
@@ -77,6 +79,9 @@ class DataImportTool:
             if args.research_id != request.research_id:
                 raise ToolExecutionError("research ID mismatch")
             source = Path(args.source_path)
+            if self.allowed_source_paths is not None and (source.resolve() not in self.allowed_source_paths or
+                    any(p.is_symlink() or p.is_junction() for p in [source, *source.parents])):
+                raise ToolExecutionError("SOURCE_NOT_AUTHORIZED")
             if not source.is_file() or source.suffix.lower() != ".csv":
                 raise ToolExecutionError("CSV source is missing")
             data = source.read_bytes()
@@ -188,6 +193,8 @@ class StatsTool:
                               provenance={"dataset_id": args.dataset_id, "dataset_sha256": dataset["sha256"],
                                           "stats_artifact_id": artifact_id,
                                           "scipy_version": scipy.__version__})
+        except SelectedDataError as exc:
+            return _failure(request, exc.code, str(exc))
         except (ValidationError, ToolExecutionError, ValueError, KeyError, OSError, ZeroDivisionError) as exc:
             return _failure(request, "INVALID_METHOD_INPUT", str(exc))
 
@@ -201,6 +208,7 @@ class VerifiedAnalysisSkillTool:
         self.state, self.contract_id = state, contract_id
 
     def run(self, request: ToolRequest) -> ToolResult:
+        fig = None
         try:
             if not getattr(self.state, "verified_analysis_skills_enabled", False):
                 raise ToolExecutionError("verified analysis Skills are disabled")
@@ -278,7 +286,6 @@ class VerifiedAnalysisSkillTool:
             ax.set(title=plan.skill_id)
             figure_file = self.state.workspace.path(request.research_id, figure_path)
             fig.savefig(figure_file, metadata={"Software": "H-TRSA"})
-            plt.close(fig)
             self.state.register_file_artifact(figure_id, request.research_id, self.contract_id,
                                               "FIGURE", figure_path, "tool", request.request_id,
                                               sha256_file(figure_file))
@@ -296,9 +303,15 @@ class VerifiedAnalysisSkillTool:
             return _failure(request, "INVALID_SKILL_REQUEST", "schema validation failed")
         except (ToolExecutionError, ValueError, KeyError, OSError) as exc:
             return _failure(request, "INVALID_SKILL_REQUEST", str(exc))
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
 
 def _compute_stats(args: StatsArgs, rows: list[dict[str, str]]) -> dict:
+    if args.method == "two_period_comparison":
+        from .period_comparison import compare_periods
+        return compare_periods(rows, args.variables, args.parameters["periods"])
     def paired(left: str, right: str) -> tuple[list[float], list[float], int]:
         x, y, missing = [], [], 0
         for row in rows:
@@ -380,6 +393,7 @@ class VisualizationTool:
         self.state, self.contract_id = state, contract_id
 
     def run(self, request: ToolRequest) -> ToolResult:
+        fig = None
         try:
             import matplotlib
             matplotlib.use("Agg")
@@ -413,11 +427,16 @@ class VisualizationTool:
             else:
                 raise ToolExecutionError("plot requires two columns")
             ax.set(title=args.title, xlabel=args.x_label or args.x, ylabel=args.y_label or (args.y or "count"))
+            if any("\uac00" <= c <= "\ud7a3" for c in args.title + (args.x_label or "") + (args.y_label or "")):
+                from matplotlib.font_manager import FontProperties
+                font = next((p for p in (Path("C:/Windows/Fonts/malgun.ttf"), Path("/usr/share/fonts/truetype/noto/NotoSansKR-Regular.ttf")) if p.is_file()), None)
+                if font:
+                    for label in (ax.title, ax.xaxis.label, ax.yaxis.label):
+                        label.set_fontproperties(FontProperties(fname=str(font)))
             artifact_id = new_id("ART")
             relative = f"figures/{artifact_id}.png"
             path = self.state.workspace.path(request.research_id, relative)
             fig.savefig(path, metadata={"Software": "H-TRSA"})
-            plt.close(fig)
             digest = sha256_file(path)
             self.state.register_file_artifact(artifact_id, request.research_id, self.contract_id,
                                               "FIGURE", relative, "tool", request.request_id, digest)
@@ -427,6 +446,9 @@ class VisualizationTool:
                               provenance={"dataset_id": args.dataset_id, "dataset_sha256": dataset["sha256"]})
         except (ValidationError, ToolExecutionError, ValueError, OSError) as exc:
             return _failure(request, "INVALID_PLOT_INPUT", str(exc))
+        finally:
+            if fig is not None:
+                plt.close(fig)
 
 
 def _paired_plot(rows: list[dict[str, str]], x_name: str, y_name: str):
@@ -472,6 +494,21 @@ class ToolRegistry:
         self._tools[tool.name] = tool
 
     def dispatch(self, contract_id: str, request: ToolRequest) -> ToolResult:
+        controlled = self.state._db.execute("SELECT 1 FROM sqlite_master WHERE name='control_schema'").fetchone()
+        if controlled and request.tool_name in {'stats.run', 'analysis.skill', 'visualization.render'}:
+            from .control_plane import ControlStore
+            from .resource_queue import ResourcePool
+            with ResourcePool(ControlStore(self.state._db)).sync_lease(request.research_id, request.actor_id):
+                return self._dispatch_ready(contract_id, request)
+        return self._dispatch_ready(contract_id, request)
+
+    def _dispatch_ready(self, contract_id: str, request: ToolRequest) -> ToolResult:
+        from .research_design import check_tool
+        contract, _ = self.state.contract(contract_id)
+        if request.research_id != contract.research_id:
+            raise ToolNotAllowedError("연구의 소유 범위가 다릅니다.")
+        if check_tool(self.state, contract, request):
+            raise ToolNotAllowedError("RESEARCH_DESIGN_ACTION_BLOCKED")
         tool = self._tools.get(request.tool_name)
         if tool is None:
             raise ToolNotAllowedError(request.tool_name)
@@ -482,6 +519,8 @@ class ToolRegistry:
         started_at, started_clock = utc_now(), time.perf_counter()
         try:
             result = tool.run(request)
+        except MemoryError:
+            result = _failure(request, 'RESOURCE_EXHAUSTED', '분석에 사용할 메모리가 부족합니다.')
         except DatasetIntegrityError as exc:
             result = _failure(request, "DATASET_INTEGRITY_ERROR", str(exc))
         except ArtifactIntegrityError as exc:
@@ -489,6 +528,8 @@ class ToolRegistry:
         except Exception as exc:
             result = _failure(request, "TOOL_EXECUTION_ERROR", str(exc))
         finished_at = utc_now()
+        from .research_design import record_tool_outcome
+        record_tool_outcome(self.state, request, result)
         provenance = {**result.provenance, "tool_name": tool.name, "tool_version": tool.version,
                       "started_at": started_at.isoformat(), "finished_at": finished_at.isoformat(),
                       "latency_ms": (time.perf_counter() - started_clock) * 1000,

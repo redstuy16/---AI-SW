@@ -33,6 +33,7 @@ from .providers.base import ModelProviderError
 from .release import export_release, ReleaseExportError
 from .schemas import StrictModel, new_id, utc_now
 from .storage import sha256_file
+from .storage_errors import storage_error_code
 from .local_auth import MemorySecrets, contains_auth_material, redact_auth_material
 
 
@@ -91,9 +92,16 @@ class WorkbenchAPI:
         self.children = []
         self.workspace.mkdir(parents=True, exist_ok=True)
         (self.workspace / "inputs").mkdir(exist_ok=True)
+        from .input_upload import Attachments
+        Attachments(self.store, self.workspace).cleanup()
         self._recover()
+        from .research_lifecycle import cleanup
+        cleanup(self)
 
     def _recover(self):
+        from .resource_queue import ResourcePool
+        with self.store.transaction():
+            ResourcePool(self.store).recover()
         from .productization import recover_qualifications
         recover_qualifications(self)
         from .live_api_test import recover_sessions
@@ -124,21 +132,12 @@ class WorkbenchAPI:
         result.update(packages=versions, python=sys.version.split()[0], free_bytes=shutil.disk_usage(self.workspace).free,
                       generated_code="격리 검증 전 생성 코드 실행 차단", local_egress="외부 전송 차단 미검증",
                       skill_live_efficacy="NOT_VALIDATED", f3p_live_efficacy="NOT_VALIDATED")
+        result['checked_at'] = datetime.now().astimezone().isoformat()
         return result
 
     def research_list(self):
-        rows = []
-        for raw in self.store.db.execute("SELECT * FROM research_runs ORDER BY created_at DESC"):
-            rid = raw["research_id"]
-            overview = project_overview(self.read._state, rid, mode=self.mode).model_dump(mode="json")
-            owned = self.store.db.execute("SELECT * FROM control_runs WHERE research_id=?", (rid,)).fetchone()
-            snapshot = json.loads(owned["snapshot"]) if owned else {}
-            event = self.store.db.execute("SELECT event_type,created_at FROM runtime_events WHERE research_id=? ORDER BY seq DESC LIMIT 1", (rid,)).fetchone()
-            rows.append({**overview, "title": owned["title"] if owned else overview["question"],
-                         "control_status": owned["status"] if owned else overview["status"], "control_version": owned["version"] if owned else None,
-                         "research_depth": snapshot.get("research_depth"), "last_action": event[0] if event else overview["current_stage"],
-                         "updated_at": event[1] if event else raw["created_at"], "controlled": bool(owned)})
-        return rows
+        from .workbench_pages import research_list
+        return research_list(self)
 
     def repair_projection(self, rid):
         state, db = self.read._state, self.store.db
@@ -202,6 +201,7 @@ class WorkbenchAPI:
 
     def preflight(self, snapshot):
         reasons = []
+        price_required_profiles = []
         if self.mode == "DEMO":
             reasons.append("DEMO_EXECUTION_SEPARATE")
         if snapshot["egress"] == "none":
@@ -213,7 +213,8 @@ class WorkbenchAPI:
             conn = Connection.model_validate(snapshot["connections"][model.connection_id])
             if not conn.enabled or not conn.destination_approved:
                 reasons.append("DESTINATION_APPROVAL_REQUIRED")
-            if model.capability_status != "supported":
+            from .product_policy import workflow_compatible
+            if not (workflow_compatible(model) if snapshot.get("settings_version", 1) >= 2 else model.capability_status == "supported"):
                 reasons.append("CAPABILITY_NOT_VALIDATED")
             try:
                 from .providers.native import REGISTRY
@@ -230,36 +231,69 @@ class WorkbenchAPI:
                     admitted_cost(model, min(4096, model.input_byte_limit))
                 except ControlError as exc:
                     reasons.append(exc.code)
+                    if exc.code == "PRICE_REQUIRED" and model.profile_id not in price_required_profiles:
+                        price_required_profiles.append(model.profile_id)
         try:
-            source = safe_source(self.workspace / "inputs", snapshot["source_relative"])
-            if sha256_file(source) != snapshot["source"]["sha256"]:
+            from .input_upload import Attachments
+            Attachments(self.store, self.workspace).validate(snapshot.get("attachments", []), snapshot.get("draft_id"), snapshot.get("analysis_attachment_id"))
+            if snapshot.get("source_relative") is None:
+                if snapshot.get("source") is not None:
+                    reasons.append("SOURCE_INVALID")
+                source = None
+            else:
+                source = safe_source(self.workspace / "inputs", snapshot["source_relative"])
+            if source is not None and sha256_file(source) != snapshot["source"]["sha256"]:
                 reasons.append("SOURCE_HASH_MISMATCH")
-        except (ControlError, OSError):
+        except ControlError as exc:
+            reasons.append(exc.code)
+        except OSError:
             reasons.append("SOURCE_INVALID")
         from .search_policy import decision
         search_status = decision(snapshot)
-        if snapshot.get('search_required') and search_status != 'SEARCH_ALLOWED':
+        if snapshot.get('search_required') and snapshot.get("settings_version", 1) < 2 and search_status != 'SEARCH_ALLOWED':
             reasons.append(search_status)
-        return {"search_status": search_status, "ready": not reasons, "reasons": sorted(set(reasons)), "price_status": "가격 확인 필요" if "PRICE_REQUIRED" in reasons else "예약 시 계산",
+        value = {"search_status": search_status, "ready": not reasons, "reasons": list(dict.fromkeys(reasons)),
+                "price_required_profiles": price_required_profiles,
+                "first_blocker": next(iter(reasons), None), "field_sources": snapshot.get("field_sources", {}),
+                "effective_routing": snapshot["routing"], "effective_settings": {k:snapshot.get(k) for k in
+                    ("performance_profile","advanced_performance_profile","model_reasoning","sampling_mode","search_required","search_attempt_limit","report_format","selected_model_pool","draft_revision")},
+                "price_status": "가격 확인 필요" if "PRICE_REQUIRED" in reasons else "예약 시 계산",
                 "generated_code": False, "egress_verified": False}
+        from .beginner_policy import classify
+        return classify(snapshot, value)
 
     def prepare(self, request):
         if contains_auth_material(to_json(request)):
             raise ControlError("SECRET_IN_CONFIG")
         if any(value in to_json(request) for value in self.credentials.active_secrets(c.get("credential_env_name") for c in self.store.configs("connection"))):
             raise ControlError("SECRET_IN_CONFIG")
-        request = NewResearch.model_validate(request)
-        from .product_policy import prepare_snapshot, apply_reasoning
-        prepared = prepare_snapshot(self.store, request.model_dump(mode="json"))
+        requested = dict(request)
+        from .product_policy import prepare_snapshot, apply_reasoning, resolve_effective_settings
+        resolved, field_sources = resolve_effective_settings(self.store, requested)
+        prepared = prepare_snapshot(self.store, resolved)
         request = NewResearch.model_validate({k: v for k, v in prepared.items() if k in NewResearch.model_fields})
+        from .input_upload import Attachments
+        attachment_store = Attachments(self.store, self.workspace)
+        attachment_items, analysis_source = attachment_store.validate(request.attachments, request.draft_id, request.analysis_attachment_id)
+        from .research_design import authorize_bindings
+        authorize_bindings(self.store, self.workspace, request.detailed_design, request.draft_id, request.attachments)
+        if analysis_source:
+            if request.source_relative and request.source_relative != analysis_source:
+                raise ControlError("ANALYSIS_ATTACHMENT_CONFLICT")
+            request.source_relative = analysis_source
         routing_revision = None
-        if request.routing_profile_id:
+        if request.routing_profile_id and request.settings_version == 1:
             routing = RoutingProfile.model_validate(self.store.config("routing", request.routing_profile_id))
             request.routing = dict(routing.routing)
             if routing.reviewer_profile_id: request.routing["verification_coordinator"] = routing.reviewer_profile_id
             routing_revision = next(x["revision"] for x in self.store.configs("routing") if x["profile_id"] == routing.profile_id)
         snapshot = request.model_dump(mode="json")
-        snapshot["source"] = source_snapshot(self.workspace / "inputs", request.source_relative)
+        snapshot["source"] = source_snapshot(self.workspace / "inputs", request.source_relative) if request.source_relative else None
+        snapshot["field_sources"] = field_sources
+        snapshot["requested_settings"] = requested
+        from .research_design import resolve_design
+        snapshot["design_resolution"] = resolve_design(snapshot["question"], snapshot.get("detailed_design"))
+        snapshot["attachment_snapshots"] = [attachment_store.public(item) for item in attachment_items]
         snapshot["models"] = {role: self.store.config("model", profile) for role, profile in request.routing.items()}
         snapshot["profile_revisions"] = {x["profile_id"]:x["revision"] for x in self.store.configs("model") if x["profile_id"] in request.routing.values()}
         snapshot["routing_revision"] = routing_revision
@@ -272,6 +306,7 @@ class WorkbenchAPI:
                         tool_policy={"generated_code": False, "web_search": request.search_policy != "DISABLED", "telemetry": False, "tools": "existing contract allowlist"})
         # 기본값으로 사용자가 선택한 깊이를 바꾸지 않는다.
         snapshot["research_depth"] = request.research_depth
+        snapshot["search_attempt_limit"] = request.search_attempt_limit
         snapshot["requested_depth_limits"] = DEPTHS[request.research_depth]
         snapshot["depth_limits"] = resolved_depth(request.research_depth)
         if request.max_followups is not None:
@@ -281,7 +316,29 @@ class WorkbenchAPI:
 
     def create(self, request):
         snapshot = self.prepare(request)
-        rid = self.read._state.create_research(snapshot["question"])
+        key = snapshot.get("submission_key")
+        digest = sha256(to_json(request).encode("utf-8", errors="strict")).hexdigest()
+        rid = None
+        if key:
+            with self.store.transaction():
+                row = self.store.db.execute("SELECT payload FROM control_configs WHERE kind='research_submission' AND id=?", (key,)).fetchone()
+                if row:
+                    prior = json.loads(row[0])
+                    if prior["payload_hash"] != digest:
+                        raise ControlError("IDEMPOTENCY_CONFLICT")
+                    rid = prior["research_id"]
+                else:
+                    rid = new_id("R")
+                    self.store.db.execute("INSERT INTO control_configs VALUES('research_submission',?,1,?)",
+                        (key, to_json({"research_id":rid, "payload_hash":digest})))
+            if self.store.db.execute("SELECT 1 FROM control_runs WHERE research_id=?", (rid,)).fetchone():
+                current = self.store.run(rid)["snapshot"]
+                return {"research_id":rid, "snapshot":current, "preflight":self.preflight(current)}
+        rid = self.read._state.create_research(snapshot["question"], research_id=rid)
+        from .research_design import initialize_design
+        design = initialize_design(self.read._state, rid, snapshot)
+        if design and not design["issues"] and design["effective_question"] != snapshot["question"]:
+            self.read._state.set_research_question(rid, design["effective_question"])
         self.read.workspace.prepare(rid)
         with self.store.transaction():
             self.store.db.execute("INSERT INTO control_runs(research_id,title,status,snapshot,created_at) VALUES(?,?,?,?,?)",
@@ -332,6 +389,9 @@ class WorkbenchAPI:
             result = {"research_id": rid, "status": status, "version": run["version"] + 1}
             self.store.db.execute("INSERT INTO control_commands VALUES(?,?,?,?,?)", (key, rid, action, digest, to_json(result)))
             self.store.audit(rid, action.upper() + "_REQUESTED", result)
+        if status in {"STARTING", "RESUMING"} and run["snapshot"].get("attachments"):
+            from .input_upload import Attachments
+            Attachments(self.store, self.workspace).reference(run["snapshot"]["attachments"], rid)
         if action in {"start", "resume"} and self.launch:
             args = [sys.executable, "-m", "htrsa.workbench", str(self.database), str(self.workspace), "--worker", rid]
             # 분석 도구·컨테이너에 키를 마운트하지 않는다.
@@ -380,6 +440,8 @@ class WorkbenchAPI:
                     return [scrub(v) for v in value]
                 return value
             return APIResponse(response.status, scrub(response.body), response.content_type)
+        except sqlite3.Error as exc:
+            return APIResponse(409, {"error": storage_error_code(exc)})
         except (ControlError, OSError):
             return APIResponse(409, {"error": "SECRET_STORAGE_OR_ARTIFACT_BLOCKED"})
 
@@ -398,9 +460,29 @@ class WorkbenchAPI:
                 if any(value in to_json(config_body) for value in self.credentials.active_secrets(c.get("credential_env_name") for c in self.store.configs("connection"))):
                     raise ControlError("SECRET_IN_CONFIG")
             if method == "GET":
+                if parts == ["api", "control", "research", "design-catalog"]:
+                    from .research_design import catalog
+                    return APIResponse(200, catalog())
+                if len(parts) == 5 and parts[:3] == ["api", "control", "research"] and parts[4] == "design":
+                    from .research_lifecycle import ensure_visible
+                    from .research_design import current_design, summary
+                    ensure_visible(self, parts[3])
+                    return APIResponse(200, {"current": current_design(self.read._state, parts[3]),
+                        "summary": summary(self.read._state, parts[3]), "state_version": self.read._state.state_version(parts[3])})
                 if parts == ["api", "control", "research"]:
                     self._recover()
                     value = self.research_list()
+                    from .workbench_pages import list_page
+                    from urllib.parse import parse_qs
+                    query = parse_qs(urlsplit(path).query)
+                    if query.get('trash', ['0'])[0] == '1':
+                        from .research_lifecycle import cleanup
+                        cleanup(self)
+                        value = [r for r in self.research_list() if r['lifecycle']['status'] in {'TRASH', 'PURGING'}]
+                    else:
+                        value = [r for r in value if r['lifecycle']['status'] == 'ACTIVE']
+                    if 'limit' in query:
+                        value = list_page(value,query)
                 elif parts == ["api", "control", "settings"]:
                     from .product_policy import catalog, PRESETS
                     value = {"connections": self.connections(), "models": self.store.configs("model"),
@@ -413,12 +495,19 @@ class WorkbenchAPI:
                              "credential_storage": "환경변수 → OS 자격 증명 관리자 → 보호된 평문 파일 · 저장 키 조회/복사 불가"}
                     from .resource_policy import preferences, low_spec
                     value["preferences"] = preferences(self.store)
+                    from .qualified_profiles import registry
+                    value["research_profiles"] = registry().public()
                     value["low_spec"] = low_spec(self.store)
+                    value['resource_policy'] = {'local_inference':1,'heavy_analysis':1,'remote_network':1 if value['low_spec'] else 4,'queue_limit':32,
+                        'free_bytes':shutil.disk_usage(self.workspace).free,'disk_warning':shutil.disk_usage(self.workspace).free < 512 * 1024**2}
                     from .productization import onboarding
                     value["onboarding"] = onboarding(self, value["catalog"]["models"])
                 elif parts == ["api", "control", "onboarding"]:
                     from .productization import onboarding
                     value = onboarding(self)
+                elif parts == ["api", "control", "research", "draft"]:
+                    row = self.store.db.execute("SELECT revision,payload FROM control_configs WHERE kind='research_draft' AND id='owner'").fetchone()
+                    value = {"revision":row["revision"], "draft":json.loads(row["payload"])} if row else {"revision":0,"draft":None}
                 elif parts == ["api", "control", "live-api-tests"]:
                     value = [{"api_test_session_id": r["api_test_session_id"], "status": r["status"],
                               "started_at": r["started_at"], "execution": r["execution"],
@@ -431,18 +520,65 @@ class WorkbenchAPI:
                 elif parts == ["api", "control", "inputs"]:
                     value = [{"name": p.name, "size_bytes": p.stat().st_size} for p in sorted((self.workspace / "inputs").glob("*.csv"))
                              if p.is_file() and not p.is_symlink() and p.stat().st_size <= 5000000]
+                elif parts == ["api", "control", "attachments"]:
+                    from .input_upload import Attachments
+                    from urllib.parse import parse_qs
+                    draft = parse_qs(urlsplit(path).query).get("draft_id", [None])[0]
+                    if not draft:
+                        raise ControlError("ATTACHMENT_DRAFT_REQUIRED")
+                    manager = Attachments(self.store, self.workspace)
+                    value = [manager.public(item) for item in self.store.configs("attachment")
+                             if item["draft_id"] == draft and item["status"] not in {"DELETED","RETAINED"}]
+                elif parts == ['api','control','library']:
+                    from .workbench_pages import library_page
+                    from urllib.parse import parse_qs
+                    query = parse_qs(urlsplit(path).query)
+                    value = library_page(self,limit=int(query.get('limit',['50'])[0]),offset=int(query.get('offset',['0'])[0]))
                 elif parts == ["api", "control", "environment"]:
                     value = self.environment()
                 elif parts == ["api", "control", "usage"]:
-                    value = self.store.ledger()
+                    from .workbench_pages import usage_page
+                    value = usage_page(self,path)
+                elif len(parts) == 5 and parts[:3] == ["api", "control", "models"] and parts[4] == "pricing":
+                    from .product_policy import model_pricing
+                    value = model_pricing(self.store, parts[3])
                 elif len(parts) == 5 and parts[:3] == ["api", "control", "research"]:
                     rid, endpoint = parts[3:]
                     self.read._research(rid)
-                    if endpoint == "activity":
+                    from urllib.parse import parse_qs
+                    query = parse_qs(urlsplit(path).query)
+                    if endpoint == 'conclusion-card':
+                        from .qualified_profiles import conclusion_card
+                        value = conclusion_card(self.read._state, rid)
+                    elif endpoint == 'source-inspection':
+                        from .qualified_profiles import source_inspection
+                        value = source_inspection(self.read._state, rid, include_rows=query.get('rows', ['0'])[0] == '1')
+                    elif endpoint == 'beginner-progress':
+                        from .beginner_controls import progress
+                        value = progress(self, rid)
+                    elif endpoint == 'flow':
+                        from .research_flow import project_flow
+                        value = project_flow(self,rid,view=query.get('view',['current'])[0],limit=int(query.get('limit',['100'])[0]),offset=int(query.get('offset',['0'])[0]),selected=query.get('selected',[None])[0])
+                    elif endpoint == 'flow-node':
+                        from .research_flow import flow_node
+                        value = flow_node(self,rid,query.get('id',[''])[0])
+                    elif endpoint == 'items':
+                        from .workbench_pages import item_page
+                        value = item_page(self,rid,query.get('kind',[''])[0],limit=int(query.get('limit',['50'])[0]),offset=int(query.get('offset',['0'])[0]))
+                    elif endpoint == 'resources':
+                        from .resource_queue import ResourcePool
+                        value = ResourcePool(self.store).summary(rid)
+                    elif endpoint == 'semantic-summary':
+                        from .workbench_pages import semantic_summary
+                        value = semantic_summary(self, rid)
+                    elif endpoint == "activity":
                         from .resource_policy import activity_page
                         from urllib.parse import parse_qs
                         query = parse_qs(urlsplit(path).query)
-                        value = activity_page(self.read._state, rid, limit=int(query.get('limit', ['100'])[0]), offset=int(query.get('offset', ['0'])[0]))
+                        value = activity_page(self.read._state, rid, limit=int(query.get('limit', ['100'])[0]), offset=int(query.get('offset', ['0'])[0]),summary=query.get('summary',['0'])[0]=='1')
+                    elif endpoint == 'activity-event':
+                        from .resource_policy import activity_detail
+                        value = activity_detail(self.read._state,rid,query.get('id',[''])[0])
                     elif endpoint == "repair":
                         value = self.repair_projection(rid)
                     elif endpoint == "settings":
@@ -454,10 +590,21 @@ class WorkbenchAPI:
                     elif endpoint == "report-view":
                         from .report_ux import friendly_report
                         value = friendly_report(self.read._state, rid)
+                    elif endpoint in {"report.pdf", "report-preview"}:
+                        from .report_pdf import render_pdf
+                        secrets = self.credentials.active_secrets(c.get("credential_env_name") for c in self.store.configs("connection"))
+                        output = render_pdf(self.read._state, rid, protected_values=secrets, include_preview=endpoint == "report-preview")
+                        if endpoint == "report-preview":
+                            return APIResponse(200, {"view": output["preview"], "state_version": output["state_version"], "pdf_sha256": output["sha256"]})
+                        return APIResponse(200, output["data"], "application/pdf")
                     elif endpoint == "usage":
-                        value = self.store.ledger(rid)
+                        from .workbench_pages import usage_page
+                        value = usage_page(self,path,rid)
                     elif endpoint == "control":
                         self._recover()
+                        if query.get('summary',['0'])[0]=='1':
+                            row = self.store.db.execute('SELECT status,version FROM control_runs WHERE research_id=?',(rid,)).fetchone()
+                            return APIResponse(200,{'status':row['status'] if row else 'LEGACY_INSPECTION','version':row['version'] if row else None})
                         try:
                             value = self.store.run(rid)
                             from .product_policy import effective_snapshot
@@ -487,9 +634,126 @@ class WorkbenchAPI:
                 from .input_upload import upload_csv
                 protected = self.credentials.active_secrets(c.get('credential_env_name') for c in self.store.configs('connection'))
                 return APIResponse(201, upload_csv(self.workspace / 'inputs', body, protected_values=protected))
+            if parts == ["api", "control", "attachments", "begin"]:
+                from .input_upload import Attachments
+                return APIResponse(201, Attachments(self.store, self.workspace).begin(body))
+            if len(parts) == 5 and parts[:3] == ["api", "control", "attachments"] and parts[4] == "delete":
+                from .input_upload import Attachments
+                return APIResponse(200, Attachments(self.store, self.workspace).delete(parts[3], body.get("draft_id")))
             if parts == ["api", "control", "preferences"]:
                 from .resource_policy import save_preferences
                 return APIResponse(200, save_preferences(self.store, body))
+            if parts == ["api", "control", "preferences", "reset"]:
+                from .resource_policy import save_preferences, UIPreferences
+                return APIResponse(200, save_preferences(self.store, UIPreferences().model_dump(mode="json")))
+            if len(parts) == 5 and parts[:3] == ["api", "control", "research"] and parts[4] in {"rename", "trash", "restore", "purge"}:
+                from . import research_lifecycle
+                if parts[4] == "purge" and body.get("confirm") is not True:
+                    raise ControlError("PERMANENT_DELETE_CONFIRMATION_REQUIRED")
+                result = research_lifecycle.rename(self, parts[3], body.get("title")) if parts[4] == "rename" else getattr(research_lifecycle, parts[4])(self, parts[3])
+                return APIResponse(200, result)
+            if len(parts) == 5 and parts[:3] == ["api", "control", "research"]:
+                from .research_lifecycle import ensure_visible
+                ensure_visible(self, parts[3])
+                if parts[4] == "finish-current-budget":
+                    from .research_lifecycle import _idle
+                    from .research_schemas import StopReason
+                    from .final_report import export_final_report
+                    rid = parts[3]
+                    _idle(self, rid)
+                    if self.store.run(rid)["status"] not in {"PAUSED","BUDGET_BLOCKED"}:
+                        raise ControlError("BUDGET_FINISH_REQUIRES_PAUSE")
+                    if not self.store.db.execute("SELECT 1 FROM research_budgets WHERE research_id=?", (rid,)).fetchone():
+                        raise ControlError("RESEARCH_NOT_STARTED")
+                    if self.store.db.execute("SELECT run_status FROM research_runs WHERE research_id=?", (rid,)).fetchone()[0] == "ACTIVE":
+                        self.read._state.stop_research(rid, StopReason.BUDGET_EXHAUSTED)
+                    export_final_report(self.read._state, rid)
+                    self.store.db.execute("UPDATE control_runs SET status='STOPPED',error='FINISHED_WITH_CURRENT_BUDGET',version=version+1 WHERE research_id=?", (rid,))
+                    return APIResponse(200, {"status":"FINISHED_WITH_CURRENT_BUDGET","paid_calls":0,"monthly_limit_changed":False})
+                if parts[4] in {"recalculate", "refresh-source", "amend-question"}:
+                    from .research_lifecycle import _idle
+                    from .qualified_workflow import execute_profile, fetch_source, fetch_secondary, update_source, amend_question
+                    from .autonomous_loop import AutonomousResearchLoop
+                    from .providers.fake import FakeProvider
+                    _idle(self, parts[3])
+                    rid = parts[3]
+                    snapshot = self.store.run(rid)["snapshot"]
+                    if parts[4] == "amend-question":
+                        if set(body) != {"question", "expected_version"} or type(body["expected_version"]) is not int:
+                            raise ControlError("PROFILE_OWNER_AMENDMENT_REQUIRED")
+                        result = amend_question(self.read._state, rid, body["question"], expected_version=body["expected_version"])
+                    elif parts[4] == "refresh-source":
+                        text = asyncio.run(fetch_source(snapshot))
+                        alternate = asyncio.run(fetch_secondary(self.read._state, rid, snapshot, credentials=self.credentials))
+                        result = update_source(self.read._state, rid, text, secondary_text=alternate)
+                        if not result["affected"] and result["status"] == "SUPPORTED" and self.read._state._one("SELECT run_status FROM research_runs WHERE research_id=?", (rid,))[0] != "ACTIVE":
+                            from .qualified_workflow import archive_report
+                            from .final_report import export_final_report
+                            archive_report(self.read._state, rid)
+                            export_final_report(self.read._state, rid)
+                    else:
+                        runtime = AutonomousResearchLoop(self.read._state, FakeProvider([]),
+                            models={role: m["model_id"] for role, m in snapshot["models"].items()},
+                            verified_analysis_skills_enabled=snapshot["verified_analysis_skills"],
+                            verification_repair_enabled=snapshot["verification_repair"],
+                            ridge_arithmetic_check_enabled=snapshot["ridge_arithmetic_check"])
+                        result = asyncio.run(execute_profile(runtime, rid, snapshot, replay=True))
+                        from .final_report import export_final_report
+                        export_final_report(self.read._state, rid)
+                    return APIResponse(200, redact(result))
+            if parts == ["api", "control", "catalog", "resolve"]:
+                from .product_policy import resolve_catalog_profile
+                identity = resolve_catalog_profile(self.store, body)
+                return APIResponse(200, {"profile_id": identity, "inference_executed": False})
+            if parts == ["api", "control", "research", "effective-settings"]:
+                from .product_policy import resolve_effective_settings
+                config, sources = resolve_effective_settings(self.store, body, task_intent="preview")
+                return APIResponse(200, {"effective": config, "field_sources": sources, "paid_calls": 0})
+            if parts == ["api", "control", "research", "draft"]:
+                from .product_policy import resolve_effective_settings
+                draft = dict(body["draft"])
+                if "detailed_design" not in draft:
+                    previous = self.store.db.execute("SELECT payload FROM control_configs WHERE kind='research_draft' AND id='owner'").fetchone()
+                    if previous:
+                        saved_draft = json.loads(previous[0])
+                        if saved_draft.get("draft_id") == draft.get("draft_id") and "detailed_design" in saved_draft:
+                            draft["detailed_design"] = saved_draft["detailed_design"]
+                if "detailed_design" in draft:
+                    from .research_design import normalize_design
+                    draft["detailed_design"] = normalize_design(draft["detailed_design"])
+                    from .research_design import authorize_bindings
+                    authorize_bindings(self.store, self.workspace, draft["detailed_design"], draft.get("draft_id"), draft.get("attachments", []))
+                resolve_effective_settings(self.store, draft, task_intent="preview")
+                return APIResponse(200, self.store.put("research_draft", "owner", draft, body["expected_revision"]))
+            if parts == ["api", "control", "research", "design-review"]:
+                from .research_design import resolve_design, organize
+                if re.search(r"(?:sk-[A-Za-z0-9_-]{12,}|AIza[A-Za-z0-9_-]{35}|ghp_[A-Za-z0-9]{36})", to_json(body)):
+                    raise ControlError("SECRET_IN_CONFIG")
+                if body.get("action") == "organize":
+                    return APIResponse(200, organize(body.get("question", ""), body.get("draft_revision", 0)))
+                return APIResponse(200, resolve_design(body.get("question", ""), body.get("detailed_design")))
+            if parts == ["api", "control", "research", "design-columns"]:
+                import csv
+                from .input_upload import Attachments
+                manager = Attachments(self.store, self.workspace)
+                item = manager.get(body["attachment_id"], body["draft_id"])
+                manager.validate([item["attachment_id"]], body["draft_id"])
+                if item["supported_parser"] != "csv":
+                    raise ControlError("ANALYSIS_ATTACHMENT_INVALID")
+                with manager.path(item).open(encoding="utf-8-sig", newline="") as stream:
+                    columns = next(csv.reader(stream))
+                return APIResponse(200, {"columns": columns, "sha256": item["sha256"], "rows_loaded": False, "paid_calls": 0})
+            if len(parts) == 5 and parts[:3] == ["api", "control", "research"] and parts[4] == "design":
+                from .research_lifecycle import ensure_visible, _idle
+                from .research_design import amend_design
+                ensure_visible(self, parts[3])
+                _idle(self, parts[3])
+                from .research_design import authorize_bindings
+                run = self.store.run(parts[3])["snapshot"]
+                authorize_bindings(self.store, self.workspace, body["detailed_design"], run.get("draft_id"), run.get("attachments", []),
+                    state=self.read._state, rid=parts[3])
+                return APIResponse(200, amend_design(self.read._state, parts[3], body["detailed_design"],
+                    expected_version=body["expected_version"]))
             if parts == ["api", "control", "research", "preflight"]:
                 snapshot = self.prepare(body)
                 value = self.preflight(snapshot)
@@ -497,7 +761,10 @@ class WorkbenchAPI:
                 from decimal import Decimal
                 required = Decimal(0)
                 try:
-                    for raw in snapshot['models'].values():
+                    qualified = value.get('research_profile', {})
+                    paid_roles = qualified.get('paid_roles', ROLES) if qualified.get('status') == 'SUPPORTED' else ROLES
+                    for role in paid_roles:
+                        raw = snapshot['models'][role]
                         model = ModelProfile.model_validate(raw)
                         if not model.local_api_unmetered:
                             bound = admitted_cost(model, min(4096, model.input_byte_limit))
@@ -515,6 +782,8 @@ class WorkbenchAPI:
                 value['ready'] = not value['reasons']
                 value['minimum_role_call_bound_usd'] = str(required)
                 value['paid_calls'] = 0
+                from .beginner_policy import classify
+                value = classify(snapshot, value)
                 return APIResponse(200, value)
             if parts == ["api", "control", "research"]:
                 return APIResponse(201, redact(self.create(body)))
@@ -597,6 +866,9 @@ class WorkbenchAPI:
                 from .productization import revision
                 self.store.put("credential_change", parts[3], {"changed_at": utc_now().isoformat()}, revision(self.store, "credential_change", parts[3]))
                 return APIResponse(200, result)
+            if len(parts) == 5 and parts[:3] == ["api", "control", "connections"] and parts[4] == "delete":
+                from .beginner_controls import delete_connection
+                return APIResponse(200, delete_connection(self, parts[3], confirm=body.get("confirm"), expected_revision=body.get("expected_revision")))
             if len(parts) == 5 and parts[:3] == ["api", "control", "models"] and parts[4] == "qualify":
                 from .productization import qualify
                 return APIResponse(200, asyncio.run(qualify(self, parts[3], body)))
@@ -608,6 +880,9 @@ class WorkbenchAPI:
             if len(parts) == 5 and parts[:3] == ["api", "control", "live-api-tests"] and parts[4] == "export":
                 from .live_api_test import export_session
                 return APIResponse(200, export_session(self, parts[3]))
+            if len(parts) == 5 and parts[:3] == ["api", "control", "models"] and parts[4] == "pricing":
+                from .product_policy import apply_model_pricing
+                return APIResponse(200, apply_model_pricing(self.store, parts[3], body))
             if len(parts) == 5 and parts[:3] == ["api", "control", "models"] and parts[4] == "check":
                 return APIResponse(200, asyncio.run(self.check_model(parts[3], body)))
             if len(parts) == 5 and parts[:3] == ["api", "control", "research"]:
@@ -692,7 +967,12 @@ class WorkbenchAPI:
             return APIResponse(409, {"error": exc.code})
         except (ValidationError, KeyError, ValueError, TypeError):
             return APIResponse(400, {"error": "INVALID_REQUEST"})
-        except (OSError, ReleaseExportError):
+        except sqlite3.Error as exc:
+            return APIResponse(409, {"error": storage_error_code(exc)})
+        except OSError as exc:
+            code = storage_error_code(exc)
+            return APIResponse(409, {"error": "STORAGE_OR_EXPORT_BLOCKED" if code == "STORAGE_UNAVAILABLE" else code})
+        except ReleaseExportError:
             return APIResponse(409, {"error": "STORAGE_OR_EXPORT_BLOCKED"})
         except Exception:
             return APIResponse(409, {"error": "OPERATION_UNAVAILABLE"})
@@ -834,6 +1114,8 @@ class Handler(BaseHTTPRequestHandler):
         if not self.boundary_valid():
             return self.reply(APIResponse(403, {"error": "ORIGIN_HOST_DENIED"}))
         path = urlsplit(self.path).path
+        if path == '/favicon.ico':
+            return self.reply(APIResponse(204,b'', 'image/x-icon'))
         if path in {"/", "/dashboard", "/api/session", "/auth/bootstrap", "/auth/status"} and (urlsplit(self.path).query or urlsplit(self.path).fragment):
             return self.reply(APIResponse(400, {"error": "AUTH_ROUTE_INVALID"}))
         if path == "/auth/bootstrap":
@@ -842,7 +1124,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(APIResponse(200, {"manual_pairing": self.session.allow_pairing}))
         if path in {"/", "/dashboard"}:
             return self.reply(APIResponse(200, (STATIC / "index.html").read_text(encoding="utf-8"), "text/html; charset=utf-8"))
-        if path in {"/assets/workbench.js", "/assets/provider_settings.js", "/assets/product_ux.js", "/assets/bootstrap.js", "/assets/cycle5_ui.js", "/assets/live_api_test.js", "/assets/workbench.css"}:
+        if path in {"/assets/workbench.js", "/assets/provider_settings.js", "/assets/product_ux.js", "/assets/bootstrap.js", "/assets/cycle5_ui.js", "/assets/live_api_test.js", "/assets/workbench.css", '/assets/research_flow.js', '/assets/beginner_ux.js', '/assets/tutorial_content.js', '/assets/tutorial.js', '/assets/research_design.js'}:
             filename = path.rsplit("/", 1)[-1]
             return self.reply(APIResponse(200, (STATIC / filename).read_bytes(), "text/javascript; charset=utf-8" if filename.endswith(".js") else "text/css; charset=utf-8"))
         if not self.session.authorized(self.headers.get("Cookie")):
@@ -855,6 +1137,28 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         admitted_origin = self.boundary_valid(True)
+        upload_path = re.fullmatch(r"/api/control/attachments/(ATT-[a-f0-9]{32})/upload", self.path)
+        if upload_path:
+            authorized = self.session.authorized(self.headers.get("Cookie")) and secrets.compare_digest(
+                self.headers.get("X-CSRF-Token", ""), self.session.csrf or "invalid")
+            if not admitted_origin or not authorized:
+                self.close_connection = True
+                return self.reply(APIResponse(403, {"error":"OWNER_CSRF_REQUIRED"}))
+            if not self.session.admitted():
+                self.close_connection = True
+                return self.reply(APIResponse(429, {"error":"LOCAL_RATE_LIMIT"}))
+            try:
+                from .input_upload import Attachments, MAX_BYTES
+                length = int(self.headers.get("Content-Length", "-1"))
+                if self.headers.get("Content-Type") != "application/octet-stream" or not 0 <= length <= MAX_BYTES or self.headers.get("Transfer-Encoding"):
+                    raise ControlError("UPLOAD_SIZE_OR_CONTENT")
+                protected = self.api.credentials.active_secrets(c.get("credential_env_name") for c in self.api.store.configs("connection"))
+                value = Attachments(self.api.store, self.api.workspace, protected_values=protected).receive(upload_path[1], self.rfile, length)
+                return self.reply(APIResponse(201, value))
+            except (ControlError, OSError, ValueError, sqlite3.Error) as exc:
+                self.close_connection = True
+                code = exc.code if isinstance(exc, ControlError) else storage_error_code(exc)
+                return self.reply(APIResponse(409, {"error": "UPLOAD_STORAGE_FAILED" if code == "STORAGE_UNAVAILABLE" else code}))
         try:
             length = int(self.headers.get("Content-Length", "0"))
             upload = (self.path == '/api/control/inputs/upload' and admitted_origin
@@ -907,10 +1211,15 @@ class Handler(BaseHTTPRequestHandler):
         return self.reply(APIResponse(405, {"error": "METHOD_NOT_ALLOWED"}))
 
 
+class LocalWorkbenchServer(HTTPServer):
+    # 새로고침 때 한꺼번에 들어오는 화면 파일 요청을 순서대로 처리한다.
+    request_queue_size = 64
+
+
 def create_server(api, port=0, *, session=None):
     session = session if session is not None else OwnerSession()
     handler = type("WorkbenchHandler", (Handler,), {"api": api, "session": session, "authority": ""})
-    server = HTTPServer(("127.0.0.1", port), handler)
+    server = LocalWorkbenchServer(("127.0.0.1", port), handler)
     handler.authority = f"127.0.0.1:{server.server_port}"
     return server
 

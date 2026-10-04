@@ -19,7 +19,7 @@ from typing import Literal
 from urllib.parse import urlsplit
 
 import httpx
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, StrictInt, model_validator
 
 from .database import to_json
 from .schemas import StrictModel, new_id, utc_now
@@ -183,18 +183,37 @@ class Defaults(StrictModel):
     monthly_limit_usd: Decimal = Field(default=Decimal("20"), gt=0, le=1000, allow_inf_nan=False)
     request_limit_usd: Decimal = Field(default=Decimal("0.25"), gt=0, le=100, allow_inf_nan=False)
     accounting_timezone: Literal["Asia/Seoul"] = "Asia/Seoul"
+    search_attempt_limit: StrictInt = Field(default=5, ge=0, le=20)
+
+
+from .research_design import DetailedDesign
 
 
 class NewResearch(StrictModel):
-    title: str = Field(min_length=1, max_length=200)
+    detailed_design: DetailedDesign | None = None
+    beginner_mode: bool = False
+    research_profile_mode: Literal["AUTO", "DISABLED"] = "DISABLED"
+    title: str = Field(default="", max_length=200)
     question: str = Field(min_length=1, max_length=4000)
-    source_relative: str = Field(min_length=1, max_length=200)
+    source_relative: str | None = Field(default=None, min_length=1, max_length=200)
+    settings_version: Literal[1, 2] = 1
+    draft_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{8,100}$")
+    draft_revision: int = Field(default=0, ge=0)
+    submission_key: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{8,100}$")
+    selected_model_pool: list[str] = Field(default_factory=list, max_length=30)
+    attachments: list[str] = Field(default_factory=list, max_length=10)
+    analysis_attachment_id: str | None = None
+    advanced_performance_profile: Literal["FAST", "BALANCED", "DEEP", "MAX"] | None = None
+    model_reasoning: ReasoningPolicy | None = None
+    sampling_mode: Literal["provider_default", "profile"] = "provider_default"
+    report_format: Literal["pdf"] = "pdf"
     research_depth: Literal["explore", "standard", "deep", "focused"] = "standard"
     routing: dict[str, str] = Field(default_factory=dict)
     routing_profile_id: str | None = None
     run_limit_usd: Decimal = Field(default=Decimal("1"), gt=0, le=100, allow_inf_nan=False)
     max_elapsed_sec: int = Field(default=300, ge=10, le=3600)
     egress: Literal["none", "selected", "research"] = "none"
+    question_only: bool = False
     verified_analysis_skills: bool = False
     verification_repair: bool = False
     ridge_arithmetic_check: bool = False
@@ -208,7 +227,26 @@ class NewResearch(StrictModel):
     max_followups: int | None = Field(default=None, ge=0, le=2)
     search_policy: Literal["AUTO", "DISABLED", "ALLOWED"] = "DISABLED"
     public_search_query: str = Field(default="", max_length=500)
+    public_search_consent: bool = False
     search_required: bool = False
+    search_attempt_limit: StrictInt = Field(default=5, ge=0, le=20)
+
+    @model_validator(mode="before")
+    @classmethod
+    def compatible_defaults(cls, raw):
+        if not isinstance(raw, dict):
+            return raw
+        value = dict(raw)
+        value.setdefault("title", str(value.get("question", "")).strip()[:100])
+        if value.get("source_relative") == "":
+            value["source_relative"] = None
+        value.setdefault("settings_version", 1 if value.get("source_relative") else 2)
+        if value["settings_version"] == 2:
+            value.setdefault("search_required", True)
+            value.setdefault("search_policy", "AUTO")
+            value.setdefault("performance_profile", "BALANCED")
+        value["report_format"] = "pdf"
+        return value
 
     @model_validator(mode="after")
     def flags(self):
@@ -442,7 +480,7 @@ CREATE TABLE IF NOT EXISTS control_model_cache(key TEXT PRIMARY KEY,research_id 
 class ControlStore:
     def __init__(self, db: sqlite3.Connection):
         self.db = db
-        db.executescript("BEGIN IMMEDIATE;" + SCHEMA + "CREATE INDEX IF NOT EXISTS idx_runtime_research_seq ON runtime_events(research_id,seq DESC);COMMIT;")
+        db.executescript("BEGIN IMMEDIATE;" + SCHEMA + "CREATE INDEX IF NOT EXISTS idx_runtime_research_seq ON runtime_events(research_id,seq DESC);CREATE INDEX IF NOT EXISTS idx_ui_evidence_experiment ON evidence(research_id,experiment_id);COMMIT;")
 
     @contextmanager
     def transaction(self):
@@ -495,18 +533,37 @@ class ControlStore:
         value["snapshot"] = json.loads(value["snapshot"])
         return value
 
-    def ledger(self, rid=None):
-        query = "SELECT * FROM spend_ledger" + (" WHERE research_id=?" if rid else "") + " ORDER BY created_at"
-        rows = [dict(row) for row in self.db.execute(query, (rid,) if rid else ())]
-        totals = {"spent": 0, "reserved": 0, "unresolved": 0}
-        for row in rows:
-            key = "spent" if row["status"] == "SETTLED" else "unresolved" if row["status"] == "UNRESOLVED" else "reserved"
-            totals[key] += row["settled"] if key == "spent" else 0 if row["status"] == "RELEASED" else row["reserved"]
+    def ledger(self, rid=None, *, limit=None, offset=0, scope='all', role=None):
+        if limit is not None and (not 1 <= limit <= 100 or not 0 <= offset <= 100000 or scope not in {'all','month','day'}):
+            raise ControlError('PAGE_INVALID')
+        where = ' WHERE research_id=?' if rid else ''
+        params = (rid,) if rid else ()
+        total = self.db.execute("SELECT COALESCE(SUM(CASE WHEN status='SETTLED' THEN settled ELSE 0 END),0),COALESCE(SUM(CASE WHEN status='UNRESOLVED' THEN reserved ELSE 0 END),0),COALESCE(SUM(CASE WHEN status NOT IN ('SETTLED','UNRESOLVED','RELEASED') THEN reserved ELSE 0 END),0) FROM spend_ledger"+where,params).fetchone()
+        totals = dict(spent=total[0],unresolved=total[1],reserved=total[2])
+        query, query_params = 'SELECT * FROM spend_ledger'+where, params
+        if limit is not None:
+            clauses = []
+            if role:
+                clauses.append('role=?');query_params += (role,)
+            if scope == 'month':
+                clauses.append('month=?');query_params += (utc_now().astimezone(ACCOUNTING_ZONE).strftime('%Y-%m'),)
+            elif scope == 'day':
+                clauses.append("date(created_at,'+9 hours')=?");query_params += (utc_now().astimezone(ACCOUNTING_ZONE).strftime('%Y-%m-%d'),)
+            if clauses:
+                query += (' AND ' if where else ' WHERE ')+' AND '.join(clauses)
+            query += ' ORDER BY created_at DESC,rowid DESC LIMIT ? OFFSET ?'
+            query_params += (limit+1,offset)
+        else:
+            query += ' ORDER BY created_at'
+        rows = [dict(row) for row in self.db.execute(query, query_params)]
+        next_offset = offset+limit if limit is not None and len(rows)>limit else None
+        if limit is not None:
+            rows = rows[:limit]
         month = utc_now().astimezone(ACCOUNTING_ZONE).strftime("%Y-%m")
         exposure = "CASE WHEN status='SETTLED' THEN settled WHEN status='RELEASED' THEN 0 ELSE reserved END"
         monthly = self.db.execute(f"SELECT COALESCE(SUM({exposure}),0) FROM spend_ledger WHERE month=? OR status IN ('RESERVED','DISPATCHED','UNRESOLVED')", (month,)).fetchone()[0]
-        limit = micro(self.defaults().monthly_limit_usd)
-        remaining = max(0, limit - monthly)
+        monthly_limit = micro(self.defaults().monthly_limit_usd)
+        remaining = max(0, monthly_limit - monthly)
         if rid:
             run = self.db.execute("SELECT snapshot FROM control_runs WHERE research_id=?", (rid,)).fetchone()
             if run:
@@ -515,7 +572,7 @@ class ControlStore:
                 remaining = min(remaining, max(0, micro(effective_cap(self, rid, snapshot)) - sum(totals.values())),
                                 max(0, micro(snapshot.get("monthly_limit_usd", self.defaults().monthly_limit_usd)) - monthly))
         return {"currency": "USD", "timezone": "Asia/Seoul", **{k: money(v) for k, v in totals.items()}, "available": money(remaining), "month": month,
-                "monthly_exposure": money(monthly), "requests": rows,
+                "monthly_exposure": money(monthly), "requests": rows, 'offset':offset,'next_offset':next_offset,'limit':limit,
                 "billing_scope": "이 앱의 예약 원장만 포함 · 제공사 청구서와 다릅니다."}
 
     def reserve(self, *, rid, connection, model, role, purpose, bound, run_limit, monthly_limit, request_limit,
@@ -548,6 +605,45 @@ class ControlStore:
             self.db.execute("INSERT INTO spend_ledger VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
                             (identity, rid, connection, model, role, purpose, month, "RESERVED", amount, None, revision, now.isoformat(), None))
         return identity
+
+    def dispatch_search(self, reservation_id, rid, limit, provider, *, snapshot=None, completion_reserve=0):
+        """전송 직전 모든 역할·재시도에 공유되는 시도 수를 원자적으로 기록한다."""
+        with self.transaction():
+            row = self.db.execute("SELECT status,research_id FROM spend_ledger WHERE id=?", (reservation_id,)).fetchone()
+            if not row or row["research_id"] != rid or row["status"] not in {"RESERVED", "DISPATCHED"}:
+                raise ControlError("SEARCH_RESERVATION_INVALID")
+            if snapshot is not None:
+                from .product_policy import effective_cap
+                current = self.defaults()
+                exposure = "CASE WHEN status='SETTLED' THEN settled WHEN status='RELEASED' THEN 0 ELSE reserved END"
+                run_spend = self.db.execute(f"SELECT COALESCE(SUM({exposure}),0) FROM spend_ledger WHERE research_id=?", (rid,)).fetchone()[0]
+                month = utc_now().astimezone(ACCOUNTING_ZONE).strftime("%Y-%m")
+                month_spend = self.db.execute(f"SELECT COALESCE(SUM({exposure}),0) FROM spend_ledger WHERE month=? OR status IN ('RESERVED','DISPATCHED','UNRESOLVED')", (month,)).fetchone()[0]
+                amount = self.db.execute("SELECT reserved FROM spend_ledger WHERE id=?", (reservation_id,)).fetchone()[0]
+                if amount > micro(min(current.request_limit_usd, Decimal(snapshot['request_limit_usd']))):
+                    raise ControlError('REQUEST_BUDGET_BLOCKED')
+                if (run_spend + micro(completion_reserve) > micro(effective_cap(self, rid, snapshot))
+                        or month_spend + micro(completion_reserve) > micro(min(current.monthly_limit_usd, Decimal(snapshot['monthly_limit_usd'])))):
+                    raise ControlError('COMPLETION_RESERVE_BLOCKED')
+            limit = min(limit, self.defaults().search_attempt_limit)
+            for kind in ("research_effective", "research_settings"):
+                policy = self.db.execute("SELECT payload FROM control_configs WHERE kind=? AND id=?", (kind, rid)).fetchone()
+                if policy:
+                    requested = json.loads(policy[0])["settings"].get("search_attempt_limit")
+                    if requested is not None:
+                        limit = min(limit, requested)
+            old = self.db.execute("SELECT revision,payload FROM control_configs WHERE kind='search_attempts' AND id=?", (rid,)).fetchone()
+            used = json.loads(old["payload"])["used"] if old else 0
+            if type(used) is not int or used < 0:
+                raise ControlError("SEARCH_COUNTER_INVALID")
+            if used >= limit:
+                raise ControlError("SEARCH_ATTEMPT_LIMIT")
+            value = {"used": used + 1, "limit": limit, "last_dispatch_at": utc_now().isoformat()}
+            self.db.execute("INSERT OR REPLACE INTO control_configs VALUES('search_attempts',?,?,?)",
+                            (rid, old["revision"] + 1 if old else 1, to_json(value)))
+            self.db.execute("UPDATE spend_ledger SET status='DISPATCHED' WHERE id=? AND status='RESERVED'", (reservation_id,))
+            self.audit(rid, "SEARCH_TRANSPORT_DISPATCHED", {**value, "provider": provider, "reservation_id":reservation_id})
+        return value
 
     def transition(self, identity, status, *, settled=None, response_id=None):
         allowed = {"DISPATCHED": {"RESERVED"}, "RELEASED": {"RESERVED"}, "UNRESOLVED": {"DISPATCHED"}, "SETTLED": {"DISPATCHED"}}

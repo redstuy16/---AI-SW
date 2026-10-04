@@ -120,6 +120,16 @@ def resolve_numeric_placeholders(state, research_id: str, text: str) -> str:
 
 def build_final_conclusion(state, research_id: str) -> FinalConclusion:
     run = state._one("SELECT goal,research_question FROM research_runs WHERE research_id=?", (research_id,))
+    from .qualified_profiles import conclusion_card
+    qualified = conclusion_card(state, research_id)
+    if qualified["available"] and qualified["current"]:
+        mutation = state._one("SELECT payload_json FROM staged_mutations WHERE mutation_id=?", (qualified["record"]["mutation_id"],))
+        material = from_json(mutation[0])["scientific"]
+        exp_id = material["experiment_id"]
+        statement = f"두 기간의 관측 편차 평균은 앞 기간 {{{{NUM:{exp_id}:periods.0.mean}}}}, 뒤 기간 {{{{NUM:{exp_id}:periods.1.mean}}}}이며, 뒤에서 앞을 뺀 차이는 {{{{NUM:{exp_id}:difference}}}}입니다. 인과관계·예측·확증적 유의성은 확인하지 않았습니다."
+        return FinalConclusion(research_question=run["research_question"] or run["goal"], conclusion=statement,
+            support_level="SUPPORTED", evidence_refs=[material["evidence_id"]], experiment_refs=[material["experiment_id"]],
+            contradiction_refs=[], limitation_refs=[], unresolved_questions=qualified["unconfirmed"])
     sources = {row["source_id"]: row for row in _source_rows(state, research_id)}
     literature = []
     for row in _evidence_rows(state, research_id):
@@ -292,6 +302,7 @@ def _render_report(state, research_id: str, conclusion: FinalConclusion) -> str:
         identity = row["experiment_id"]
         fields = []
         for field in ("n", "estimate", "p_value", "metrics.estimate", "metrics.p_value",
+                      "periods.0.mean", "periods.1.mean", "difference",
                       "metrics.baseline.mae", "metrics.candidate.mae",
                       "metrics.candidate_minus_baseline_mae"):
             try:
@@ -433,6 +444,23 @@ def export_final_report(state, research_id: str,
     slice_snapshot = state.research_slice.snapshot(research_id)
     if slice_snapshot:
         files["research_slice.json"] = to_json(slice_snapshot) + "\n"
+    from .qualified_profiles import export_bundle
+    from .research_design import current_design, summary
+    design = current_design(state, research_id)
+    if design:
+        files["research_design.json"] = to_json({"current": design, "summary": summary(state, research_id)}) + "\n"
+    qualified = export_bundle(state, research_id)
+    if qualified:
+        files["qualified_profile.json"] = to_json(qualified) + "\n"
+        for binding in qualified["bindings"] + ([qualified["current_source"]] if qualified["current_source"] else []):
+            for capture in [binding] + ([binding["secondary"]] if binding.get("secondary") else []):
+                relative = capture["source_relative"]
+                files["qualified_sources/" + relative.rsplit("/", 1)[-1]] = state.workspace.path(research_id, relative).read_text(encoding="utf-8", errors="strict")
+        files["replay_manifest.json"] = to_json({"profile_id":qualified["record"]["profile_id"] if "record" in qualified else qualified["card"]["record"]["profile_id"],
+            "binding":qualified["bindings"][-1], "source":"qualified_sources/" + qualified["bindings"][-1]["source_relative"].rsplit("/",1)[-1],
+            "current_source": qualified["current_source"], "authority": qualified.get("authority"),
+            **({"research_design": {"hash": design["hash"], "revision": design["revision"], "path": "research_design.json"}} if design else {}),
+            "expected_claim":qualified["card"]["calculation"]}) + "\n"
     manifest = {"research_id": research_id, "state_version": run["state_version"],
                 "files": {name: sha256_bytes(content.encode("utf-8", errors="strict"))
                           for name, content in files.items()},

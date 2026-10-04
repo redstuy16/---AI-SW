@@ -1,0 +1,15 @@
+{
+  "execution": "ACTUAL_GENERATED_PDF_RENDER_AND_CONTACT_SHEET_REVIEW",
+  "qualified_pdf": "build/beginner-v4/browser/29f49164-2db8-4c1a-8216-f45137919840/report.pdf",
+  "qualified_pages": 4,
+  "legacy_pages": 14,
+  "contacts": [
+    "build/beginner-v4/pdf-final-contact.png",
+    "build/beginner-v4/pdf-legacy-contact.png"
+  ],
+  "layout_status": "PASS_CONTACT_SHEET",
+  "scope": "페이지 모음에서 잘림·겹침·한글 누락이 보이지 않았습니다. 수치와 출처의 검증은 해당 도구·manifest·테스트 결과에 따릅니다.",
+  "limitations": [
+    "PDF 시각 검토는 과학적 타당성이나 사용자 사용성 평가가 아닙니다."
+  ]
+}

@@ -32,6 +32,18 @@ from test_autonomous_loop import CSV, MODELS, fake_replies
 GOAL = "Analyze temperature and growth without inferring causality."
 
 
+def test_co2_solubility_is_indirect_principle_without_release_measurement():
+    question = '탄산음료의 온도에 따른 CO₂ 방출 속도'
+    source = work('Temperature dependence of CO2 solubility in carbonated water',
+                  'Carbon dioxide solubility in carbonated water decreased with temperature.', '10.5555/solubility')
+    relevant = screen_source('source', source, question)
+    assert relevant.relevance == 'INDIRECT' and '미확인' in relevant.reason
+    evidence = extract_abstract_evidence('source', source, question=question)
+    assert evidence is not None and evidence.evidence_text in source.abstract
+    unrelated = work('Temperature and speed of the Dokdo dispute', 'The historical dispute changed with time.', '10.5555/unrelated')
+    assert screen_source('other', unrelated, question).relevance == 'IRRELEVANT'
+
+
 def make_state(tmp_path):
     db = initialize(tmp_path / "research.sqlite")
     state = StateService(db, Workspace(tmp_path / "workspace"))

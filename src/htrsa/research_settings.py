@@ -5,7 +5,7 @@ from decimal import Decimal
 import json
 from typing import Literal
 
-from pydantic import Field, StrictInt
+from pydantic import Field, StrictInt, field_validator
 
 from .control_plane import ControlError, ModelProfile, ROLES, resolved_depth
 from .database import to_json
@@ -32,10 +32,21 @@ class ResearchSettings(StrictModel):
     public_search_consent: bool | None = None
     search_required: bool | None = None
     search_attempt_limit: StrictInt | None = Field(default=None, ge=0, le=20)
+    fulltext_enabled: bool | None = None
+    openalex_archive_enabled: bool | None = None
+    searxng_url: str | None = Field(default=None, max_length=500)
     advanced_performance_profile: Literal["FAST", "BALANCED", "DEEP", "MAX"] | None = None
     model_reasoning: ReasoningPolicy | None = None
     sampling_mode: Literal["provider_default", "profile"] | None = None
     report_format: Literal["pdf"] = "pdf"
+
+    @field_validator('searxng_url')
+    @classmethod
+    def public_search_server(cls, value):
+        if value:
+            from .source_documents import validate_public_url
+            return validate_public_url(value.strip(), allow_loopback=True, root=True).rstrip('/')
+        return None
 
 
 def projection(store, rid):

@@ -328,7 +328,20 @@ class AutonomousResearchLoop(AgentRuntime):
                    "HYPOTHESIS_STATUS", "EXPERIMENT_INVALIDATED", "RESEARCH_STOPPED",
                    "SOURCE_DISCOVERED", "SOURCE_DEDUPLICATED", "SOURCE_SCREENED",
                    "SOURCE_EVIDENCE_EXTRACTED", "SOURCE_INVALIDATED",
-                    "LITERATURE_EVIDENCE_VERIFIED", "LITERATURE_SYNTHESIZED"}
+                    "LITERATURE_EVIDENCE_VERIFIED", "LITERATURE_SYNTHESIZED", "SOURCE_DOCUMENT_SAVED"}
+        for event in planning:
+            if event['event_type'] != 'SOURCE_DOCUMENT_SAVED':
+                continue
+            payload = from_json(event['payload_json'])
+            if payload.get('status') not in {'DOWNLOADED', 'READY', 'FAILED'}:
+                raise StateConflictError('SOURCE_DOCUMENT_RECOVERY_CONFLICT')
+            for key, kind in (('artifacts', 'SOURCE_PDF'), ('text', 'SOURCE_TEXT')):
+                item = payload.get(key)
+                if item:
+                    artifact = self.state.file_artifact(item['artifact_id'], research_id)
+                    if (artifact['artifact_type'] != kind or artifact['sha256'] != item['sha256']
+                            or artifact['relative_path'] != item['relative_path']):
+                        raise StateConflictError('SOURCE_DOCUMENT_RECOVERY_CONFLICT')
         if self.state.cycle5.enabled(research_id):
             self.state.cycle5.validate_planning_events(research_id, planning)
             allowed.update({"CYCLE5_REVISION", "CYCLE5_TRANSFORM_REPAIRED"})
@@ -376,7 +389,10 @@ class AutonomousResearchLoop(AgentRuntime):
         return result
 
     async def _run_bounded(self, research_id: str, csv_source: str | Path, goal: str) -> dict:
-        manager, manager_task = self._role_contract(research_id, "manager", goal, "ManagerDecision",
+        objective = goal
+        if getattr(self, "approved_search_query", None):
+            objective += "\n승인된 공개 검색어: " + self.approved_search_query + "\nsearch_queries에 같은 주제의 영어 검색 표현을 포함한다. 개인정보나 다른 주제를 추가하지 않는다."
+        manager, manager_task = self._role_contract(research_id, "manager", objective, "ManagerDecision",
                                                     runtime_key="auto:manager:initial")
         decision: ManagerDecision = await self._model_once(manager, ManagerDecision, "manager_decision")
         if decision.decision_type not in {"INITIAL_PLAN", "DELEGATE"}:
@@ -403,7 +419,25 @@ class AutonomousResearchLoop(AgentRuntime):
         self._save_cursor(research_id, "QUESTION_READY")
 
         acquire = getattr(self, "evidence_acquisition", None)
+        self.planned_search_queries = decision.search_queries
         supported = await acquire() if acquire is not None else True
+        if csv_source is None and getattr(self, "report_writer", None):
+            self._save_cursor(research_id, "LITERATURE_READY")
+            record = await self.report_writer()
+            draft = record.get("draft", {})
+            reason = StopReason.INSUFFICIENT_DATA
+            if supported and record.get("status") == "READY":
+                if draft.get("claims"):
+                    reason = StopReason.LITERATURE_REVIEW_COMPLETED
+                elif len(draft.get("procedure", [])) >= 2 and len(draft.get("variables", [])) >= 2 and draft.get("measurement"):
+                    reason = StopReason.LITERATURE_DESIGN_COMPLETED
+                    self.state.runtime_event(research_id, "RESEARCH_INPUT_LIMITATION", {"reason": "LITERATURE_EVIDENCE_MISSING", "design_only": True})
+            self.state.runtime_event(research_id, "LITERATURE_DESIGN_READY", {"report_status": record["status"], "measured": False})
+            if not supported:
+                self.state.runtime_event(research_id, "RESEARCH_INPUT_LIMITATION", {"reason": getattr(self, "input_limitation", "LITERATURE_EVIDENCE_MISSING")})
+            self.state.stop_research(research_id, reason)
+            self._save_cursor(research_id, "STOPPED")
+            return {"research_id": research_id, "stop_reason": reason.value}
         if not supported or csv_source is None:
             self.state.runtime_event(research_id, "RESEARCH_INPUT_LIMITATION",
                 {"reason": getattr(self, "input_limitation", "LITERATURE_EVIDENCE_MISSING") if not supported else "ANALYSIS_DATA_REQUIRED"})

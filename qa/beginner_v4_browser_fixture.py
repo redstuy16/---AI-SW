@@ -22,9 +22,14 @@ def main():
     folder.mkdir(parents=True, exist_ok=True)
     observed = []
     source = (ROOT / "qa/qualified_profiles/public/gistemp.txt").read_text(encoding="utf-8")
+    secondary = (ROOT / "qa/qualified_profiles/public/gistemp.csv").read_text(encoding="utf-8")
     async def fixed_source(snapshot):
         return source
     qualified_workflow.fetch_source = fixed_source
+    async def fixed_download(url, **kwargs):
+        assert str(url).endswith(".csv"), "고정 CSV 외 다운로드"
+        return secondary
+    qualified_workflow._fetch_text = fixed_download
     def respond(request):
         body = json.loads(request.content)
         fixed = any(m.get("content") == "짧은 기능 검사" for m in body.get("messages", []))
@@ -46,13 +51,20 @@ def main():
                     RoutedGateway(store, self.credentials, research_id, snapshot, client_factory=factory)))
             return result
         def _request(self, method, path, body=None):
-            nonlocal source
+            nonlocal source, secondary
             if method == "POST" and path == "/qa/revise":
                 lines = source.splitlines()
                 for i, line in enumerate(lines):
                     if line.startswith("2005 "):
                         cells = line.split();cells[13] = str(int(cells[13]) + 10);lines[i] = " ".join(cells)
                 source = "\n".join(lines) + "\n"
+                lines = secondary.splitlines()
+                for i, line in enumerate(lines):
+                    if line.startswith("2005,"):
+                        cells = line.split(",")
+                        cells[13] = str(float(cells[13]) + .10)
+                        lines[i] = ",".join(cells)
+                secondary = "\n".join(lines) + "\n"
                 return APIResponse(200, {"execution":"OFFLINE_SOURCE_REVISION"})
             return super()._request(method, path, body)
     api = OfflineAPI(folder / "state.sqlite", folder / "workspace", launch=False)

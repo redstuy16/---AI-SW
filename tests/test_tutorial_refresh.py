@@ -31,8 +31,9 @@ def test_research_modes_share_files_and_have_distinct_guidance():
     assert len(files) == 2 and files[0]['text'] == files[1]['text']
     assert all('필요한 파일' in entry['text'] and 'CSV' not in entry['text'] for entry in files)
     assert any(entry['target'] == '#design-review' for entry in detailed)
-    query = next(entry for entry in routes['research_model']['targets'] if entry['target'].endswith('[name=public_search_query]'))
-    assert 'plant growth temperature' in query['detail'] and '비공개' in query['detail']
+    query = next(entry for entry in routes['research_model']['targets'] if entry['target'].endswith('[name=search_policy]'))
+    assert 'AI' in query['detail'] and '한국어·영어' in query['detail'] and '비공개' in query['detail']
+    assert not any('public_search_consent' in entry['target'] or 'public_search_query' in entry['target'] for entry in routes['research_model']['targets'])
     egress = next(entry for entry in routes['research_start']['targets'] if entry['target'].endswith('[name=egress]'))
     assert egress['fallback'] == '#research-advanced>summary'
 

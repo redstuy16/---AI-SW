@@ -60,7 +60,7 @@ async def check_model(app, profile_id, body, *, client_factory=None, scope=None)
     capability = {"inference":"text", "text":"text", "structured":"structured_output", "tools":"tool_calling", "stream":"streaming", "reasoning":"reasoning"}.get(mode)
     if capability is None: raise ControlError("UNKNOWN_CHECK_MODE")
     # 검사별 한도와 실패 기록을 독립적으로 보존한다.
-    profile = profile.model_copy(update={"output_limit":min(128, profile.output_limit)})
+    profile = profile.model_copy(update={"output_limit":min(128, profile.output_limit), "task_output_limits": {}})
     if capability in profile.capabilities and profile.capabilities[capability].status == CapabilityStatus.UNSUPPORTED:
         if body.get("retest") is not True: raise ControlError("CAPABILITY_RETEST_REQUIRED")
         profile.capabilities = dict(profile.capabilities)

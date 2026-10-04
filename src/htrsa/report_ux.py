@@ -70,11 +70,15 @@ def friendly_report(state, rid):
         elif field.startswith("metrics.") and field.rsplit(".", 1)[-1] in {"mae", "rmse", "r2"}:
             name = {"mae": "평균 절대 오차", "rmse": "제곱근 평균 제곱 오차", "r2": "결정계수"}[field.rsplit(".", 1)[-1]]
             display.append({"label": ("기준 모델 " if "baseline" in field else "분석 모델 ") + name, **number})
-    return {"available": True, "mode": "DETERMINISTIC_LOCAL", "ai_narrative": "NOT_RUN", "titles": TITLES, "report_style": style,
+    from .research_report import report_record
+    ai_report = report_record(state, rid)
+    return {"available": True, "mode": "AI_GROUNDED" if ai_report and ai_report["status"] == "READY" else "DETERMINISTIC_LOCAL",
+            "ai_narrative": ai_report["status"] if ai_report else "NOT_RUN", "ai_report": ai_report, "titles": TITLES, "report_style": style,
             "source_semantics": state.cycle5.snapshot(rid) if state.cycle5.enabled(rid) else {"enabled": False},
             "research_design": __import__("htrsa.research_design", fromlist=["summary"]).summary(state, rid),
             "question": conclusion.research_question, "status": run["run_status"], "stop_reason": run["stop_reason"],
-            "complete": run["stop_reason"] in {"GOAL_ANSWERED", "QUALIFIED_PROCEDURE_COMPLETED"}, "conclusion": card["calculation"] if card["available"] else SUPPORT[conclusion.support_level],
+            "complete": run["stop_reason"] in {"GOAL_ANSWERED", "QUALIFIED_PROCEDURE_COMPLETED", "LITERATURE_REVIEW_COMPLETED"},
+            "conclusion": ai_report["draft"]["summary"] if ai_report and ai_report["status"] == "READY" else card["calculation"] if card["available"] else SUPPORT[conclusion.support_level],
             "support_level": conclusion.support_level, "numbers": numbers, "display_numbers": display, "analyses": methods, "images": images, "conclusion_card":card,
             "evidence_refs": conclusion.evidence_refs, "contradictions": conclusion.contradiction_refs,
             "limitations": limitations, "comparison": "추가 분석은 별도 승인된 방법별 결과로 비교합니다. 분석 간 차이를 새 유의성이나 인과 효과로 해석하지 않습니다.",
@@ -82,7 +86,9 @@ def friendly_report(state, rid):
 
 
 def markdown_report(view):
-    lines = ["# 연구 결과", "", "로컬 결정론적 보고서 · AI 서술 API 실행 안 함", ""]
+    record = view.get("ai_report")
+    writing = "AI 작성 · 수정본 " + str(record["revision"]) if record and record["status"] == "READY" else "부분 보고서 · AI 작성 미완료" if record else "로컬 결정론적 보고서 · AI 서술 API 실행 안 함"
+    lines = ["# 연구 결과", "", writing, ""]
     for index, title in enumerate(view["titles"], 1):
         lines += [f"## {index}. {title}", ""]
         if index == 1:

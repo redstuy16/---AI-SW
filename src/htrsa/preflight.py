@@ -186,6 +186,7 @@ def _source_fingerprint() -> str:
     paths += sorted((ROOT / "db" / "migrations").glob("*.sql"))
     paths += [ROOT / "pyproject.toml", ROOT / "docker" / "Dockerfile.sandbox"]
     paths += [ROOT / "src" / "htrsa" / "product_catalog.json"]
+    paths += [ROOT / "src" / "htrsa" / "workbench_static" / "pdfjs" / "manifest.json"]
     if (ROOT / "H-TRSA.wsf").is_file():
         paths += [ROOT / "H-TRSA.wsf"]
     digest = hashlib.sha256()

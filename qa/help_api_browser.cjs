@@ -38,7 +38,7 @@ async function main(){
  const checked=await state();check('검사 과정은 연구·Agent 생성 없음',checked.researches===0&&checked.agents===0);
  await page.locator('#editor-close').click();await page.locator('[data-view=research]').click();await page.locator('#list-new').click();
  await page.locator('[name=question]').fill('공개 자료의 관계를 검토해 주세요.');await page.locator('[name=title]').fill('단가 수정 후 실행');
- await page.locator('#research-next').click();await page.locator('#research-next').click();
+ await page.locator('#research-next').click();await page.locator('[name=search_policy]').selectOption('DISABLED');await page.locator('#research-next').click();
  await page.evaluate(()=>api('/qa/reset-price',{}));await page.locator('#research-start').click();await page.locator('[data-apply-research-price]').waitFor();
  const blocked=await state();check('연구 시작의 단가 누락은 모델별 적용 버튼으로 해결',blocked.provider_calls===4&&blocked.researches===0&&await page.locator('.research-price strong').innerText()==='GPT-6 Luna');
  check('단가 오류 중복 설명 제거',await page.locator('#research-preflight').innerText().then(t=>!t.includes('안전한 비용 상한')));
@@ -48,7 +48,7 @@ async function main(){
  await page.locator('#research-next').click();await page.locator('#research-start').click();await page.locator('#run-content').waitFor();
  const started=await state();check('유료 모델 경로에서 실제 연구 실행·모의 API 정산',started.provider_calls>4&&started.researches===1&&started.agents>0&&started.runs.every(r=>r.status!=='FAILED'&&r.status!=='STARTING'));
  await page.locator('#run-back').click();await page.locator('#list-new').click();await page.locator('#research-input-mode').waitFor();await page.locator('[name=question]').fill('공개 자료의 관계를 검토해 주세요.');
- await page.locator('#research-next').click();await page.locator('#research-form[data-page="1"]').waitFor();await page.locator('#research-next').click();await page.locator('#research-form[data-page="2"]').waitFor();await page.evaluate(()=>api('/qa/reset-price',{}));
+ await page.locator('#research-next').click();await page.locator('#research-form[data-page="1"]').waitFor();await page.locator('[name=search_policy]').selectOption('DISABLED');await page.locator('#research-next').click();await page.locator('#research-form[data-page="2"]').waitFor();await page.evaluate(()=>api('/qa/reset-price',{}));
  await page.locator('#research-smoke').click();await page.locator('[data-apply-research-price]').waitFor();check('연구 화면 연결 검사도 누락 단가부터 처리',(await state()).provider_calls===started.provider_calls);
  await page.locator('[data-apply-research-price]').click();await page.getByText('시작 준비 완료',{exact:true}).waitFor();await page.locator('#research-next').click();
  await page.locator('#research-smoke').click();await page.locator('#notice[data-status=success]').filter({hasText:'AI 응답을 확인했습니다.'}).waitFor();

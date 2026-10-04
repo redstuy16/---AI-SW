@@ -163,6 +163,8 @@ class AgentRuntime:
             cost = None
             try:
                 role_instructions = instructions(role)
+                if getattr(output_type, "INSTRUCTIONS", None):
+                    role_instructions += "\n" + output_type.INSTRUCTIONS
                 if output_type is RepairDecision:
                     role_instructions += (
                         "\nChoose a RepairDecision from the structured failure evidence. "

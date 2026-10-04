@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import os
 from typing import Literal
-from pydantic import Field, StrictInt
+from pydantic import Field, StrictInt, field_validator
 
 from .schemas import StrictModel
 from .control_plane import ControlError
@@ -18,14 +18,25 @@ class UIPreferences(StrictModel):
     report_style: Literal["friendly", "technical"] = "friendly"
     low_spec_mode: Literal["AUTO", "LOW_SPEC", "NORMAL", "ON", "OFF"] = "AUTO"
     settings_version: Literal[1, 2] = 2
-    search_required: bool = True
-    search_attempt_limit: StrictInt = Field(default=5, ge=0, le=20)
+    search_required: bool = False
+    search_attempt_limit: StrictInt = Field(default=10, ge=0, le=20)
+    fulltext_enabled: bool = False
+    openalex_archive_enabled: bool = False
+    searxng_url: str | None = Field(default=None, max_length=500)
     adaptive_budget: bool = True
     new_research_explanations: bool = False
     explanation_prompt_dismissed: bool = False
     tutorial_completed: bool = False
     tutorial_do_not_ask: bool = False
     tutorial_progress: TutorialProgress | None = None
+
+    @field_validator('searxng_url')
+    @classmethod
+    def public_search_server(cls, value):
+        if value:
+            from .source_documents import validate_public_url
+            return validate_public_url(value.strip(), allow_loopback=True, root=True).rstrip('/')
+        return None
 
 
 def preferences(store):

@@ -4,6 +4,11 @@
 
 | 작업 | 구현 보고서 | 최종 결과 |
 |---|---|---|
+| 연구 기본 화면·실시간 진행 v8 | [보고서](research_base_v8_report.md) | [JSON](research_base_v8_report.json) |
+| 검색 자동화·근거 부족 시 설계 이어가기 | [보고서](search_automatic_settings_report.md) | [JSON](search_automatic_settings_report.json) |
+| 무료 검색·공개 원문·연구 완료율 개선 | [보고서](free_search_implementation.md) | [JSON](free_search_implementation.json) |
+| 자동 검색·연구 화면·AI 보고서 | [보고서](research_search_report_redesign.md) | [JSON](research_search_report_redesign.json) |
+| 연구 시작·단가 연결 수정 | [보고서](research_price_start_report.md) | [Chrome 결과](../../build/help-api/browser/e5cfcce6-a270-4277-bb50-f79de420dbe9/result.json) |
 | 등록 API 실행 시도·API 로직 검사 | [보고서](api_live_logic_check_report.md) | [JSON](api_live_logic_check_results.json) |
 | 도움말 정리·API 연결 확인 | [보고서](help_api_unblock_report.md) | [JSON](help_api_unblock_results.json) |
 | 연구별 비용 표시·캐시 정리 | [보고서](research_cost_display_report.md) | [JSON](research_cost_display_results.json) |

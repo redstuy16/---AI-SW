@@ -14,6 +14,8 @@ from htrsa.provider_checks import check_model
 from test_autonomous_loop import MANAGER
 from htrsa.database import to_json
 
+REPORT_DRAFT = {"summary": "확인된 수치 결과는 없습니다. 측정 자료가 필요합니다.", "procedure": ["측정 조건을 정하고 원본 자료를 기록합니다."], "limitations": ["자료 부족으로 결론을 확정하지 않습니다."]}
+
 
 def main():
     folder=Path(sys.argv[1])
@@ -30,7 +32,7 @@ def main():
         text=to_json(observed);text.encode("utf-8",errors="strict")
         (folder/"observed.json").write_text(text,encoding="utf-8")
         return httpx.Response(200,json={"id":"offline-browser","model":value["model"],
-            "choices":[{"message":{"role":"assistant","content":json.dumps(MANAGER) if manager_request else "HTRSA_OK"},"finish_reason":"stop"}],
+            "choices":[{"message":{"role":"assistant","content":json.dumps(REPORT_DRAFT if "ReportDraft" in json.dumps(value) else MANAGER) if manager_request else "HTRSA_OK"},"finish_reason":"stop"}],
             "usage":{"prompt_tokens":10,"completion_tokens":20}})
     factory=lambda *_:httpx.AsyncClient(transport=httpx.MockTransport(respond))
     class OfflineAPI(WorkbenchAPI):

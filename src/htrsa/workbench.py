@@ -250,10 +250,29 @@ class WorkbenchAPI:
             reasons.append("SOURCE_INVALID")
         from .search_policy import decision
         search_status = decision(snapshot)
-        if snapshot.get('search_required') and snapshot.get("settings_version", 1) < 2 and search_status != 'SEARCH_ALLOWED':
+        if (snapshot.get("ai_report_enabled") and snapshot.get("research_profile_mode") == "AUTO"
+                and not snapshot.get("source_relative") and snapshot.get("design_resolution", {}).get("profile", {}).get("status") == "SUPPORTED"):
+            search_status = "SEARCH_NOT_NEEDED"
+        report_search_enabled = snapshot.get("ai_report_enabled") and snapshot.get("search_policy") != "DISABLED"
+        if (report_search_enabled or snapshot.get('search_required') and (snapshot.get("settings_version", 1) < 2 or snapshot.get("ai_report_enabled"))) and search_status not in {'SEARCH_ALLOWED', 'SEARCH_NOT_NEEDED'}:
             reasons.append(search_status)
+        search_fields = {"SEARCH_EGRESS_DENIED": "public_search_consent", "SEARCH_QUERY_REQUIRED": "public_search_query",
+                         "SEARCH_PRIVATE_QUERY_BLOCKED": "public_search_query", "SEARCH_DISABLED": "search_policy",
+                         "SEARCH_REQUIRED_BUT_DISABLED": "search_policy", "SEARCH_ATTEMPT_LIMIT": "search_attempt_limit", "COMPLETION_RESERVE_BLOCKED": "run_limit_usd", "PRICE_UNKNOWN": "search_policy"}
+        if snapshot.get("ai_report_enabled"):
+            from .product_policy import completion_budget
+            budget = completion_budget(self.store, "preflight", snapshot)
+            if not budget["can_complete"]:
+                reasons.append("COMPLETION_RESERVE_BLOCKED")
+            if report_search_enabled and search_status == "SEARCH_ALLOWED":
+                from .search_policy import default_search_price, search_allocation
+                price, price_source = default_search_price()
+                allocation = search_allocation(self.store, "preflight", snapshot, price=price, price_source=price_source, view=budget)
+                if not allocation["allowed_attempts"]:
+                    reasons.append(allocation["status"])
         value = {"search_status": search_status, "ready": not reasons, "reasons": list(dict.fromkeys(reasons)),
                 "price_required_profiles": price_required_profiles,
+                "repair_fields": [search_fields[r] for r in reasons if r in search_fields],
                 "first_blocker": next(iter(reasons), None), "field_sources": snapshot.get("field_sources", {}),
                 "effective_routing": snapshot["routing"], "effective_settings": {k:snapshot.get(k) for k in
                     ("performance_profile","advanced_performance_profile","model_reasoning","sampling_mode","search_required","search_attempt_limit","report_format","selected_model_pool","draft_revision")},
@@ -492,7 +511,8 @@ class WorkbenchAPI:
                              "routing_profiles": self.store.configs("routing"),
                              "defaults_revision": next((x["revision"] for x in self.store.configs("defaults")), 0),
                              "catalog": catalog(self.store), "performance_profiles": PRESETS,
-                             "credential_storage": "환경변수 → OS 자격 증명 관리자 → 보호된 평문 파일 · 저장 키 조회/복사 불가"}
+                             "credential_storage": "환경변수 → OS 자격 증명 관리자 → 보호된 평문 파일 · 저장 키 조회/복사 불가",
+                             "openalex_credential": self.credentials.metadata('OPENALEX_API_KEY')}
                     from .resource_policy import preferences, low_spec
                     value["preferences"] = preferences(self.store)
                     from .qualified_profiles import registry
@@ -556,9 +576,30 @@ class WorkbenchAPI:
                     elif endpoint == 'beginner-progress':
                         from .beginner_controls import progress
                         value = progress(self, rid)
+                    elif endpoint == 'execution-summary':
+                        from .research_report import execution_summary
+                        value = execution_summary(self, rid)
+                    elif endpoint == 'screen':
+                        from .research_screen import screen_summary
+                        value = screen_summary(self, rid)
+                    elif endpoint in {'source-document', 'source-document.pdf'}:
+                        from .source_documents import checked_document
+                        source_id = query.get('source_id', [''])[0]
+                        record, pages = checked_document(self.read._state, rid, source_id)
+                        from .release import _secret_free
+                        from .storage import sha256_bytes
+                        data = self.read._state.workspace.path(rid, record['pdf']['relative_path']).read_bytes()
+                        secrets = self.credentials.active_secrets([c.get('credential_env_name') for c in self.store.configs('connection')] + ['OPENALEX_API_KEY'])
+                        if (not _secret_free('source.pdf', data) or sha256_bytes(data) != record['pdf']['sha256']
+                                or any(s in to_json(pages) for s in secrets)):
+                            raise ControlError('SOURCE_DOCUMENT_CHANGED')
+                        if endpoint == 'source-document.pdf':
+                            return APIResponse(200, data, 'application/pdf')
+                        value = {'source_id': source_id, 'status': record['status'], 'pages': record['extracted_pages'],
+                                 'total_pages': record['total_pages'], 'truncated': record['truncated'], 'pdf_sha256': record['pdf']['sha256']}
                     elif endpoint == 'flow':
                         from .research_flow import project_flow
-                        value = project_flow(self,rid,view=query.get('view',['current'])[0],limit=int(query.get('limit',['100'])[0]),offset=int(query.get('offset',['0'])[0]),selected=query.get('selected',[None])[0])
+                        value = project_flow(self,rid,view=query.get('view',['current'])[0],limit=int(query.get('limit',['100'])[0]),offset=int(query.get('offset',['0'])[0]),selected=query.get('selected',[None])[0],lane=query.get('lane',[None])[0])
                     elif endpoint == 'flow-node':
                         from .research_flow import flow_node
                         value = flow_node(self,rid,query.get('id',[''])[0])
@@ -634,6 +675,11 @@ class WorkbenchAPI:
                 from .input_upload import upload_csv
                 protected = self.credentials.active_secrets(c.get('credential_env_name') for c in self.store.configs('connection'))
                 return APIResponse(201, upload_csv(self.workspace / 'inputs', body, protected_values=protected))
+            if parts == ["api", "control", "search-suggestion"]:
+                from .research_report import search_suggestion
+                if set(body) - {"title", "question"} or any(not isinstance(v, str) or len(v) > 3000 for v in body.values()):
+                    raise ControlError("INVALID_REQUEST")
+                return APIResponse(200, search_suggestion(body.get("title", ""), body.get("question", "")))
             if parts == ["api", "control", "attachments", "begin"]:
                 from .input_upload import Attachments
                 return APIResponse(201, Attachments(self.store, self.workspace).begin(body))
@@ -655,6 +701,9 @@ class WorkbenchAPI:
             if len(parts) == 5 and parts[:3] == ["api", "control", "research"]:
                 from .research_lifecycle import ensure_visible
                 ensure_visible(self, parts[3])
+                if parts[4] == "rewrite-report":
+                    from .research_report import rewrite_report
+                    return APIResponse(200, asyncio.run(rewrite_report(self, parts[3], body)))
                 if parts[4] == "finish-current-budget":
                     from .research_lifecycle import _idle
                     from .research_schemas import StopReason
@@ -698,6 +747,8 @@ class WorkbenchAPI:
                             verification_repair_enabled=snapshot["verification_repair"],
                             ridge_arithmetic_check_enabled=snapshot["ridge_arithmetic_check"])
                         result = asyncio.run(execute_profile(runtime, rid, snapshot, replay=True))
+                        from .research_report import rebase_local_report
+                        rebase_local_report(self.read._state, self.store, rid)
                         from .final_report import export_final_report
                         export_final_report(self.read._state, rid)
                     return APIResponse(200, redact(result))
@@ -859,6 +910,11 @@ class WorkbenchAPI:
                 value.capability_status, value.capability_source, value.capability_checked_at = "unknown", None, None
                 self.store.config("connection", value.connection_id)
                 return APIResponse(200, self.store.put("model", value.profile_id, value, body.get("expected_revision", 0)))
+            if parts == ['api', 'control', 'search', 'credential']:
+                secret = None if body.get('delete') is True else CredentialInput.model_validate(body).value.get_secret_value()
+                result = self.credentials.save('OPENALEX_API_KEY', secret)
+                self.store.audit(None, 'SEARCH_CREDENTIAL_CHANGED', {'provider': 'OpenAlex', 'deleted': secret is None})
+                return APIResponse(200, result)
             if len(parts) == 5 and parts[:3] == ["api", "control", "connections"] and parts[4] == "credential":
                 conn = self.store.config("connection", parts[3])
                 secret = None if body.get("delete") is True else CredentialInput.model_validate(body).value.get_secret_value()
@@ -1092,7 +1148,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("X-Frame-Options", "DENY")
-        self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
+        self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'self'; worker-src 'self'; style-src 'self'; font-src 'self' blob:; img-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
         if cookie:
             self.send_header("Set-Cookie", self.session.cookie_name + "=" + self.session.cookie + "; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200")
         self.end_headers()
@@ -1124,9 +1180,23 @@ class Handler(BaseHTTPRequestHandler):
             return self.reply(APIResponse(200, {"manual_pairing": self.session.allow_pairing}))
         if path in {"/", "/dashboard"}:
             return self.reply(APIResponse(200, (STATIC / "index.html").read_text(encoding="utf-8"), "text/html; charset=utf-8"))
-        if path in {"/assets/workbench.js", "/assets/provider_settings.js", "/assets/product_ux.js", "/assets/bootstrap.js", "/assets/cycle5_ui.js", "/assets/live_api_test.js", "/assets/workbench.css", '/assets/research_flow.js', '/assets/beginner_ux.js', '/assets/tutorial_content.js', '/assets/tutorial.js', '/assets/research_design.js'}:
+        if path in {"/assets/workbench.js", "/assets/provider_settings.js", "/assets/product_ux.js", "/assets/bootstrap.js", "/assets/cycle5_ui.js", "/assets/live_api_test.js", "/assets/workbench.css", '/assets/research_flow.js', '/assets/beginner_ux.js', '/assets/tutorial_content.js', '/assets/tutorial.js', '/assets/research_design.js', '/assets/research_workspace.js', '/assets/research_workspace.css'}:
             filename = path.rsplit("/", 1)[-1]
             return self.reply(APIResponse(200, (STATIC / filename).read_bytes(), "text/javascript; charset=utf-8" if filename.endswith(".js") else "text/css; charset=utf-8"))
+        if path.startswith('/assets/pdfjs/'):
+            relative = path[len('/assets/pdfjs/'):]
+            vendor = STATIC / 'pdfjs'
+            manifest = json.loads((vendor / 'manifest.json').read_text(encoding='utf-8', errors='strict'))
+            if manifest['version'] != '6.4.299' or relative not in manifest['files']:
+                return self.reply(APIResponse(404, {'error':'NOT_FOUND'}))
+            asset = (vendor / relative).resolve()
+            if not asset.is_relative_to(vendor.resolve()):
+                return self.reply(APIResponse(404, {'error':'NOT_FOUND'}))
+            data = asset.read_bytes()
+            if sha256(data).hexdigest() != manifest['files'][relative]:
+                return self.reply(APIResponse(409, {'error':'PDF_ASSET_CHANGED'}))
+            mime = 'text/javascript; charset=utf-8' if relative.endswith('.mjs') else 'application/wasm' if relative.endswith('.wasm') else 'application/octet-stream'
+            return self.reply(APIResponse(200, data, mime))
         if not self.session.authorized(self.headers.get("Cookie")):
             return self.reply(APIResponse(401, {"error": "OWNER_SESSION_REQUIRED"}))
         if not self.session.admitted():

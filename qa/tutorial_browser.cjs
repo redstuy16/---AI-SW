@@ -130,7 +130,8 @@ async function main(){
  for(const width of [390,1280]){await page.setViewportSize({width,height:900});await page.locator('#connection-form [name=api_key]').scrollIntoViewIfNeeded();await coachAt('#connection-form [name=api_key]');check('API 입력 화살표 '+width+'px 위치·가로 넘침·입력 접근',await clearTarget()&&await inViewport());await shot('visual-key-'+width);}
  await page.locator('#tutorial-coach-next').click();await coachAt('#connection-form [name=display_name]');check('다음 안내로 실제 연결 이름 입력칸 하나만 강조',await clearTarget()&&await page.locator('.tutorial-focus').count()===1&&await page.locator('#connection-form [name=display_name]').getAttribute('aria-describedby').then(value=>value.includes('tutorial-coach-text')));
  await page.locator('#tutorial-coach-prev').click();await coachAt('#connection-form [name=api_key]');check('이전 안내로 돌아와도 실제 입력칸 접근 가능',await clearTarget());
- await page.locator('#tutorial-coach-next').click();await page.locator('#tutorial-coach-next').click();await coachAt('#connection-form [name=destination_approved]');await page.locator('#tutorial-coach-next').click();await coachAt('#connection-form button.primary');
+ await page.locator('#tutorial-coach-next').click();await page.locator('#tutorial-coach-next').click();await coachAt('#connection-form button.primary');
+ check('연결 전송 허용은 기본 적용하고 고급 설정에 숨김',await page.locator('#connection-form [name=destination_approved]').isChecked()&&!await page.locator('#connection-form [name=destination_approved]').isVisible());
  check('저장 버튼 화살표 안내 이동은 연결·키·유료 검사 생성 없음',await clearTarget()&&(await state()).keys===0&&(await state()).checks===0&&requests.filter(request=>request.path.endsWith('/register')).length===0);
  check('연결됨·활성화와 실제 응답 확인을 안내에서 구분',await page.locator('#tutorial-coach-text').innerText().then(text=>text.includes('실제 API 응답')));
  const canary='qa-tutorial-secret-canary';
@@ -154,7 +155,7 @@ async function main(){
  check('연구 다음 장에서 모델·성능·검색·예산 안내로 변경',await page.locator('#tutorial-coach').getAttribute('data-route')==='research_model');
  await page.waitForFunction(()=>app.settings.preferences.tutorial_progress.step_id==='model'&&$('#research-form').elements.model_profile_id.value);const selectedProfile=await page.locator('[name=model_profile_id]').inputValue();await waitDraft(selectedProfile);await pace();await page.reload();await acceptIfAsked();await page.locator('#list-new').click();await page.locator('#research-form').waitFor();
  check('둘째 장 새로고침 뒤 모델·예산 안내와 장 복구',await page.locator('#research-form').getAttribute('data-page')==='1'&&await page.locator('#tutorial-coach').getAttribute('data-route')==='research_model');
- for(const selector of ['#performance','#research-form [name=search_policy]','#research-form [name=public_search_query]','#research-form [name=public_search_consent]','#research-form [name=run_limit_usd]','#research-form [name=adaptive_budget]']){
+ for(const selector of ['#performance','#research-form [name=search_policy]','#research-form [name=run_limit_usd]','#research-form [name=adaptive_budget]']){
   await page.locator(selector).focus();await coachAt(selector);check(selector+' 실제 입력 위치와 짧은 안내',await clearTarget()&&await page.locator('#tutorial-coach-text').innerText().then(text=>text.length<=70));
  }
  await page.locator('#research-next').click();await page.waitForFunction(()=>document.querySelector('#tutorial-coach')?.dataset.route==='research_start');await page.locator('#research-start').focus();await coachAt('#research-start');

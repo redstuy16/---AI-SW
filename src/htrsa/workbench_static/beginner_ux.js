@@ -40,7 +40,8 @@ function arrangeResearchPages(form){
  move('title',0);move('question',0);move('attachment_files',0);pages[0].append(form.querySelector('#attachment-list'));
  const picker=form.querySelector('#research-model-picker');pages[1].append(picker.previousElementSibling.previousElementSibling,form.elements.model_profile_id,picker);
  pages[1].append(form.querySelector('label[for=performance]'));move('performance',1);pages[1].append(form.querySelector('#performance-detail'));
- for(const name of ['search_policy','public_search_query','public_search_consent','run_limit_usd','adaptive_budget'])move(name,1);
+ for(const name of ['search_policy','run_limit_usd','adaptive_budget'])move(name,1);
+ form.elements.search_policy.addEventListener('change',()=>{form.elements.search_required.checked=form.elements.search_policy.value!=='DISABLED';form.dispatchEvent(new Event('input',{bubbles:true}));});
  pages[2].append(form.querySelector('#research-advanced'));
  const advanced=pages[2].querySelector('#research-advanced');advanced.open=true;
  const egress=form.elements.egress;egress.closest('label').firstChild.textContent='선택한 분석 자료도 같이 보내기 ';
@@ -85,20 +86,26 @@ newResearch=async function({skipExplanation=false}={}){
  arrangeResearchPages(form);await window.HtrsaResearchDesign?.ensureMounted(form);if(app.tutorialActive){window.HtrsaTutorial?.researchOpened(form);drawTutorial();}
 };
 
+
+function researchListCards(rows,filter){
+ return rows.length?'<div class="research-list-cards">'+rows.map(r=>'<article class="research-list-card"><button class="research-card-title" data-run="'+esc(r.research_id)+'">'+esc(r.title)+'</button><span class="tag" data-tone="'+esc(r.official_status?.tone||'waiting')+'">'+esc(filter==='trash'?'휴지통':r.official_status?.label||beginnerStatus(r.control_status))+'</span><div class="research-card-meta"><span>사용 비용 '+researchCostCell(r)+'</span><time>'+esc(time(r.updated_at))+'</time></div><div class="inline-actions">'+(filter==='trash'?'<button data-restore="'+esc(r.research_id)+'">복원</button><button data-purge="'+esc(r.research_id)+'">영구 삭제</button>':'<button data-rename="'+esc(r.research_id)+'">이름 변경</button><button data-trash="'+esc(r.research_id)+'">연구 삭제</button>')+'</div></article>').join('')+'</div>':'<div class="empty">'+(filter==='trash'?'휴지통이 비어 있습니다.':'아직 연구가 없습니다.')+'</div>';
+}
+
 renderList=async function(epoch){
- const filter=app.beginnerFilter||'all',query=new URLSearchParams({limit:'50',offset:String(app.listOffset||0),trash:filter==='trash'?'1':'0',status_group:filter});
+ const filter=app.beginnerFilter||'all',query=new URLSearchParams({limit:'50',offset:String(app.listOffset||0),trash:filter==='trash'?'1':'0',status_group:filter,q:app.beginnerQuery||''});
  const page=await api('/api/control/research?'+query);if(epoch!==app.epoch)return;
  app.rows=page.items;let rows=app.rows;
  if(filter==='running')rows=rows.filter(r=>['준비 중','진행 중','일시정지'].includes(beginnerStatus(r.control_status)));
  if(filter==='completed')rows=rows.filter(r=>beginnerStatus(r.control_status)==='완료');
  $('#breadcrumb').textContent='작업 공간 / 연구';$('#mode').textContent=app.rows.some(r=>r.mode==='DEMO')?'예시 데이터 포함':'이 기기의 연구';
- $('#content').innerHTML=`<div class="page-head"><h1>연구</h1><button id="list-new" class="primary">새 연구 만들기</button></div><nav class="tabs" aria-label="연구 분류">${[['all','전체'],['running','진행 중'],['completed','완료'],['trash','휴지통']].map(([key,label])=>`<button data-filter="${key}" aria-current="${filter===key?'page':'false'}">${label}</button>`).join('')}</nav><div id="research-table">${table(['연구 제목','상태','사용 비용 USD(미화 달러)','마지막 수정','관리'],rows.map(r=>[`<button class="link" data-run="${esc(r.research_id)}">${esc(r.title)}</button>`,filter==='trash'?'휴지통':esc(beginnerStatus(r.control_status)),researchCostCell(r),time(r.updated_at),filter==='trash'?`<button data-restore="${esc(r.research_id)}">복원</button><button data-purge="${esc(r.research_id)}">영구 삭제</button>`:`<button data-rename="${esc(r.research_id)}">이름 변경</button><button data-trash="${esc(r.research_id)}">연구 삭제</button>`]),filter==='trash'?'휴지통이 비어 있습니다. 삭제한 연구는 30일 동안 이곳에 보관됩니다.':'아직 연구가 없습니다.')}</div><div class="inline-actions"><button id="list-prev" ${!app.listOffset?'disabled':''}>이전</button><button id="list-next" ${page.next_offset===null?'disabled':''}>다음</button><button id="list-recovery">문제가 생겼어요</button></div>`;
+ $('#content').innerHTML=`<div class="page-head"><h1>연구</h1><button id="list-new" class="primary">새 연구 만들기</button></div><nav class="tabs" aria-label="연구 분류">${[['all','전체'],['running','진행 중'],['completed','완료'],['trash','휴지통']].map(([key,label])=>`<button data-filter="${key}" aria-current="${filter===key?'page':'false'}">${label}</button>`).join('')}</nav><form class="research-list-search" id="research-list-search"><label for="research-search">검색</label><input id="research-search" type="search" maxlength="200" placeholder="연구 제목·질문" value="${esc(app.beginnerQuery||'')}"><button>검색</button></form><div id="research-table">${researchListCards(rows,filter)}</div><div class="inline-actions"><button id="list-prev" ${!app.listOffset?'disabled':''}>이전</button><button id="list-next" ${page.next_offset===null?'disabled':''}>다음</button><button id="list-recovery">문제가 생겼어요</button></div>`;
  $('#list-new').onclick=()=>newResearch().catch(x=>message(x.message));
+ $('#research-list-search').onsubmit=e=>{e.preventDefault();app.beginnerQuery=$('#research-search').value;app.listOffset=0;render();};
  $('#list-recovery').onclick=beginnerRecovery;
  $('[data-view="research"]').textContent='연구';
  document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{app.beginnerFilter=b.dataset.filter;app.listOffset=0;render();});
  $('#list-prev').onclick=()=>{app.listOffset=Math.max(0,(app.listOffset||0)-50);render();};$('#list-next').onclick=()=>{app.listOffset=page.next_offset;render();};
- document.querySelectorAll('[data-run]').forEach(b=>b.onclick=()=>{app.rid=b.dataset.run;app.tab='flow';app.technicalResearch=false;render();});
+ document.querySelectorAll('[data-run]').forEach(b=>b.onclick=()=>{app.rid=b.dataset.run;app.tab='overview';app.technicalResearch=false;history.replaceState(null,'','#research/'+app.rid+'/overview');render();});
  document.querySelectorAll('[data-cost-history]').forEach(b=>b.onclick=()=>{app.usageOffset=0;app.usageFilter={scope:'all',role:''};renderUsage(b.dataset.costHistory).catch(x=>message(x.message));});
  bindLifecycle($('#content'));$('#statusbar').textContent='한국 시간';
  await autoTutorial();
@@ -129,40 +136,6 @@ function cardHTML(card){
  return `<article class="conclusion-card"><h2>결론 검토 카드</h2>${pairs.map(([k,v])=>`<section><h3>${esc(k)}</h3><p>${esc(v)}</p></section>`).join('')}${card.message?`<p role="alert">${esc(card.message)}</p>`:''}${card.pending_question?`<p>변경한 질문 · 재확인 대기: ${esc(card.pending_question)}</p>`:''}${auditLabel?`<p>${esc(auditLabel)}</p>`:''}${card.record?.profile_id?`<div class="inline-actions"><button id="profile-refresh">자료 변경 확인</button><button id="profile-recalculate">계산 다시 확인하기</button><button id="profile-amend">질문 변경</button></div><details id="profile-source-details"><summary>자료 근거</summary><div id="profile-source-content"></div></details>`:''}${changes}<details><summary>이전 결론</summary>${(card.analysis_history||[]).filter(h=>h.historical).map(h=>`<p>이전 결과 · ${esc(h.question)}<br>${esc(h.calculation)}</p>`).join('')||card.history.filter(h=>!h.current).map(h=>`<p>${esc(JSON.parse(h.payload_json).text)}</p>`).join('')||'<p>이전 결론이 없습니다.</p>'}</details></article>`;
 }
 
-const v4TechnicalRun=renderRun;
-renderRun=async function(epoch){
- if(app.technicalResearch){await v4TechnicalRun(epoch);if(epoch!==app.epoch)return;const cost=await api('/api/control/research/'+encodeURIComponent(app.rid)+'/usage?limit=1');if(epoch!==app.epoch)return;$('#content .page-head').insertAdjacentHTML('afterend',researchCostSummary(cost,app.rid));const back=document.createElement('button');back.id='normal-research';back.textContent='기본 화면으로';back.onclick=()=>{app.technicalResearch=false;app.tab='flow';render();};$('#content').prepend(back);return;}
- const rid=encodeURIComponent(app.rid);
- const [overview,control,progress]=await Promise.all([api('/api/research/'+rid),api('/api/control/research/'+rid+'/control'),api('/api/control/research/'+rid+'/beginner-progress')]);
- if(epoch!==app.epoch)return;app.control=control;const card=progress.card;
- const row=app.rows.find(r=>r.research_id===app.rid),steps=['질문','자료 찾기','자료 확인','분석','결과 확인','보고서'];
- if(row)row.title=progress.title;
- const actions=[['pause','일시정지',['RUNNING','STARTING','RESUMING']],['resume','계속하기',['PAUSED']],['stop','중단',['RUNNING','STARTING','RESUMING','PAUSED']]].filter(([, ,statuses])=>statuses.includes(control.status));
- const complete=card.available&&card.current;const budgetWarning=['PAUSED','BUDGET_BLOCKED'].includes(control.status)&&Number(progress.ledger.available)<=0.02;
- $('#content').innerHTML=`<div class="page-head"><div><button id="run-back">뒤로</button><h1>${esc(progress.title||row?.title||overview.question)}</h1><p>${esc(beginnerStatus(control.status||overview.status))}</p></div><div class="inline-actions">${actions.map(([key,label])=>`<button data-command="${key}">${label}</button>`).join('')}<button data-rename="${esc(app.rid)}">이름 변경</button><button data-trash="${esc(app.rid)}">연구 삭제</button></div></div>${researchCostSummary(progress.ledger,app.rid,true)}<nav class="tabs"><button id="normal-flow">연구 진행</button><button id="normal-report">보고서</button><button id="technical-research">자세히 보기</button></nav><div id="run-content">${app.tab==='report'?`<div class="inline-actions"><button data-pdf="${esc(app.rid)}">PDF 보고서 만들기</button><button id="preview-pdf">보고서 보기</button></div>`:`<ol class="beginner-flow" aria-label="연구 진행">${progress.steps.map((step,i)=>`<li class="${step.done?'done':''}"><span>${i+1}</span>${esc(step.label)}${step.done?'<strong>완료</strong>':''}</li>`).join('')}</ol>`}${budgetWarning?`<section class="budget-warning"><p>현재 남은 예산은 $${esc(progress.ledger.available)}입니다.</p><button id="finish-run-budget">현재 한도에서 마무리</button><button id="change-run-monthly">월간 한도 변경</button><button id="cancel-run-budget">취소</button></section>`:''}${cardHTML(card)}<button id="run-recovery">문제가 생겼어요</button></div>`;
- $('#finish-run-budget')?.addEventListener('click',async()=>{try{await api('/api/control/research/'+rid+'/finish-current-budget',{});await render();message('현재 한도에서 연구를 마무리했습니다.','success');}catch(x){message(x.message);}});$('#change-run-monthly')?.addEventListener('click',()=>{app.budgetResearch=app.rid;app.rid=null;app.view='settings';app.settingsPane='budget';render();});$('#cancel-run-budget')?.addEventListener('click',()=>$('.budget-warning').remove());
- $('#run-usage').onclick=()=>{app.usageOffset=0;app.usageFilter={scope:'all',role:''};renderUsage(app.rid).catch(x=>message(x.message));};
- $('#run-back').onclick=()=>{app.rid=null;render();};
- $('#normal-flow').onclick=()=>{app.tab='flow';render();};$('#normal-report').onclick=()=>{app.tab='report';render();};
- $('#technical-research').onclick=()=>{app.technicalResearch=true;render();};$('#run-recovery').onclick=beginnerRecovery;
- bindLifecycle($('#content'));
- document.querySelectorAll('[data-command]').forEach(b=>b.onclick=async()=>{try{await api('/api/control/research/'+rid+'/'+b.dataset.command,{expected_version:control.version,idempotency_key:crypto.randomUUID()});render();}catch(x){message(x.message);}});
- $('#profile-recalculate')?.addEventListener('click',async e=>{e.target.disabled=true;try{await api('/api/control/research/'+rid+'/recalculate',{});await render();message('계산을 다시 확인했습니다.','success');}catch(x){message(x.message);}finally{e.target.disabled=false;}});
- $('#profile-refresh')?.addEventListener('click',async e=>{e.target.disabled=true;try{const result=await api('/api/control/research/'+rid+'/refresh-source',{});await render();message(result.affected?'사용한 자료가 바뀌었습니다. 계산을 다시 확인해 주세요.':'사용한 자료와 결론의 범위가 유지됩니다.',result.affected?'error':'success');}catch(x){message(x.message);}finally{e.target.disabled=false;}});
- $('#profile-amend')?.addEventListener('click',()=>{
-  editor('질문 변경',`<form id="profile-question-form"><label>현재 질문<textarea name="question" maxlength="4000" required>${esc(card.pending_question||card.question)}</textarea></label><div class="inline-actions"><button class="primary">변경 저장</button><button type="button" id="cancel-profile-question">취소</button></div></form>`);
-  $('#cancel-profile-question').onclick=()=>$('#editor').close();
-  $('#profile-question-form').onsubmit=async e=>{e.preventDefault();try{await api('/api/control/research/'+rid+'/amend-question',{question:e.target.elements.question.value,expected_version:card.state_version});$('#editor').close();await render();message('질문을 변경했습니다. 계산을 다시 확인해 주세요.','success');}catch(x){message(x.message);}};
- });
- $('#profile-source-details')?.addEventListener('toggle',async e=>{
-  if(!e.target.open||e.target.dataset.loaded)return;
-  try{const source=await api('/api/control/research/'+rid+'/source-inspection');
-   $('#profile-source-content').innerHTML=`<p>원질문: ${esc(source.original_question)}</p><p>현재 질문: ${esc(source.current_question)}</p><p>${esc(source.limitation)}</p><p>출처 설명 문서: HTML 미수집 · 링크만 기록</p><dl><dt>자료 의미</dt><dd>${esc(JSON.stringify(source.primary?.semantics))}</dd><dt>원본 SHA-256</dt><dd>${esc(source.primary?.source_sha256)}</dd><dt>해시 범위</dt><dd>${esc(source.primary?.hash_scope)}</dd><dt>수집 기록</dt><dd>${esc(source.primary?.capture?.http_observed?'앱에서 HTTP 응답 관측':'로컬 자료 · 원래 HTTP 수집 미관측')}</dd><dt>다른 형식 SHA-256</dt><dd>${esc(source.secondary?.source_sha256||'없음')}</dd></dl><button id="profile-selected-rows">선택한 관측값 보기</button><div id="profile-selected-content"></div>`;
-   e.target.dataset.loaded='1';$('#profile-selected-rows').onclick=async()=>{try{const values=await api('/api/control/research/'+rid+'/source-inspection?rows=1');$('#profile-selected-content').innerHTML=values.rows?`<table><thead><tr><th>연도</th><th>원래 편차 (°C)</th></tr></thead><tbody>${values.rows.map(r=>`<tr><td>${esc(r.year)}</td><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table>`:'<p>선택값을 다시 확인해야 합니다.</p>';}catch(x){message(x.message);}};
-  }catch(x){message(x.message);}
- });
- $('#preview-pdf')?.addEventListener('click',async()=>{try{const response=await currentPDFResponse(rid,true),preview=await response.json();inspect('보고서 보기',reportHTML(preview.view));}catch(x){message(x.message);}});
-};
 
 async function connectionCheck(connectionId){
  if(!app.settings)app.settings=await api('/api/control/settings');
@@ -231,3 +204,21 @@ renderSettings=async function(epoch){
 };
 
 Object.assign(errors,{PROFILE_POLICY_INCOMPATIBLE:'저장된 검증 정책과 이 절차가 다릅니다. 기존 연구는 유지하고 새 연구를 만들어 주세요.',CONNECTION_IN_USE:'이 연결을 사용하는 연구를 먼저 마무리해 주세요.',BUDGET_FINISH_REQUIRES_PAUSE:'연구를 먼저 일시정지해 주세요.',RESEARCH_IN_TRASH:'휴지통에서 연구를 복원해 주세요.',RESEARCH_PAUSE_BEFORE_DELETE:'진행 중인 연구를 먼저 일시정지해 주세요.',PROFILE_UNSUPPORTED:'현재 지원하지 않는 연구 범위입니다. 원래 질문을 확인해 주세요.',PROFILE_CLARIFICATION_REQUIRED:'비교 기간이나 자료의 의미를 확인해 주세요.',PROFILE_VERIFICATION_FAILED:'계산이나 자료 검증을 통과하지 못했습니다.'});
+
+function bindProfileCard(card,rid){
+ const bind=(selector,event,handler)=>{const node=$(selector);if(node)node['on'+event]=handler;};
+ bind('#profile-recalculate','click',async e=>{e.target.disabled=true;try{await api('/api/control/research/'+rid+'/recalculate',{});await render();message('계산을 다시 확인했습니다.','success');}catch(x){message(x.message);}finally{e.target.disabled=false;}});
+ bind('#profile-refresh','click',async e=>{e.target.disabled=true;try{const result=await api('/api/control/research/'+rid+'/refresh-source',{});await render();message(result.affected?'사용한 자료가 바뀌었습니다. 계산을 다시 확인해 주세요.':'사용한 자료와 결론의 범위가 유지됩니다.',result.affected?'error':'success');}catch(x){message(x.message);}finally{e.target.disabled=false;}});
+ bind('#profile-amend','click',()=>{
+  editor('질문 변경',`<form id="profile-question-form"><label>현재 질문<textarea name="question" maxlength="4000" required>${esc(card.pending_question||card.question)}</textarea></label><div class="inline-actions"><button class="primary">변경 저장</button><button type="button" id="cancel-profile-question">취소</button></div></form>`);
+  $('#cancel-profile-question').onclick=()=>$('#editor').close();
+  $('#profile-question-form').onsubmit=async e=>{e.preventDefault();try{await api('/api/control/research/'+rid+'/amend-question',{question:e.target.elements.question.value,expected_version:card.state_version});$('#editor').close();await render();message('질문을 변경했습니다. 계산을 다시 확인해 주세요.','success');}catch(x){message(x.message);}};
+ });
+ bind('#profile-source-details','toggle',async e=>{
+  if(!e.target.open||e.target.dataset.loaded)return;
+  try{const source=await api('/api/control/research/'+rid+'/source-inspection');
+   $('#profile-source-content').innerHTML=`<p>원질문: ${esc(source.original_question)}</p><p>현재 질문: ${esc(source.current_question)}</p><p>${esc(source.limitation)}</p><p>출처 설명 문서: HTML 미수집 · 링크만 기록</p><dl><dt>자료 의미</dt><dd>${esc(JSON.stringify(source.primary?.semantics))}</dd><dt>원본 SHA-256</dt><dd>${esc(source.primary?.source_sha256)}</dd><dt>해시 범위</dt><dd>${esc(source.primary?.hash_scope)}</dd><dt>수집 기록</dt><dd>${esc(source.primary?.capture?.http_observed?'앱에서 HTTP 응답 관측':'로컬 자료 · 원래 HTTP 수집 미관측')}</dd><dt>다른 형식 SHA-256</dt><dd>${esc(source.secondary?.source_sha256||'없음')}</dd></dl><button id="profile-selected-rows">선택한 관측값 보기</button><div id="profile-selected-content"></div>`;
+   e.target.dataset.loaded='1';$('#profile-selected-rows').onclick=async()=>{try{const values=await api('/api/control/research/'+rid+'/source-inspection?rows=1');$('#profile-selected-content').innerHTML=values.rows?`<table><thead><tr><th>연도</th><th>원래 편차 (°C)</th></tr></thead><tbody>${values.rows.map(r=>`<tr><td>${esc(r.year)}</td><td>${esc(r.value)}</td></tr>`).join('')}</tbody></table>`:'<p>선택값을 다시 확인해야 합니다.</p>';}catch(x){message(x.message);}};
+  }catch(x){message(x.message);}
+ });
+}

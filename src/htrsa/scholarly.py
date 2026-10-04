@@ -167,6 +167,7 @@ class ScholarlyHTTPClient:
         self.last_retry_after: float | None = None
         self.last_error_code: str | None = None
         self.dispatch_guard = None
+        self.last_usage = {}
 
     @staticmethod
     def _retry_after_seconds(value: str | None) -> float | None:
@@ -192,8 +193,13 @@ class ScholarlyHTTPClient:
             raise ScholarlyError('승인되지 않은 검색 주소', code='SEARCH_DESTINATION_DENIED')
         transport = self.transport
         if transport is None:
-            from .control_plane import Connection, PinnedTransport
-            transport = PinnedTransport(Connection(connection_id='scholarly', display_name='문헌 검색', adapter_id='openai_compatible', base_url='https://' + target.hostname, auth_strategy='none', destination_approved=True))
+            from .control_plane import ControlError, PinnedTransport
+            try:
+                transport = PinnedTransport.scholarly(target.hostname)
+            except (ControlError, OSError) as exc:
+                self.last_status = "FAILED"
+                self.last_error_code = "SEARCH_DESTINATION_DENIED" if isinstance(exc, ControlError) else "PROVIDER_TRANSPORT_ERROR"
+                raise ScholarlyError("검색 서버 연결을 확인할 수 없습니다.", code=self.last_error_code, status="FAILED") from exc
         headers = {"User-Agent": "H-TRSA/0.1 scholarly-research (metadata only)", "Accept": "application/json"}
         self.last_status = "FAILED"
         self.last_status_code = None
@@ -207,6 +213,8 @@ class ScholarlyHTTPClient:
                         self.dispatch_guard()
                     async with client.stream("GET", url, params=params) as response:
                         self.last_status_code = response.status_code
+                        self.last_usage = {k: response.headers[k] for k in
+                            ("X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Credits-Used", "X-RateLimit-Reset") if k in response.headers}
                         if response.status_code in {429, 500, 502, 503, 504}:
                             retry_after = self._retry_after_seconds(response.headers.get("Retry-After"))
                             self.last_retry_after = retry_after
@@ -305,7 +313,37 @@ def normalize_openalex_work(work: dict) -> NormalizedSource:
                               provider="scholarly.openalex",
                               provider_ids={"openalex": identity} if identity else {})
     result.metadata_hash = metadata_digest(result)
+    for location in [work.get("best_oa_location") or {}, *(work.get("locations") or [])]:
+        if isinstance(location, dict) and location.get("is_oa") is True and isinstance(location.get("pdf_url"), str):
+            from .source_documents import validate_public_url
+            from .control_plane import ControlError
+            try:
+                result.provider_ids["oa_pdf_url"] = validate_public_url(location["pdf_url"])
+                break
+            except ControlError:
+                continue
     return result
+
+
+def _crossref_abstract(value):
+    if not isinstance(value, str) or not value.strip() or len(value) > 50000:
+        return None
+    from html.parser import HTMLParser
+    class TextOnly(HTMLParser):
+        def __init__(self):
+            super().__init__(convert_charrefs=True)
+            self.parts = []
+        def handle_data(self, data):
+            self.parts.append(data)
+        def handle_starttag(self, tag, attrs):
+            if tag.rsplit(':', 1)[-1] in {'p', 'title', 'sec', 'br'}:
+                self.parts.append(' ')
+        def handle_endtag(self, tag):
+            if tag.rsplit(':', 1)[-1] in {'p', 'title', 'sec'}:
+                self.parts.append(' ')
+    parser = TextOnly()
+    parser.feed(value)
+    return ' '.join(''.join(parser.parts).split()) or None
 
 
 def normalize_crossref_work(work: dict) -> NormalizedSource:
@@ -318,7 +356,7 @@ def normalize_crossref_work(work: dict) -> NormalizedSource:
     doi = normalize_doi(work.get("DOI"))
     result = NormalizedSource(title=work["title"][0], authors=authors, publication_year=year,
                               doi=doi, source_name=(work.get("container-title") or [None])[0],
-                              abstract=None, url=work.get("URL"), provider="scholarly.crossref",
+                              abstract=_crossref_abstract(work.get("abstract")), url=work.get("URL"), provider="scholarly.crossref",
                               provider_ids={"crossref_doi": doi} if doi else {})
     result.metadata_hash = metadata_digest(result)
     return result
@@ -365,8 +403,11 @@ class OpenAlexProvider:
         key = identity or f"https://doi.org/{doi}"
         params = {"api_key": self.api_key} if self.api_key else None
         try:
-            return normalize_openalex_work(await self.client.get_json(
+            source = normalize_openalex_work(await self.client.get_json(
                 "https://api.openalex.org/works/" + quote(key, safe=""), params))
+            if doi and source.doi != doi or identity and source.openalex_id != identity:
+                raise ScholarlyError("OpenAlex identity mismatch")
+            return source
         except (ValidationError, TypeError, KeyError, ValueError, AttributeError) as exc:
             raise ScholarlyError("invalid OpenAlex work metadata") from exc
 
@@ -413,6 +454,48 @@ class CrossrefProvider:
         if source.doi != doi:
             raise ScholarlyError("Crossref DOI mismatch")
         return source
+
+
+class SearXNGProvider:
+    name = "scholarly.searxng"
+
+    def __init__(self, base_url, client=None):
+        from .source_documents import PublicDocumentClient, validate_public_url
+        self.base_url = validate_public_url(base_url, allow_loopback=True, root=True)
+        self.client = client or PublicDocumentClient()
+
+    async def search(self, request):
+        from urllib.parse import urlencode
+        payload = await self.client.get_json(self.base_url + "/search?" + urlencode(
+            {"q": request.query, "format": "json", "language": "all", "pageno": request.page}), allow_loopback=True)
+        rows = payload.get("results")
+        if not isinstance(rows, list):
+            raise ScholarlyError("SearXNG JSON 검색을 사용할 수 없음", code="SEARXNG_JSON_UNAVAILABLE")
+        sources = []
+        for item in rows[:request.limit]:
+            if not isinstance(item, dict) or not isinstance(item.get("title"), str) or not isinstance(item.get("url"), str):
+                continue
+            from .source_documents import validate_public_url
+            try:
+                url = validate_public_url(item["url"])
+            except Exception:
+                continue
+            match = re.search(r"10\.\d{4,9}/[^\s<>\"?#]+", url + " " + str(item.get("content", "")))
+            identity = normalize_doi(match[0]) if match else None
+            # 검색 요약은 초록이나 논문 원문으로 승격하지 않는다.
+            source = NormalizedSource(title=item["title"], url=url, doi=identity, provider=self.name,
+                provider_ids={"discovery_url": url, **({"oa_pdf_url": url} if urlsplit_path_pdf(url) else {})})
+            source.metadata_hash = metadata_digest(source)
+            sources.append(source)
+        return SearchResult(provider=self.name, request=request, sources=_apply_filters(request, sources))
+
+    async def get_work(self, external_id):
+        raise ScholarlyError("웹 검색 결과는 서지 조회를 지원하지 않음", code="SEARCH_FETCH_NOT_APPROVED")
+
+
+def urlsplit_path_pdf(url):
+    from urllib.parse import urlsplit
+    return urlsplit(url).path.lower().endswith(".pdf")
 
 
 class FakeScholarlyProvider:

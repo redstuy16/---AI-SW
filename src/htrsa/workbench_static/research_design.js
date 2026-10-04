@@ -163,12 +163,10 @@
  ensureMounted($('#research-form')).catch(error=>message(error.message));
  Object.assign(errors,{RESEARCH_DESIGN_ACTION_BLOCKED:'입력한 연구 조건과 실행 계획을 확인해 주세요.',RESEARCH_DESIGN_SOURCE_DENIED:'현재 초안에 첨부한 자료만 연결할 수 있습니다.',RESEARCH_DESIGN_STALE:'연구 조건이 다른 창에서 바뀌었습니다. 다시 열어 주세요.'});
  const oldReport=reportHTML;reportHTML=v=>renderSummary(v.research_design)+oldReport(v);
- const oldRun=renderRun;renderRun=async function(epoch){await oldRun(epoch);if(epoch!==app.epoch||!app.rid)return;const rid=app.rid,record=await api('/api/control/research/'+encodeURIComponent(rid)+'/design');if(epoch!==app.epoch||rid!==app.rid)return;
-  if($('#run-content')&&!$('#run-content .research-design-summary'))$('#run-content').insertAdjacentHTML('beforeend',renderSummary(record.summary));
-  if(app.control?.snapshot){const button=document.createElement('button');button.textContent='연구 조건';button.id='design-amend';const actions=$('#content .page-head .inline-actions')||$('#content .page-head .actions');actions?.append(button);button.onclick=async()=>{
+ async function amend(rid){const record=await api('/api/control/research/'+encodeURIComponent(rid)+'/design');if(app.rid!==rid)return;
    const c=await api('/api/control/research/design-catalog');editor('연구 조건', '<form id="design-amend-form"><label>연구 질문<textarea name="question" readonly>'+esc(record.current?.original_question||app.control.snapshot.question)+'</textarea></label><button type="submit" class="primary">변경 저장</button><p id="design-amend-result" role="status"></p></form>');
    const form=$('#design-amend-form');form.dataset.draftRevision=0;mount(form,c,record.current?.design||{editor_open:true});
    form.onsubmit=async e=>{e.preventDefault();try{await api('/api/control/research/'+encodeURIComponent(rid)+'/design',{detailed_design:form.readDetailedDesign(),expected_version:record.state_version});$('#editor').close();await render();message('연구 조건을 저장했습니다. 변경된 조건은 다시 검증해야 합니다.','success');}catch(x){$('#design-amend-result').textContent=errors[x.code]||x.message;}};
-  };}
- };
+ }
+ window.HtrsaResearchDesign.amend=amend;
 })();

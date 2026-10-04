@@ -44,8 +44,8 @@ def test_beginner_question_only_resolves_real_defaults(app):
     assert snap["model_profile_id"] == "m"
     assert snap["routing"] == {r: "m" for r in ROLES}
     assert snap["run_limit_usd"] == "0.10" and snap["attachments"] == []
-    assert snap["report_format"] == "pdf" and snap["search_attempt_limit"] == 5
-    assert snap["adaptive_budget"] and snap["search_required"]
+    assert snap["report_format"] == "pdf" and snap["search_attempt_limit"] == 10
+    assert snap["adaptive_budget"] and not snap["search_required"]
     assert app.preflight(snap)["ready"]
     assert app.store.ledger()["requests"] == []
 

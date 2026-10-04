@@ -103,15 +103,15 @@ def test_search_cost_provenance_cache_and_untrusted_content(app):
     rid,s = search_case(app)
     p = Provider()
     asyncio.run(run_search(app.read._state,app.store,app.credentials,rid,s,provider=p,price=Decimal('0.001'),price_source='offline-known-price'))
-    assert p.calls == 2
+    assert p.calls == 3
     rows = list(app.store.db.execute("SELECT * FROM spend_ledger WHERE research_id=?",(rid,)))
-    assert len(rows) == 2 and all(r['purpose']=='web_search' and r['status']=='SETTLED' for r in rows)
+    assert len(rows) == 3 and all(r['purpose']=='web_search' and r['status']=='SETTLED' for r in rows)
     before = deepcopy(app.store.defaults().model_dump())
     trace = [json.loads(r[0]) for r in app.store.db.execute("SELECT payload FROM control_audit WHERE kind='SEARCH_COMPLETED'")]
     assert all(t['provider']==p.name and t['query'] and t['query_hash'] and t['started_at'] and t['completed_at'] and t['sources'][0]['retrieved_at'] and t['selected_result_ids'] for t in trace)
     assert app.store.defaults().model_dump() == before
     asyncio.run(run_search(app.read._state,app.store,app.credentials,rid,s,provider=p,price=Decimal('0.001'),price_source='offline-known-price'))
-    assert p.calls == 2
+    assert p.calls == 3
 
 
 def test_unknown_price_and_private_query_zero_dispatch(app):
@@ -249,7 +249,7 @@ def test_search_cache_invalidated_source_is_not_reused(app):
     assert source
     app.read._state.invalidate_source(rid,source[0],'오프라인 무효화 주입')
     asyncio.run(run_search(app.read._state,app.store,app.credentials,rid,s,provider=p,price=Decimal(0),price_source='offline'))
-    assert p.calls==4
+    assert p.calls==5
     assert app.store.db.execute('SELECT status FROM sources WHERE source_id=?',(source[0],)).fetchone()[0]=='INVALIDATED'
 
 

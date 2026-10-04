@@ -348,6 +348,9 @@ class ProviderAdapter:
             value = GenerationResult(response_id=document.get("id", document.get("responseId")), model_id=document.get("model", profile.model_id), model_revision=document.get("modelVersion", document.get("system_fingerprint")),
                 status=status, output_text=text, structured_output=output, tool_calls=calls, finish_reason=finish, refusal=refusal, usage=parse_usage(self.adapter_id, protocol, document))
             value._provider_content, value._adapter_id = deepcopy(content), self.adapter_id
+            reason = (document.get("incomplete_details") or {}).get("reason")
+            if reason in {"max_output_tokens", "content_filter"}:
+                value.provider_metadata["incomplete_reason"] = reason
             return value
         except GenerationError: raise
         except (KeyError, IndexError, TypeError, ValueError): raise GenerationError("MALFORMED_RESPONSE") from None
@@ -407,7 +410,7 @@ class ProviderAdapter:
             else: document = parse_json(data)
             result = self.normalize(document, profile, meta["protocol"])
         except (ValueError, UnicodeError): raise GenerationError("MALFORMED_RESPONSE") from None
-        result.provider_metadata = meta
+        result.provider_metadata.update(meta)
         raw_usage = document.get("usageMetadata", document.get("usage")) or {}
         result.provider_metadata["usage_sources"] = {name: "PROVIDER_REPORTED" if value is not None else "UNKNOWN" for name, value in result.usage.model_dump().items() if name.endswith("tokens")}
         if "total_tokens" not in raw_usage and "totalTokenCount" not in raw_usage:

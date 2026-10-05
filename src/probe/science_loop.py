@@ -4,7 +4,9 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import inspect
+import re
 import time
+import unicodedata
 from pathlib import Path
 from typing import Any, ClassVar, Literal
 
@@ -27,7 +29,8 @@ from .science_sources import ScienceSourcePlan
 class ScienceDecision(StrictModel):
     INSTRUCTIONS: ClassVar[str] = (
         "고등학생과 고등학교 과학 교사의 탐구 한 건을 완성한다. 이번 관찰을 평가하고 다음 행동 하나를 선택한다. "
-        "보고서 작성 전에 관련 주제 검색을 먼저 시도한다. initial_search의 결과와 확보한 근거를 확인한 뒤 COMPLETE에 보고서 전체를 반환한다. "
+        "주어진 값과 공식의 계산 문제는 검색 없이 CALCULATE로 계산·검산한 뒤 COMPLETE에 답을 작성한다. 검색 실패는 계산 실패가 아니다. "
+        "문헌·외부 자료가 필요한 연구만 검색한다. initial_search의 결과와 확보한 근거를 확인한다. "
         "확보한 근거가 부족하면 질문의 핵심 개념과 조건으로 SEARCH를 보완한다. 검색 실패나 근거 미확보만으로 같은 검색을 반복하지 않는다. "
         "search_queries는 한 번에 최대 세 개이고 각 검색어는 400자 이하이다. 추가 검색어는 다음 판단으로 나눈다. "
         "관련 VERIFIED 근거가 있으면 results의 해석에 연결하고 claims에 실제 근거 ID와 원문 인용을 포함한다. 모델 지식은 검증된 문헌이나 실측 결과가 아니다. 수치 결과와 인용을 만들지 않는다. "
@@ -125,6 +128,20 @@ def _fingerprint(value) -> str:
     return hashlib.sha256(to_json(value).encode("utf-8", errors="strict")).hexdigest()
 
 
+def _query_key(query):
+    return re.sub(r'\s+', ' ', unicodedata.normalize('NFKC', query).casefold()).strip()
+
+
+def _attempted_queries(runtime, rid, observations):
+    queries = [query for item in observations if item['action'] == 'SEARCH'
+               for query in item['result'].get('queries', [])]
+    if runtime.state._db.execute("SELECT 1 FROM sqlite_master WHERE name='control_audit'").fetchone():
+        queries.extend(value['query'] for row in runtime.state._db.execute(
+            "SELECT payload FROM control_audit WHERE research_id=? AND kind IN ('SEARCH_COMPLETED','SEARCH_DISPATCHED')",
+            (rid,)) for value in [from_json(row[0])] if isinstance(value.get('query'), str))
+    return list(dict.fromkeys(queries))
+
+
 async def _await(value):
     return await value if inspect.isawaitable(value) else value
 
@@ -214,16 +231,26 @@ def _finish(runtime, rid, reason, *, limitation=None):
 
 
 async def _dataset(runtime, rid, csv_source):
-    if csv_source is None:
-        return None
     saved = runtime.state.runtime_step(rid, "science:dataset")
     if saved and saved["status"] == "COMPLETED":
         return saved["output"]
+    inline = False
+    if csv_source is None:
+        from .science_tables import question_csv
+        question = runtime.state._one("SELECT goal FROM research_runs WHERE research_id=?", (rid,))[0]
+        content = question_csv(question)
+        if content is None:
+            return None
+        data = content.encode('utf-8', errors='strict')
+        csv_source = runtime.state.workspace.path(rid, 'inputs/question-table.csv')
+        csv_source.parent.mkdir(parents=True, exist_ok=True)
+        csv_source.write_bytes(data)
+        inline = True
     intake, task = runtime._role_contract(
         rid, "experiment_coordinator", "과학 탐구 자료를 가져오고 실제 열과 품질을 확인합니다.",
         "DatasetIntake", allowed_tools=["data.import", "data.profile"], max_tool_calls=2,
         runtime_key="science:intake")
-    registry = runtime._registry(intake.contract_id)
+    registry = runtime._registry(intake.contract_id, import_source_paths=[csv_source])
     _, imported = runtime._dispatch(registry, intake, task, "data.import",
                                     {"source_path": str(csv_source), "research_id": rid})
     runtime.faults.at("AFTER_INTAKE_IMPORT")
@@ -234,6 +261,10 @@ async def _dataset(runtime, rid, csv_source):
     document = from_json(runtime.state.workspace.path(rid, artifact["relative_path"]).read_text(
         encoding="utf-8", errors="strict"))
     value = {"dataset_id": did, "profile_artifact_id": profile.result["artifact_id"], "profile": document}
+    if inline:
+        value['origin'] = 'USER_QUESTION_TABLE'
+        runtime.state.runtime_event(rid, 'SCIENCE_QUESTION_TABLE_IMPORTED',
+            {'dataset_id': did, 'source_sha256': _fingerprint(question)})
     runtime.state.finish_runtime_step(rid, "science:dataset", value, intake.contract_id)
     runtime._complete_task(intake.contract_id)
     runtime._save_cursor(rid, "SCIENCE_DATASET_READY")
@@ -313,18 +344,38 @@ async def _execute(runtime, rid, iteration, decision, contract, dataset, goal, o
         from .science_tools import execute_science_plan
         return await execute_science_plan(runtime, rid, iteration, decision, contract)
     if decision.action == "SEARCH":
+        from .search_policy import self_contained_calculation
+        settings = getattr(runtime, 'science_settings', {}) or {}
+        snapshot = {'execution_mode': 'SCIENCE_AUTO', **settings.get('snapshot', {}),
+                    'search_policy': settings.get('search_policy', 'AUTO'),
+                    'search_required': settings.get('search_required', False)}
+        if snapshot['search_policy'] == 'DISABLED':
+            return {'status': 'NO_EVIDENCE', 'reason': 'SEARCH_DISABLED', 'new_evidence_count': 0}
+        if self_contained_calculation(snapshot, goal):
+            return {'status': 'NO_EVIDENCE', 'reason': 'SEARCH_NOT_NEEDED', 'new_evidence_count': 0,
+                    'repair': {'instruction': '입력값으로 CALCULATE를 실행하고 계산·해석 보고서를 COMPLETE로 작성하세요. 검색은 필요하지 않습니다.'}}
+        attempted = {_query_key(query) for query in _attempted_queries(runtime, rid, observations)}
+        queries = []
+        for query in decision.search_queries:
+            if _query_key(query) not in attempted:
+                queries.append(query)
+                attempted.add(_query_key(query))
+        if not queries:
+            return {'status': 'NO_EVIDENCE', 'reason': 'SEARCH_ALREADY_ATTEMPTED', 'new_evidence_count': 0,
+                    'queries': decision.search_queries,
+                    'repair': {'instruction': '같은 검색을 재전송하지 않습니다. 다른 표현·출처를 선택하거나 확보한 계산·근거로 보고서를 작성하세요.'}}
         acquire = getattr(runtime, "evidence_acquisition", None)
         if acquire is None:
             return {"status": "NEED_INPUT", "reason": "SEARCH_NOT_CONFIGURED"}
         before = runtime.state._db.execute("SELECT COUNT(*) FROM evidence WHERE research_id=? AND status='VERIFIED'", (rid,)).fetchone()[0]
         try:
-            result = await _await(acquire(queries=decision.search_queries))
+            result = await _await(acquire(queries=queries))
         except ModelProviderError as exc:
             return {"status": "NO_EVIDENCE", "reason": exc.code, "new_evidence_count": 0,
-                    "queries": decision.search_queries}
+                    "queries": queries}
         after = runtime.state._db.execute("SELECT COUNT(*) FROM evidence WHERE research_id=? AND status='VERIFIED'", (rid,)).fetchone()[0]
         return {"status": "COMPLETED" if result else "NO_EVIDENCE", "new_evidence_count": max(0, after-before),
-                "queries": decision.search_queries, "acquisition": result if isinstance(result, dict) else bool(result)}
+                "queries": queries, "acquisition": result if isinstance(result, dict) else bool(result)}
     if decision.action == "ANALYZE" or (decision.action == "DELEGATE" and decision.delegate_role == "analysis_planner_worker"):
         return await _analyze(runtime, rid, iteration, decision, contract, dataset, goal)
     if decision.action == "REFINE_DESIGN":
@@ -396,8 +447,15 @@ async def _initial_search(runtime, rid):
         return saved["output"]
     acquire = getattr(runtime, "evidence_acquisition", None)
     settings = getattr(runtime, "science_settings", {}) or {}
+    from .search_policy import self_contained_calculation
+    goal = runtime.state._one("SELECT goal FROM research_runs WHERE research_id=?", (rid,))[0]
+    snapshot = {'execution_mode': 'SCIENCE_AUTO', **settings.get('snapshot', {}),
+                'search_policy': settings.get('search_policy', 'AUTO'),
+                'search_required': settings.get('search_required', False)}
     if settings.get("search_policy") == "DISABLED":
         result = {"status": "SKIPPED", "reason": "SEARCH_DISABLED"}
+    elif self_contained_calculation(snapshot, goal):
+        result = {"status": "SKIPPED", "reason": "SELF_CONTAINED_CALCULATION"}
     elif acquire is None:
         result = {"status": "SKIPPED", "reason": "SEARCH_NOT_CONFIGURED"}
     else:
@@ -467,6 +525,8 @@ async def run_science_loop(runtime, rid: str, csv_source: str | Path | None, goa
                        "remaining_search_requests":slots.remaining(),
                        "remaining_source_requests":slots.remaining(kind='public_original'),
                        "initial_search": initial_search,
+                       "search_guidance": "주어진 수치의 계산은 검색 없이 계산·검산하고 답을 작성하세요. 검색어가 아닌 숫자 표기나 보고서 오류의 repair를 수정하세요." if initial_search.get('reason') == 'SELF_CONTAINED_CALCULATION' else "완료한 검색은 반복하지 말고 남은 요청 한도 안에서 필요한 근거만 보완하세요.",
+                       "attempted_search_queries": _attempted_queries(runtime, rid, observations),
                        "progress_feedback": {"consecutive_unproductive_actions": no_progress,
                            "stop_after": no_progress_limit,
                            "instruction": "성과 없는 반복이 2회 이상이면 같은 요청 대신 검색 표현·자료 출처·분석 방법을 바꾸세요. 확보한 자료로 답할 수 있으면 COMPLETE로 보고서를 작성하고 미확인 내용과 한계를 명시하세요. 부족한 근거를 검증 완료로 표시하거나 수치를 만들지 마세요."},

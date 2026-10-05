@@ -90,7 +90,7 @@ def test_distinct_math_plans_are_progress_and_repeated_plan_is_not(tmp_path, rep
         'inputs':{'x':2 if repeated else n},'calculations':[{'name':'square','expression':'x*x','unit':'무차원'}]}}
         for n in (2,3,4)]
     db,state,provider,loop=runtime(tmp_path,replies+[complete()])
-    loop.science_settings.update(search_policy='DISABLED',max_decisions=6)
+    loop.science_settings.update(search_policy='DISABLED',max_decisions=6,no_progress_limit=2)
     result=asyncio.run(loop.run('입력별 공식 검산',None))
     assert result['stop_reason']==('UNRESOLVED_VERIFICATION' if repeated else 'SCIENCE_INQUIRY_COMPLETED')
     assert len(provider.calls)==(3 if repeated else 4)

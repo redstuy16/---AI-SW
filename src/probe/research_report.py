@@ -56,11 +56,15 @@ class ReportNumericError(ControlError):
 def _input_numbers(text):
     """같은 입력값의 지수 표기와 단위 지수를 구분한다."""
     from decimal import Decimal
+    text=re.sub(r'\\(?:times|cdot)', '×', text)
+    text=re.sub(r'\^\s*\{([^{}]+)\}', r'^\1', text)
+    text=re.sub(r'\\(?:mathrm|text|operatorname)\s*\{([^{}]+)\}', r'\1', text)
+    text=re.sub(r'\\[,;! ]', ' ', text)
     text=re.sub(r'10([⁺⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+)',lambda m:'10^'+unicodedata.normalize('NFKC',m[1]).replace('−','-'),text)
     text=unicodedata.normalize('NFKC',text).replace('−','-')
     text=re.sub(r'(?<=\d),(?=\d{3}(?:\D|$))','',text)
     text=re.sub(r'([0-9]+(?:\.[0-9]+)?)\s*[×x*]\s*10\s*\^\s*([+-]?[0-9]+)',r'\1e\2',text)
-    text=re.sub(r'\b(?:m|s|kg|K|mol)\s*\^?\s*[+-]?[234]\b','unit',text)
+    text=re.sub(r'(?:m|s|kg|K|mol)\s*\^?\s*[+-]?[234](?!\d)','unit',text)
     return {Decimal(v) for v in _numbers(text)}
 
 
@@ -82,6 +86,22 @@ def _calculated_display(mention, verified):
             context.prec=60
             if abs(Decimal(str(value['value']))-printed)<=Decimal(5).scaleb(printed.as_tuple().exponent-1):return True
     return False
+
+
+def _quoted_number_display(text, quote):
+    """번역된 수치도 원문 값·온도 단위와 일치해야 한다."""
+    if text in quote:
+        return True
+    values = _input_numbers(text)
+    if not values or values - _input_numbers(quote):
+        return False
+    units = {
+        "celsius": r"℃|°\s*C|degrees?\s+Celsius|섭씨",
+        "kelvin": r"(?<![A-Za-z])K(?![A-Za-z])|kelvin|켈빈",
+        "fahrenheit": r"°\s*F|degrees?\s+Fahrenheit|화씨",
+    }
+    return all(not re.search(pattern, text, re.I) or re.search(pattern, quote, re.I)
+               for pattern in units.values())
 
 
 class ReportDraft(StrictModel):
@@ -232,6 +252,12 @@ def bind_calculation_mentions(state,rid,draft):
             candidate=mention.model_copy(update={'location':path,'kind':kind})
             if kind!='calculated' or _calculated_display(candidate,verified):mentions.append(candidate)
     for path,text in fields.items():
+        for mention in list(mentions):
+            if mention.kind == 'provided':
+                fragment = re.sub(r'^[^0-9+−-]*', '', mention.text)
+                for literal in dict.fromkeys([mention.text, fragment]):
+                    if literal and literal in text and not any(m.location == path and m.text == literal for m in mentions):
+                        mentions.append(mention.model_copy(update={'location': path, 'text': literal}))
         for literal,reference in _data_metadata_literals(state,rid):
             if literal in text:
                 mentions=[m for m in mentions if not (m.location==path and m.text==literal)]
@@ -245,7 +271,7 @@ def bind_calculation_mentions(state,rid,draft):
             for candidate in candidates:
                 mention=ReportNumber(text=candidate,kind='calculated',artifact_id=value['artifact_id'],field=value['field'],location=path)
                 if _calculated_display(mention,verified) and not any(m.location==path and m.text==candidate for m in mentions):mentions.append(mention)
-        for match in re.finditer(r'1\s*/\s*4|1[−-]A|(?<=/)4|273\.15(?:\s*K)?|365(?:\.25)?(?:\s*일)?|86,?400(?:\s*초)?|1(?=\s*년)',text):
+        for match in re.finditer(r'1\s*/\s*4|1[−-](?:A|알베도)|1(?=[−-]\s*0\.\d+)|(?<=/)4|273\.15(?:\s*K)?|365(?:\.25)?(?:\s*일)?|86,?400(?:\s*초)?|1(?=\s*년)',text):
             if _formal_constant(match[0],text,path) and not any(m.location==path and m.text==match[0] for m in mentions):mentions.append(ReportNumber(text=match[0],kind='constant',location=path))
     return draft.model_copy(update={'numeric_mentions':mentions})
 
@@ -261,15 +287,20 @@ def _data_metadata_literals(state,rid):
             values+=re.findall(r'GISTEMP v\d+|HadCRUT(?:\.\d+)*|HadCRUT5',source['definition'])
             if source['format']=='hadcrut5':values+=['HadCRUT5']
             literals.extend((v,source['artifact_id']) for v in values if _numbers(v))
+    literals.extend((row['title'], row['source_id']) for row in state._db.execute(
+        "SELECT source_id,title FROM sources WHERE research_id=? AND status='VERIFIED'", (rid,))
+        if _numbers(row['title']))
     return list(dict.fromkeys(literals))
 
 
 def _formal_constant(literal,text,path):
     if literal=='4' and re.search(r'S\s*\(\s*1[−-]A\s*\)\s*/\s*4',text):return True
-    if re.fullmatch(r'1\s*/\s*4|1[−-]A',literal):
+    if re.fullmatch(r'1\s*/\s*4|1[−-](?:A|알베도)',literal):
         return bool(re.search(r'구형|단면|기하|표면|구의|흡수|알베도',text))
+    if literal == '1' and re.search(r'1[−-]\s*0\.\d+', text) and re.search(r'알베도|흡수|반사', text):
+        return path in {'/method','/explanation','/results'}
     conversions={'273.15':r'켈빈|섭씨','365':r'년|연도|연간','365.25':r'년|연도|연간','86400':r'일|하루|초','1':r'1\s*년|하루','4':r'구형|단면|기하|표면'}
-    return path in {'/method','/explanation'} and any(_input_numbers(literal)==_input_numbers(number) and re.search(label,text) for number,label in conversions.items())
+    return path in {'/method','/explanation','/results'} and any(_input_numbers(literal)==_input_numbers(number) and re.search(label,text) for number,label in conversions.items())
 
 
 def validate_draft(state, rid, draft, *, check_internal=True):
@@ -293,8 +324,8 @@ def validate_draft(state, rid, draft, *, check_internal=True):
         original = state._one("SELECT * FROM sources WHERE research_id=? AND source_id=?", (rid, source["source_id"]))
         stored = state._one("SELECT * FROM evidence WHERE research_id=? AND evidence_id=?", (rid, claim.evidence_id))
         _validate_literature_provenance(dict(original), dict(stored), state=state)
-        if _numbers(claim.text) and claim.text not in claim.quote:
-            raise ControlError("REPORT_UNPROVEN_NUMBER")
+        if _numbers(claim.text) and not _quoted_number_display(claim.text, claim.quote):
+            raise ReportNumericError("REPORT_UNPROVEN_NUMBER", f"/claims/{i}/text", claim.text)
         for key in ("text", "quote"):
             path, text = f"/claims/{i}/{key}", getattr(claim, key)
             fields[path] = text
@@ -329,14 +360,14 @@ def validate_draft(state, rid, draft, *, check_internal=True):
         elif mention.kind == "observed":
             if mention.evidence_id:
                 source = evidence.get(mention.evidence_id)
-                if not source or not mention.quote or mention.quote not in source["evidence_text"] or mention.text not in mention.quote:
-                    raise ControlError("REPORT_UNPROVEN_NUMBER")
+                if not source or not mention.quote or mention.quote not in source["evidence_text"] or not _quoted_number_display(mention.text, mention.quote):
+                    raise ReportNumericError("REPORT_UNPROVEN_NUMBER", path, mention.text)
                 from .final_report import _validate_literature_provenance
                 original = state._one("SELECT * FROM sources WHERE research_id=? AND source_id=?", (rid, source["source_id"]))
                 stored = state._one("SELECT * FROM evidence WHERE research_id=? AND evidence_id=?", (rid, mention.evidence_id))
                 _validate_literature_provenance(dict(original), dict(stored), state=state)
             elif mention.text not in [line.strip() for line in fields[path].splitlines()] or not any(v["experiment_id"] == mention.experiment_id and v["field"] == mention.field and mention.text == v["sentence"] for v in verified):
-                raise ControlError("REPORT_UNPROVEN_NUMBER")
+                raise ReportNumericError("REPORT_UNPROVEN_NUMBER", path, mention.text)
         elif mention.kind == "constant":
             formal=_formal_constant(mention.text,fields[path],path)
             if not _defined_constant(mention.text) and not formal:
@@ -370,7 +401,7 @@ def validate_draft(state, rid, draft, *, check_internal=True):
 
 def _number_matches(text):
     # 정규화한 숫자와 원래 표시 위치의 길이가 같은 전각·유니코드 십진 숫자도 검사한다.
-    return re.finditer(r"[+\-−＋－]?(?:\d+(?:[.．]\d*)?|[.．]\d+)(?:[eEｅＥ][+\-−＋－]?\d+)?", text)
+    return re.finditer(r"(?:(?<![\w)])[+\-−＋－])?(?:\d+(?:[.．]\d*)?|[.．]\d+)(?:[eEｅＥ][+\-−＋－]?\d+)?", text)
 
 
 def _numbers(text):

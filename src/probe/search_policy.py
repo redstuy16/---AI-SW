@@ -38,6 +38,19 @@ def useful(question):
     return bool(re.search(r'최근|최신|문헌|논문|출처|인용|공개 데이터|current|recent|latest|literature|citation|source verification', question, re.I))
 
 
+def self_contained_calculation(snapshot, question=None):
+    """입력값이 있는 계산 문제의 자동 검색을 선택 사항으로 구분한다."""
+    text = question or snapshot.get('question', '')
+    if (snapshot.get('execution_mode') != 'SCIENCE_AUTO'
+            or snapshot.get('search_policy') != 'AUTO'
+            or snapshot.get('search_required') or snapshot.get('public_search_query')
+            or useful(text) or re.search(r'직접\s*(?:찾|확보|수집)|자료를?\s*(?:찾|확보|수집)', text)):
+        return False
+    return (bool(re.search(r'계산|적합|회귀|calculate|regression', text, re.I))
+            and bool(re.search(r'가정|주어진|제공|다음.*자료|given|provided|=', text, re.I))
+            and len(re.findall(r'\d+(?:\.\d+)?', text)) >= 2)
+
+
 def private_query(query, protected=()):
     return (any(v and v in query for v in protected)
             or bool(re.search(r'(?i)(sk-[\w-]{12,}|AIza[\w-]{35}|ghp_\w{36}|[A-Z]:[\\/]|/home/|/Users/|https?://|@|API[_ ]?KEY|password|confidential|private|internal|비밀번호|비공개|주민등록|\d{3}[- ]\d{3,4}[- ]\d{4}|(?:\d+[,.]\d+[,; ]+){3})', query)))
@@ -58,6 +71,8 @@ def decision(snapshot, *, question=None, budget_ok=True, protected=()):
     required = snapshot.get('search_required', False)
     if policy == SearchPolicy.DISABLED:
         return 'SEARCH_REQUIRED_BUT_DISABLED' if required else 'SEARCH_DISABLED'
+    if self_contained_calculation(snapshot, question):
+        return 'SEARCH_NOT_NEEDED'
     if snapshot.get("search_attempt_limit", 5) == 0:
         return 'SEARCH_ATTEMPT_LIMIT'
     if not required and not snapshot.get('ai_report_enabled') and not useful(question or snapshot['question']):

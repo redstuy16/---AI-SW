@@ -98,7 +98,8 @@ def test_empty_search_twice_stops_with_a_preserved_limitation(tmp_path):
     loop.evidence_acquisition = acquire
     result = asyncio.run(loop.run("새 연구 근거 확인", None))
     assert result["stop_reason"] == "UNRESOLVED_VERIFICATION"
-    assert len(calls) == 3 and len(provider.calls) == 2
+    assert len(calls) == 2 and len(provider.calls) == 2
+    assert result["observations"][-1]["result"]["reason"] == "SEARCH_ALREADY_ATTEMPTED"
     assert result["observations"][-1]["result"]["status"] == "NO_EVIDENCE"
     db.close()
 

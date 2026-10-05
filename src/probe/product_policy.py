@@ -148,7 +148,7 @@ def resolve_effective_settings(store, draft, *, task_intent="research"):
         from .research_report import requested_report_sections
         extended = len(requested_report_sections(raw.get("question", ""))) >= 8
         raw.setdefault("science_max_decisions", 20 if extended else 6)
-        raw.setdefault("science_no_progress_limit", 3 if extended else 2)
+        raw.setdefault("science_no_progress_limit", 5)
         raw.setdefault("search_attempt_limit", 3)
         raw.setdefault("ai_report_enabled", True)
     owner = preferences(store)

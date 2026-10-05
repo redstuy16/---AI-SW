@@ -118,7 +118,7 @@ def _current_limits(runtime):
     settings = getattr(runtime, "science_settings", {}) or {}
     return (settings, min(20, max(1, int(settings.get("max_decisions", 6)))),
             min(3600, max(1, float(settings.get("max_runtime_sec", 300)))),
-            min(5, max(1, int(settings.get("no_progress_limit", 2)))))
+            min(5, max(1, int(settings.get("no_progress_limit", 5)))))
 
 
 def _fingerprint(value) -> str:
@@ -467,6 +467,9 @@ async def run_science_loop(runtime, rid: str, csv_source: str | Path | None, goa
                        "remaining_search_requests":slots.remaining(),
                        "remaining_source_requests":slots.remaining(kind='public_original'),
                        "initial_search": initial_search,
+                       "progress_feedback": {"consecutive_unproductive_actions": no_progress,
+                           "stop_after": no_progress_limit,
+                           "instruction": "성과 없는 반복이 2회 이상이면 같은 요청 대신 검색 표현·자료 출처·분석 방법을 바꾸세요. 확보한 자료로 답할 수 있으면 COMPLETE로 보고서를 작성하고 미확인 내용과 한계를 명시하세요. 부족한 근거를 검증 완료로 표시하거나 수치를 만들지 마세요."},
                        "observations": _compact_observations(observations), "remaining_decisions": max_decisions-iteration,
                        "report_evidence": [{key: item[key] for key in ("evidence_id", "claim", "evidence_text", "source_scope", "title", "url", "text_field", "evidence_location") if key in item}
                                            for item in inputs["evidence"][-8:]],
@@ -544,8 +547,9 @@ async def run_science_loop(runtime, rid: str, csv_source: str | Path | None, goa
             return _finish(runtime, rid, StopReason.INSUFFICIENT_DATA, limitation=result.get("reason"))
         previous = [item for item in observations if item["iteration"] < iteration]
         repeated = any(item["fingerprint"] == observation["fingerprint"] for item in previous)
-        empty = result["status"] in {"NO_EVIDENCE", "PARTIAL", "NEEDS_REVIEW"} or (observation["action"] == "SEARCH" and result.get("new_evidence_count") == 0)
-        no_progress = no_progress+1 if repeated or empty else 0
+        new_evidence = result.get("new_evidence_count", 0) > 0
+        empty = (result["status"] in {"NO_EVIDENCE", "PARTIAL", "NEEDS_REVIEW"} and not new_evidence) or (observation["action"] == "SEARCH" and result.get("new_evidence_count") == 0)
+        no_progress = no_progress+1 if (repeated and not new_evidence) or empty else 0
         _, _, _, no_progress_limit = _current_limits(runtime)
         if no_progress >= no_progress_limit:
             return _finish(runtime, rid, StopReason.UNRESOLVED_VERIFICATION, limitation="NO_PROGRESS")

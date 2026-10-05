@@ -36,7 +36,8 @@ def inquiry_sections(draft):
     draft = draft or {}
     if not any(draft.get(key) for key in ("purpose", "method", "results", "conclusion")):
         return []
-    return [{"title": title, "key": key, "text": draft.get(key, "")} for title, key in INQUIRY_SECTIONS if draft.get(key)]
+    from .report_content import public_text
+    return [{"title": title, "key": key, "text": public_text(draft[key])} for title, key in INQUIRY_SECTIONS if public_text(draft.get(key))]
 
 
 def report_visual_specs(draft, detailed_design=None):
@@ -268,6 +269,7 @@ def _friendly_report(state, rid):
             "ai_narrative": ai_report["status"] if ai_report else "NOT_RUN", "ai_report": ai_report, "titles": TITLES, "report_style": style,
             "source_semantics": state.cycle5.snapshot(rid) if state.cycle5.enabled(rid) else {"enabled": False},
             "research_design": report_execution_details(state, rid, __import__("probe.research_design", fromlist=["summary"]).summary(state, rid)),
+            "references": [dict(row) for row in state._db.execute("SELECT title,url,status FROM sources WHERE research_id=? ORDER BY rowid", (rid,))],
             "question": conclusion.research_question, "status": run["run_status"], "stop_reason": run["stop_reason"],
             "complete": run["stop_reason"] in {"GOAL_ANSWERED", "QUALIFIED_PROCEDURE_COMPLETED", "LITERATURE_REVIEW_COMPLETED", "SCIENCE_INQUIRY_COMPLETED"},
             "report_type": ((ai_report or {}).get("draft") or {}).get("report_type", "analysis"), "visual_specs": visual_specs,
@@ -278,46 +280,22 @@ def _friendly_report(state, rid):
             "reproduction": "검증 후 내보내기의 manifest, 입력 hash, 고정 분석 계획과 재현 안내를 사용하세요."}
 
 
-def markdown_report(view):
-    record = view.get("ai_report")
-    writing = "AI 작성 · 수정본 " + str(record["revision"]) if record and record["status"] == "READY" else "부분 보고서 · AI 작성 미완료" if record else "로컬 결정론적 보고서 · AI 서술 API 실행 안 함"
-    sections = inquiry_sections((record or {}).get("draft"))
-    if sections:
-        lines = ["# 과학 탐구 보고서", ""]
-        if record["status"] != "READY" or not view["complete"]:
-            lines += ["부분 보고서 · 확인된 범위까지 작성됨", ""]
-        for item in sections:
-            lines += ["## " + item["title"], "", item["text"], ""]
-        claims = record["draft"].get("claims", [])
-        if claims:
-            lines += ["## 참고 근거", ""]
-            lines += [claim["text"] + " [" + claim["evidence_id"] + "]" for claim in claims]
-        return "\n".join(lines)
-    lines = ["# 연구 결과", ""]
-    for index, title in enumerate(view["titles"], 1):
-        lines += [f"## {index}. {title}", ""]
-        if index == 1:
-            lines += ["상태: " + str(view["stop_reason"] or "진행 중")]
-        elif index == 2:
-            lines += [view["conclusion"]]
-        elif index in {3, 4, 7}:
-            lines += ["검증된 분석 결과와 원본 provenance에 연결된 수치만 포함합니다."]
-            if index == 4:
-                lines += ["- " + str(a["method"]) for a in view["analyses"]]
-                for source in view.get("source_semantics", {}).get("sources", []):
-                    meaning = f"{source['column']}: {source['quantity_name']} ({source['quantity_kind']}), 단위 {source['unit']}, 기준 {source['baseline'] or '미지정'}, {source['spatial_scope']}, {source['temporal_scope']}, {source['review_status']}"
-                    lines += ["- " + html.escape(meaning).replace("[", "&#91;").replace("]", "&#93;")]
-            if index == 3:
-                lines += ["- " + n["field"] + ": " + str(n["value"]) for n in view["numbers"]]
-        elif index == 5:
-            lines += ["![검증된 분석 그림](" + i["release_path"] + ")" for i in view["images"]] or ["검증된 그림 없음"]
-        elif index == 6:
-            lines += [view["comparison"]]
-        elif index == 8:
-            for key, value in view["limitations"].items():
-                lines += ["### " + key, "", str(value), ""]
-        else:
-            lines += [view["reproduction"]]
-        lines += [""]
-    lines += ["작성 기록: " + writing, ""]
+def markdown_report(view, sources=(), *, include_images=True):
+    """내부 상태·해시·코드와 빈 항목을 제외한 보고서 본문만 내보낸다."""
+    from .report_content import public_sections
+    lines = ["# 과학 탐구 보고서" if view.get("ai_report") else "# 연구 결과", ""]
+    if not view["complete"]:
+        lines += ["부분 보고서 · 확인된 범위까지 작성됨", ""]
+    for item in public_sections(view, sources):
+        if item["images"] and not include_images:
+            continue
+        lines += ["## " + item["title"], "", item["text"], ""]
+        if item["table"]:
+            headers, rows = item["table"]
+            cell = lambda value: html.escape(str(value)).replace("|", "&#124;").replace("\n", "<br/>")
+            lines += ["| " + " | ".join(map(cell, headers)) + " |", "| " + " | ".join("---" for _ in headers) + " |"]
+            lines += ["| " + " | ".join(map(cell, row)) + " |" for row in rows]
+            lines += [""]
+        if item["images"]:
+            lines += ["![" + html.escape(i["caption"]) + "](" + i["release_path"] + ")" for i in view["images"]]
     return "\n".join(lines)

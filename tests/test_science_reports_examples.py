@@ -107,7 +107,7 @@ def test_science_scope_pdf_uses_generic_target_and_value_labels(app):
     export_final_report(state, rid)
     rendered = render_pdf(state, rid)
     text = '\n'.join(page.extract_text() for page in PdfReader(io.BytesIO(rendered['data'])).pages)
-    assert '요청한 식물별 측정값' in text and '생장 길이' in text and '식물 5' in text
+    assert '생장 길이' in text and '요청한 식물별 측정값' not in text and '종류 미확인' not in text
     assert '음료별' not in text and '방출 속도' not in text
 
 
@@ -390,7 +390,7 @@ def test_report_opening_does_not_copy_owner_request(app, tmp_path, format, compl
     stored = json.loads((root / "research_summary.json").read_text(encoding="utf-8"))
     assert stored["research_question"] == question
     final = (root / "final_report.md").read_text(encoding="utf-8")
-    assert final.startswith("# 연구 결과\n\n## 배경과 문헌") and "## 연구 질문" not in final
+    assert final.startswith("# ") and "## 연구 질문" not in final and question not in final
     markdown = markdown_report(view)
     assert question not in markdown and "요청 원문 표식" not in markdown
     pdf = render_pdf(state, rid)
@@ -405,7 +405,7 @@ def test_report_opening_does_not_copy_owner_request(app, tmp_path, format, compl
         assert "AI 작성" not in markdown and "AI 작성" not in text
         assert all(body[key] in text for key in body)
     else:
-        assert "AI 작성" not in text.split("핵심 답변" if format == "legacy" else "한눈에 보기", 1)[0]
+        assert "AI 작성" not in text
     (tmp_path / (format + "-opening.pdf")).write_bytes(pdf["data"])
 
 

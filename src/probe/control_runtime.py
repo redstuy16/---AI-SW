@@ -460,7 +460,7 @@ async def execute(database: Path, workspace: Path, rid: str, *, credential_file=
                 "public_search_consent":snapshot.get('public_search_consent',False),'snapshot':snapshot,
                 "max_decisions": snapshot.get("science_max_decisions", 6),
                 "max_runtime_sec": snapshot["max_elapsed_sec"],
-                "no_progress_limit": snapshot.get("science_no_progress_limit", 2)}
+                "no_progress_limit": snapshot.get("science_no_progress_limit", 5)}
             runtime.protected_values = lambda: Credentials(Path(__file__).resolve().parents[2],workspace,credential_file).active_secrets([c.get('credential_env_name') for c in snapshot['connections'].values()])
             from .research_report import persist_report_draft
             runtime.science_report_writer = lambda draft, decision, request_key: persist_report_draft(

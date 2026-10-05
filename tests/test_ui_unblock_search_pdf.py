@@ -72,7 +72,7 @@ def test_pdf_structure_unicode_deterministic_and_hash(qa_demo_a):
     assert first["data"]==second["data"] and first["sha256"]==second["sha256"]
     reader=PdfReader(io.BytesIO(first["data"]))
     text="\n".join(p.extract_text() for p in reader.pages)
-    assert "한계와 미해결 문제" in text and "SHA-256" in text
+    assert "결론" in text and "SHA-256" not in text and "NOT_VALIDATED" not in text
     sources=__import__("json").loads((report_root(state, result["research_id"]) / "evidence/sources.json").read_text(encoding="utf-8"))
     links=[str(item.get_object().get("/A",{}).get("/URI","")) for page in reader.pages for item in page.get("/Annots",[])]
     assert all(source["url"] in text and source["url"] in links for source in sources if source.get("url","").startswith("https://"))

@@ -2,6 +2,7 @@
 import asyncio
 from copy import deepcopy
 import json
+import io
 from pathlib import Path
 
 import httpx
@@ -11,6 +12,39 @@ from probe.control_runtime import RoutedGateway, execute
 from probe.research_report import execution_summary
 from probe.science_policy import prepare_science_profiles
 from test_multi_provider import app, setup_app
+
+
+def test_app_native_request_completes_and_serves_pdf_without_rebilling(app, monkeypatch):
+    from test_science_loop import complete
+    from pypdf import PdfReader
+    profile = setup_model(app, monkeypatch)
+    sent = []
+    def handler(request):
+        sent.append(request)
+        return httpx.Response(200, json={'id': 'resp-complete-offline', 'model': 'gpt-6-luna', 'status': 'completed',
+            'output': [{'type': 'message', 'content': [{'type': 'output_text', 'text': json.dumps(complete(), ensure_ascii=False)}]}],
+            'usage': {'input_tokens': 1000, 'output_tokens': 300, 'input_tokens_details': {'cached_tokens': 0}}})
+    created = app.request('POST', '/api/control/research', body(profile, question='빛의 세기와 광합성의 관계를 설명해 주세요.'))
+    assert created.status == 201, created.body
+    rid = created.body['research_id']
+    started = app.request('POST', f'/api/control/research/{rid}/start',
+        {'expected_version': 0, 'idempotency_key': 'offline-complete-start'})
+    assert started.status == 200, started.body
+    def factory(store, research_id, snapshot):
+        return RoutedGateway(store, app.credentials, research_id, snapshot,
+            client_factory=lambda *_: httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    asyncio.run(execute(app.database, app.workspace, rid, provider_factory=factory))
+    assert app.store.run(rid)['status'] == 'COMPLETED', app.store.run(rid)
+    assert app.store.run(rid)['error'] == 'SCIENCE_INQUIRY_COMPLETED'
+    ledger = deepcopy(app.store.ledger(rid))
+    for _ in range(2):
+        for suffix in ('execution-summary', 'report-view', 'report.pdf'):
+            response = app.request('GET', f'/api/control/research/{rid}/{suffix}')
+            assert response.status == 200, (suffix, response.body)
+            if suffix == 'report.pdf':
+                assert PdfReader(io.BytesIO(response.body)).pages
+    assert len(sent) == 1
+    assert app.store.ledger(rid) == ledger
 
 
 QUESTION = json.loads((Path(__file__).resolve().parents[1] / 'qa/climate_questions.json').read_text(encoding='utf-8'))[4]['question']
@@ -38,6 +72,7 @@ def test_long_research_uses_app_defaults_and_preserves_explicit_settings(app, mo
     snapshot = app.prepare(body(profile))
     assert snapshot['models']['manager']['input_byte_limit'] == 128000
     assert snapshot['science_max_decisions'] == 20
+    assert snapshot['science_no_progress_limit'] == 5
     assert snapshot['science_context_budget'] == 64000
     assert snapshot['science_max_actions'] == 200
     assert app.store.config('model', profile.profile_id) == saved
@@ -45,6 +80,7 @@ def test_long_research_uses_app_defaults_and_preserves_explicit_settings(app, mo
     assert (fixed['science_max_decisions'], fixed['science_no_progress_limit'], fixed['max_elapsed_sec']) == (4, 1, 60)
     short = app.prepare(body(profile, question='지구의 평균 흡수 복사량을 계산해 주세요.'))
     assert short['science_max_decisions'] == 6
+    assert short['science_no_progress_limit'] == 5
     assert 'science_context_budget' not in short
     legacy = app.prepare(body(profile, execution_mode='LEGACY', research_profile_mode='DISABLED'))
     assert legacy['models']['manager']['input_byte_limit'] == 32000

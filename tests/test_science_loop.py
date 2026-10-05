@@ -90,6 +90,7 @@ def test_selected_audience_and_science_field_reach_the_decision_context(tmp_path
 def test_empty_search_twice_stops_with_a_preserved_limitation(tmp_path):
     search = {"action": "SEARCH", "rationale": "직접 근거를 확인합니다.", "search_queries": ["photosynthesis light evidence"]}
     db, _, provider, loop = runtime(tmp_path, [search, search, complete()])
+    loop.science_settings["no_progress_limit"] = 2
     calls = []
     async def acquire(queries=None):
         calls.append(queries)
@@ -104,6 +105,7 @@ def test_empty_search_twice_stops_with_a_preserved_limitation(tmp_path):
 
 def test_required_literature_cannot_complete_with_an_uncited_design(tmp_path):
     db, _, provider, loop = runtime(tmp_path, [complete(), complete()])
+    loop.science_settings["no_progress_limit"] = 2
     saved = []
     async def writer(draft, decision, *, request_key):
         saved.append(draft)
@@ -311,6 +313,52 @@ def test_explicit_no_progress_limit_can_reach_five(tmp_path):
     loop.evidence_acquisition = acquire
     result = asyncio.run(loop.run("과학 문헌 확인", None))
     assert result["stop_reason"] == "UNRESOLVED_VERIFICATION" and len(provider.calls) == 5
+    db.close()
+
+
+def test_default_tolerates_four_empty_searches_then_completes(tmp_path):
+    search = {"action": "SEARCH", "rationale": "다른 자료를 찾아 확인합니다.", "search_queries": ["photosynthesis evidence"]}
+    db, _, provider, loop = runtime(tmp_path, [search]*4 + [complete()])
+    provider.name = "control_broker"
+    async def acquire(queries=None):
+        return False
+    loop.evidence_acquisition = acquire
+    result = asyncio.run(loop.run("광합성 원리", None))
+    assert result["stop_reason"] == "SCIENCE_INQUIRY_COMPLETED"
+    assert len(provider.calls) == 5
+    context = json.loads(json.loads(provider.calls[-1]["input_text"])["active_state"]["contract"]["objective"].split("\n", 1)[1])
+    assert context["progress_feedback"]["consecutive_unproductive_actions"] == 4
+    db.close()
+
+
+def test_explicit_strict_no_progress_setting_is_preserved(tmp_path):
+    search = {"action": "SEARCH", "rationale": "근거를 확인합니다.", "search_queries": ["photosynthesis evidence"]}
+    db, _, provider, loop = runtime(tmp_path, [search, complete()])
+    provider.name = "control_broker"
+    loop.science_settings.update(no_progress_limit=1)
+    async def acquire(queries=None):
+        return False
+    loop.evidence_acquisition = acquire
+    result = asyncio.run(loop.run("광합성 원리", None))
+    assert result["stop_reason"] == "UNRESOLVED_VERIFICATION"
+    assert len(provider.calls) == 1
+    db.close()
+
+
+def test_partial_search_with_new_evidence_resets_stagnation(tmp_path, monkeypatch):
+    import probe.science_loop as science_loop
+    search = {"action": "SEARCH", "rationale": "추가 자료를 확보합니다.", "search_queries": ["photosynthesis evidence"]}
+    db, _, provider, loop = runtime(tmp_path, [search]*5 + [complete()])
+    provider.name = "control_broker"
+    original = science_loop._execute
+    async def execute(*args):
+        if args[3].action == "SEARCH":
+            return {"status": "PARTIAL", "new_evidence_count": 1}
+        return await original(*args)
+    monkeypatch.setattr(science_loop, "_execute", execute)
+    result = asyncio.run(loop.run("광합성 원리", None))
+    assert result["stop_reason"] == "SCIENCE_INQUIRY_COMPLETED"
+    assert len(provider.calls) == 6
     db.close()
 
 

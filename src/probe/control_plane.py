@@ -215,7 +215,7 @@ class NewResearch(StrictModel):
     ai_report_enabled: bool = False
     execution_mode: Literal["LEGACY", "SCIENCE_AUTO"] = "LEGACY"
     science_max_decisions: StrictInt = Field(default=6, ge=1, le=20)
-    science_no_progress_limit: StrictInt = Field(default=2, ge=1, le=5)
+    science_no_progress_limit: StrictInt = Field(default=5, ge=1, le=5)
     source_fetch_attempt_limit: StrictInt = Field(default=10, ge=1, le=20)
     audience: Literal["student", "teacher"] = "student"
     science_field: Literal["general", "physics", "chemistry", "biology", "earth_science"] = "general"

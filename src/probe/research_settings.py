@@ -171,7 +171,7 @@ def apply_pending(store, state, rid, snapshot, runtime=None):
             runtime.science_settings.update(search_required=snapshot.get("search_required", False),
                 max_runtime_sec=snapshot.get("max_elapsed_sec", 300),
                 max_decisions=snapshot.get("science_max_decisions", 6),
-                no_progress_limit=snapshot.get("science_no_progress_limit", 2),
+                no_progress_limit=snapshot.get("science_no_progress_limit", 5),
                 audience=snapshot.get("audience", "student"), science_field=snapshot.get("science_field", "general"))
     if store.db.execute("SELECT 1 FROM research_budgets WHERE research_id=?", (rid,)).fetchone():
         state.update_owner_budget(rid, float(snapshot["run_limit_usd"]))

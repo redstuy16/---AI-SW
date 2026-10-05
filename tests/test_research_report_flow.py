@@ -137,7 +137,7 @@ def test_no_csv_bilingual_search_design_ai_pdf_and_export(app, monkeypatch, tmp_
     reader = PdfReader(io.BytesIO(pdf["data"]))
     text = "\n".join(p.extract_text() for p in reader.pages)
     assert "실험 설계안" in text and "직접 측정" in text and "참고문헌" in text
-    assert len(reader.outline) == 6
+    assert reader.outline and all(entry.title not in {"검증", "재현 방법", "시각화"} for entry in reader.outline)
     links = [a.get_object().get("/A", {}).get("/URI") for p in reader.pages for a in p.get("/Annots", [])]
     assert "https://doi.org/10.5555/co2" in links
     assert render_pdf(app.read._state, rid)["sha256"] == pdf["sha256"]
@@ -161,7 +161,7 @@ def test_failure_keeps_partial_report_and_actions(app, monkeypatch, search, repo
     if report != "ok":
         assert saved["status"] == "PARTIAL" and saved["draft"]["claims"]
         assert not saved["draft"]["procedure"] and not saved["draft"]["variables"]
-        assert "AI 본문 작성이 완료되지" in saved["draft"]["summary"]
+        assert "확보한 자료의 범위" in saved["draft"]["summary"]
         assert saved["author"] == "LOCAL_FALLBACK"
         assert not app.store.db.execute("SELECT 1 FROM runtime_steps WHERE research_id=? AND step_key LIKE 'report-draft:%' AND status='RUNNING'", (rid,)).fetchone()
     if search != "ok":

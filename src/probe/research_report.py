@@ -92,6 +92,11 @@ class ReportDraft(StrictModel):
         "다섯 필드를 모두 작성하되 필드 안에 제목·번호를 반복하지 않는다. summary는 핵심 답을 짧게 요약하고 본문과 중복하지 않는다. "
         "요청은 작성 지침으로만 사용한다. 질문·요청 전문이나 산출물 목록을 서두에 복사하지 않고 보고서 본문만 작성한다. "
         "인사, 요청을 이해했다는 말, 작성 예고, AI의 작업 설명을 본문 앞에 붙이지 않는다. "
+        "보고서 전체에서 내부 운영 정보를 엄격히 금지한다. 연구·실험·근거·산출물 ID, SHA-256·해시, 파일 경로·파일 목록, "
+        "manifest·provenance·JSON·스키마 필드, 상태·오류 코드, Docker·Live LLM·Live Search·NOT_VALIDATED, "
+        "API·모델·예산·비용·복구·환경 점검·검증 시스템 설명을 본문·표·주석·한계·참고문헌에 쓰지 않는다. "
+        "비어 있는 표, 그림 없음, 미실행 검사 목록, 관성적인 검증·재현 안내를 생성하지 않는다. "
+        "실제 연구 결과·분석 방법·자료의 기간과 단위·과학적으로 필요한 한계·사용한 참고문헌의 제목과 링크만 작성한다. "
         "purpose는 탐구 대상과 비교 범위를 보고서 문장으로 설명하고, explanation은 직접 관련된 원리, method는 실제 사용한 자료·계산·문헌 검토 방식을 쓴다. "
         "results는 확보한 근거와 원리에서 도출되는 해석을 설명하고 conclusion은 질문에 대한 답과 중요한 한계만 정리한다. "
         "실측 자료가 없으면 principle 또는 literature 보고서로 원리와 근거를 분석한다. 이 경우 method는 원리 비교·문헌 검토 방법이며, "
@@ -267,7 +272,7 @@ def _formal_constant(literal,text,path):
     return path in {'/method','/explanation'} and any(_input_numbers(literal)==_input_numbers(number) and re.search(label,text) for number,label in conversions.items())
 
 
-def validate_draft(state, rid, draft):
+def validate_draft(state, rid, draft, *, check_internal=True):
     from .release import _secret_free
     value = draft.model_dump(mode="json")
     if not _secret_free("ai_report.json", to_json(value).encode("utf-8", errors="strict")):
@@ -294,6 +299,12 @@ def validate_draft(state, rid, draft):
             path, text = f"/claims/{i}/{key}", getattr(claim, key)
             fields[path] = text
             covered[path] = {match.span() for match in _number_matches(text)}
+    if check_internal:
+        from .report_content import internal_content, empty_table_lines
+        if any(internal_content(text) for text in fields.values()):
+            raise ControlError("REPORT_INTERNAL_CONTENT_BLOCKED")
+        if any(list(empty_table_lines(text)) for text in fields.values()):
+            raise ControlError("REPORT_EMPTY_TABLE_BLOCKED")
     verified = verified_numbers(state, rid)
     for mention in draft.numeric_mentions:
         path = mention.location
@@ -412,7 +423,7 @@ def report_record(state, rid, *, validate=True):
         if not current:
             raise ControlError("REPORT_STALE")
         draft = ReportDraft.model_validate(record["draft"])
-        checked=validate_draft(state, rid, draft)
+        checked=validate_draft(state, rid, draft, check_internal=False)
         for old,new in zip(record['draft'].get('numeric_mentions',[]),checked.get('numeric_mentions',[])):
             if 'metadata_ref' not in old and new.get('metadata_ref') is None:new.pop('metadata_ref',None)
         if checked != record["draft"]:
@@ -615,7 +626,7 @@ def report_failure(store, rid, contract_id):
 
 
 def fallback_draft(inputs):
-    return ReportDraft(summary="AI 본문 작성이 완료되지 않아 확보한 근거만 남겼습니다.",
+    return ReportDraft(summary="확보한 자료의 범위에서 확인된 내용만 정리했습니다.",
         claims=[ReportClaim(text=v["evidence_text"][:600], evidence_id=v["evidence_id"], quote=v["evidence_text"][:800]) for v in inputs["evidence"][:3]],
         limitations=["측정값이 없는 항목은 미확인입니다."])
 
@@ -907,7 +918,7 @@ def execution_summary(api, rid):
     record = report_record(api.read._state, rid, validate=False)
     from .control_plane import REQUEST_CONTINUATION_CODES
     for code in REQUEST_CONTINUATION_CODES:
-        descriptions[code] = ("이전 요청이 중단됐습니다. 미확정 비용은 예산에 포함하며 계속하기로 남은 연구를 진행할 수 있습니다.", "계속하기")
+        descriptions.setdefault(code, ("이전 요청이 중단됐습니다. 미확정 비용은 예산에 포함하며 계속하기로 남은 연구를 진행할 수 있습니다.", "계속하기"))
     if blocker in {"ACTION_LIMIT_REACHED", "UNRESOLVED_VERIFICATION", "INSUFFICIENT_DATA"}:
         blocker = next((json.loads(e["details_json"]).get("reason") for e in reversed(events) if e["event_type"] == "SCIENCE_LIMITATION"), None) or blocker
     if run.get("error") == "LITERATURE_DESIGN_COMPLETED":

@@ -62,7 +62,7 @@ def admission(api, rid):
     from .runtime_environment import interpreter_preflight
     if interpreter_preflight()["status"] != "READY":
         raise ControlError("PYTHON_ENVIRONMENT_BLOCKED")
-    if api.store.db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('RESERVED','DISPATCHED')", (rid,)).fetchone():
+    if api.store.db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('RESERVED','DISPATCHED','UNRESOLVED')", (rid,)).fetchone():
         raise ControlError("NEEDS_RECONCILIATION")
     inputs = report_inputs(api.read._state, rid)
     if not inputs["evidence"] and not any(item["status"] == "VERIFIED" for item in inputs["experiments"]) and api.store.db.execute(
@@ -156,7 +156,7 @@ async def run_batch(api, *, dry_run=False, resume=None, provider_factory=None):
             if item["status"] in {"BLOCKED", "FAILED"}:
                 if not resume or item.get("reason") == "STALE_INPUT":
                     continue
-                if api.store.db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('RESERVED','DISPATCHED')", (rid,)).fetchone():
+                if api.store.db.execute("SELECT 1 FROM spend_ledger WHERE research_id=? AND status IN ('RESERVED','DISPATCHED','UNRESOLVED')", (rid,)).fetchone():
                     item.update(status="BLOCKED", reason="NEEDS_RECONCILIATION")
                     continue
                 item.setdefault("previous_requests", []).append({k: item[k] for k in ("request_key", "request_body", "status", "reason") if k in item})

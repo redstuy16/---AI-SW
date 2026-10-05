@@ -11,11 +11,11 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from htrsa.control_plane import Connection, ModelProfile, PriceRecord
-from htrsa.live_api_test import run_session, export_session, summarize, verify_package, scan
-from htrsa.providers.normalized import CAPABILITIES, CapabilityEvidence, ReasoningPolicy
-from htrsa.schemas import utc_now
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import Connection, ModelProfile, PriceRecord
+from probe.live_api_test import run_session, export_session, summarize, verify_package, scan
+from probe.providers.normalized import CAPABILITIES, CapabilityEvidence, ReasoningPolicy
+from probe.schemas import utc_now
+from probe.workbench import WorkbenchAPI
 
 CANARY = "offline-live-recording-canary-" + uuid4().hex
 BASE = ROOT / "build" / "live-api-recording-probe" / uuid4().hex
@@ -34,7 +34,7 @@ def responder(calls, fault):
         if fault == "malformed": return httpx.Response(200, content=b'{"unfinished":')
         tools = payload.get("tool_choice") == "required"
         output = [{"type": "function_call", "call_id": "safe-call", "name": "get_test_value", "arguments": '{"key":"probe"}'}] if tools else [
-            {"type": "message", "content": [{"type": "output_text", "text": '{"status":"ok"}' if "text" in payload else "HTRSA_OK"}]}]
+            {"type": "message", "content": [{"type": "output_text", "text": '{"status":"ok"}' if "text" in payload else "PROBE_OK"}]}]
         value = {"id": "safe-response", "model": "qa-fixed-model", "status": "completed", "output": output,
             "usage": {"input_tokens": 40, "input_tokens_details": {"cached_tokens": 0},
                       "output_tokens": 12, "output_tokens_details": {"reasoning_tokens": 4}, "total_tokens": 52}}
@@ -45,7 +45,7 @@ def responder(calls, fault):
         if fault == "schema": value["output"][0]["content"][0]["text"] = '{"status":"wrong"}'
         if fault == "tool": value["output"][0]["arguments"] = '{"key":"private-file"}'
         if payload.get("stream"):
-            events = [{"type": "response.output_text.delta", "delta": "HTRSA_OK"},
+            events = [{"type": "response.output_text.delta", "delta": "PROBE_OK"},
                       {"type": "response.completed", "response": value}]
             content = ("\n\n".join("data: " + json.dumps(e) for e in events) + "\n\n").encode("utf-8")
             return httpx.Response(200, content=content, headers={"Content-Type": "text/event-stream"})

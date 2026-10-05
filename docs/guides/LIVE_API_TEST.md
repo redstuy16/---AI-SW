@@ -11,31 +11,31 @@
 먼저 작업대에서 모델을 준비하고 키를 등록한다. 키를 명령행·채팅·저장소에 적지 않는다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 실제 저장 프로필 ID를 `PROFILE_ID`에 넣는다. 아래 사전 검사는 유료 생성 요청을 보내지 않는다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.live_api_test build/workbench/state.sqlite build/workbench/workspace --profile PROFILE_ID --budget-cap 0.10 --output-dir qa/live_api_test
+.\.venv\Scripts\python.exe -m probe.live_api_test build/workbench/state.sqlite build/workbench/workspace --profile PROFILE_ID --budget-cap 0.10 --output-dir qa/live_api_test
 ```
 
 목록 조회는 연결의 `discovery_unmetered` 승인도 필요하다. 제공사 문서·목록 비용을 확인하고 기존 연결 설정에서 승인한다. 목록 조회를 생략하려면 `--cases text`를 직접 지정한다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.live_api_test build/workbench/state.sqlite build/workbench/workspace --profile PROFILE_ID --budget-cap 0.10 --live --consent --output-dir qa/live_api_test
+.\.venv\Scripts\python.exe -m probe.live_api_test build/workbench/state.sqlite build/workbench/workspace --profile PROFILE_ID --budget-cap 0.10 --live --consent --output-dir qa/live_api_test
 ```
 
 상위 검사는 지원 근거가 있는 모델에서 직접 선택한다. 전체 상한은 계속 0.10 USD다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.live_api_test build/workbench/state.sqlite build/workbench/workspace --profile PROFILE_ID --budget-cap 0.10 --live --consent --cases text,structured --output-dir qa/live_api_test
+.\.venv\Scripts\python.exe -m probe.live_api_test build/workbench/state.sqlite build/workbench/workspace --profile PROFILE_ID --budget-cap 0.10 --live --consent --cases text,structured --output-dir qa/live_api_test
 ```
 
 기존 세션을 다시 내보내면 HTTP 요청을 보내지 않는다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.live_api_test build/workbench/state.sqlite build/workbench/workspace --budget-cap 0.10 --session SESSION_ID --output-dir qa/live_api_test
+.\.venv\Scripts\python.exe -m probe.live_api_test build/workbench/state.sqlite build/workbench/workspace --budget-cap 0.10 --session SESSION_ID --output-dir qa/live_api_test
 ```
 
 ## 증거

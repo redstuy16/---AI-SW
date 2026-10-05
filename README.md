@@ -1,4 +1,6 @@
-# H-TRSA 연구 작업대
+# Probe 연구 작업대
+
+프로젝트·화면·실행 파일·Python 패키지 이름은 Probe로 통일했습니다. 기존 연구 DB와 작업 폴더는 유지합니다. 이전 이름의 Windows 자격 증명과 보안 키 파일은 호환 경로로 읽으며 새 OS 자격 증명은 Probe에 저장합니다. 기존 보안 파일이 있으면 해당 파일의 경로와 권한을 유지합니다.
 
 연구 질문을 입력하고, 자료·분석·결론의 검증 기록과 PDF를 확인하는 로컬 앱입니다. 공개 기후 자료의 두 기간 비교를 한정된 절차로 지원합니다.
 
@@ -11,21 +13,27 @@ py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[test,openai]"
 ```
 
-공개 PDF 자동 수집을 사용할 때는 선택 의존성 `literature`도 설치합니다. 테스트 환경에는 같은 `pypdf`가 이미 포함되어 있습니다.
-
-```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[literature]"
-```
+PDF 검증에 필요한 `pypdf`는 기본 의존성입니다. 공개 PDF 자동 수집의 기본 OFF와 전송 동의는 유지합니다.
 
 ## 앱 실행
 
-**`H-TRSA.wsf`를 더블클릭**합니다. 실행되지 않으면 아래 명령을 사용합니다.
+**`Probe.wsf`를 더블클릭**합니다. 실행되지 않으면 아래 명령을 사용합니다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 브라우저가 자동으로 열립니다. 자동 열기가 실패하면 터미널에 표시된 1회용 링크를 클릭합니다.
+
+## 제출 실행
+
+**`Probe-제출.wsf`를 더블클릭**하면 API 키·Docker·외부 검색 없이 고정 예시의 분석·검증·보고서·PDF를 확인합니다. 모의 응답을 쓰는 예시이며 실제 AI 연구 결과로 표시하지 않습니다. 예시 자료는 `build/submission-demo/`에 별도 저장하고 기존 `build/workbench/`는 사용하지 않습니다.
+
+```powershell
+.\.venv\Scripts\python.exe -m probe.desktop --submission
+```
+
+제출 예시에서 새 유료 연구와 선택 실험 기능은 제공하지 않습니다. 실제 모델 연구는 기존 `Probe.wsf`에서 키·전송 동의·예산을 설정한 뒤 실행합니다. [제출 상태·검증 범위](docs/development/SUBMISSION_READINESS.md)
 
 ## API 설정
 
@@ -46,7 +54,7 @@ py -3 -m venv .venv
 
 학술 검색은 키 없이 **OpenAlex → Crossref**를 사용합니다. 무료 할당량과 요청 상한은 적용됩니다. **공개 PDF 자동 수집**은 기본으로 꺼져 있습니다. [검색·보고서 안내](docs/guides/RESEARCH_REPORTS.md)
 
-Python 3.11 이상과 최신 브라우저가 필요합니다. 실제 모델 연구에는 제공사 API 키와 예산이 필요합니다. 고정 오프라인 데모에는 키가 필요하지 않습니다. 로컬 모델은 별도 서버가 필요하며 가중치를 자동 설치·로드하지 않습니다.
+Python 3.12 이상과 최신 브라우저가 필요합니다. 실제 모델 연구에는 제공사 API 키와 예산이 필요합니다. 고정 오프라인 데모에는 키가 필요하지 않습니다. 로컬 모델은 별도 서버가 필요하며 가중치를 자동 설치·로드하지 않습니다.
 
 ## 검사
 
@@ -62,7 +70,7 @@ Python 3.11 이상과 최신 브라우저가 필요합니다. 실제 모델 연�
 
 | 위치 | 용도 |
 |---|---|
-| `src/htrsa/` | 앱과 연구 실행 코드 |
+| `src/probe/` | 앱과 연구 실행 코드 |
 | `tests/` | 회귀 테스트와 입력 자료 |
 | `docs/` | 사용 안내·개발 문서·연구일지 |
 | `qa/` | 검증 코드, `fixtures/` 고정 입력, `prepublish/` 공개 보고서 |
@@ -81,4 +89,4 @@ Python 3.11 이상과 최신 브라우저가 필요합니다. 실제 모델 연�
 - [자동 검색·조사 보고서](docs/guides/RESEARCH_REPORTS.md)
 - [연구일지](docs/history/연구일지.md)
 
-Skills·F3-P·Ridge·Research Slice·Cycle 5는 기본 OFF입니다. 데모 통과와 실제 API·Docker·검색 검증은 각각 별도 기준이며 현재 상태는 앱의 **실행 환경** 또는 `python -m htrsa.preflight status`에서 확인합니다.
+Skills·F3-P·Ridge·Research Slice·Cycle 5는 기본 OFF입니다. 데모 통과와 실제 API·Docker·검색 검증은 각각 별도 기준이며 현재 상태는 앱의 **실행 환경** 또는 `python -m probe.preflight status`에서 확인합니다.

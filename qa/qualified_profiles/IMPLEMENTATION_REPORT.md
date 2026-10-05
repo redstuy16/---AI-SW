@@ -107,7 +107,7 @@
 재검증은 저장한 질문·plan·결정을 재사용해 영향을 받은 계산과 검증을 수행한다. 로컬 재계산에는 HTTP나 LLM 호출이 없다. 이전 결론과 manifest가 포함된 보고서 이력을 보존하고 현재·이전을 구분한다. 외부 재현 CLI는 export 원본과 manifest 해시·안전한 상대 경로·계산·claim 일치를 확인한다. 독립 진위 인증은 아니다.
 
 ```powershell
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.qualified_replay PATH_TO_REPLAY_MANIFEST.json
+.\.venv\Scripts\python.exe -X utf8 -m probe.qualified_replay PATH_TO_REPLAY_MANIFEST.json
 ```
 
 ## 23. 벤치마크 프로토콜과 실행
@@ -166,7 +166,7 @@ Core 시작·종료·최종 offline 검증의 동일 소스 SHA-256: `2086d74304
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/beginner-v4-baseline-tests --junitxml build/beginner-v4-baseline.xml
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/beginner-v4-final-tests --junitxml build/beginner-v4-final.xml
 .\.venv\Scripts\python.exe -X utf8 -m pytest tests/test_beginner_v4.py -q -x -p no:cacheprovider --basetemp build/beginner-v4-policy-final --junitxml build/beginner-v4-verified.xml
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-core
 .\.venv\Scripts\python.exe -X utf8 qa/ui_unblock_offline_validation.py
 .\.venv\Scripts\python.exe -X utf8 qa/qualified_profiles/evaluate.py
 .\.venv\Scripts\python.exe -X utf8 qa/qualified_profiles/recovery_probe.py
@@ -176,10 +176,10 @@ node qa/hardening_visual_qa.cjs
 node qa/local_browser_auth_qa.cjs
 .\.venv\Scripts\python.exe -X utf8 qa/ui_unblock_pdf_checks.py
 .\.venv\Scripts\python.exe -X utf8 qa/prepublish_check.py --output qa/qualified_profiles/security_summary.json
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-docker
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight smoke-api
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-search
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight status
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-docker
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight smoke-api
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-search
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight status
 ```
 
 Core 명령은 기존 환경 marker 제외 기준을 그대로 사용한다. 전체 기본 pytest의 5 SKIP은 Docker 4개·현재 Windows credential 세션 부재 1개이며 기존 2 deselected는 opt-in Live API/Search다. 새 기능 때문에 기존 테스트를 삭제·약화·추가 제외하지 않았다. 기존 browser fixture는 새 설명 팝업의 저장 상태와 v4 제공사 그룹·도움말·정상/기술 화면을 실제로 사용하도록 수정하고 원래 안전 검사 항목을 유지했다.
@@ -191,7 +191,7 @@ v4 자체 DB migration·새 dependency는 없다. 운영 config·기존 연구 �
 ### 앱 실행과 사용
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 AI 연결을 등록하고 연구 → 새 연구 만들기에서 질문을 입력한다. 예: “1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균을 비교해 주세요.” 정상 UI는 beginner_mode=true, research_profile_mode=AUTO를 명시적으로 사용한다. 기존 API를 쓰면 두 값을 명시해야 새 흐름을 사용하며 설정하지 않은 기존 API/CLI는 그대로다.

@@ -2,19 +2,19 @@
 
 ## 실행
 
-Windows에서 가상환경 설치 후 저장소의 `H-TRSA.wsf`를 더블클릭한다. `pythonw -m htrsa.desktop`로 기존 작업대를 열고 기본 자료는 `build/workbench/state.sqlite`, `build/workbench/workspace`에 저장한다. 새 연구 엔진이나 GUI 의존성은 없다.
+Windows에서 가상환경 설치 후 저장소의 `Probe.wsf`를 더블클릭한다. `pythonw -m probe.desktop`로 기존 작업대를 열고 기본 자료는 `build/workbench/state.sqlite`, `build/workbench/workspace`에 저장한다. 새 연구 엔진이나 GUI 의존성은 없다.
 
 설치와 CLI 대체 실행:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e '.[test,openai]'
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 콘솔 없는 실행의 자료 위치를 직접 지정하려면 다음을 사용한다. 실제 저장소 내부 경로만 허용하며 심볼릭 링크·junction은 차단한다.
 
 ```powershell
-.\.venv\Scripts\pythonw.exe -m htrsa.desktop --data-dir build/my-workbench
+.\.venv\Scripts\pythonw.exe -m probe.desktop --data-dir build/my-workbench
 ```
 
 자동 브라우저 열기 실패 시 다시 열기/취소를 제공한다. 취소하면 작업대 서버를 닫는다. 이미 실행한 연구 Worker는 별도로 중지해야 한다. 브라우저 탭만 닫아도 Worker가 자동 중지되지는 않는다. WSF 파일 연결이나 기본 브라우저의 실제 인증 완료를 모의 검사로 통과 표시하지 않는다. 현재 Codex 토큰에서는 실제 `cscript`가 Script Host 설정 읽기에서 Access is denied로 막혔으므로 WSF 구문·더블클릭 실행도 미검증이다. `pythonw` 경로는 실제 Chrome QA로 확인했다.
@@ -56,7 +56,7 @@ Windows에서 가상환경 설치 후 저장소의 `H-TRSA.wsf`를 더블클릭�
 ```powershell
 .\.venv\Scripts\python.exe qa/productization_native_probe.py
 .\.venv\Scripts\python.exe qa/local_browser_launcher_probe.py
-.\.venv\Scripts\python.exe -m htrsa.preflight status
+.\.venv\Scripts\python.exe -m probe.preflight status
 ```
 
 첫 명령은 사용자 키를 변경하지 않는 별도 Windows canary와 새 QA DB의 소규모 GPT 연결 검사를 수행한다. GPT 키가 없다면 HTTP 요청 없이 미검증을 기록한다. 두 번째 명령은 실제 기본 브라우저 열기·티켓 교환·인증 목록 조회를 모두 관측해야 통과한다. 결과에는 현재 소스·사용자/컴퓨터 지문을 넣는다. 검사 canary를 Worker 환경·명령 인수·결과 파일에 전달하지 않는다.

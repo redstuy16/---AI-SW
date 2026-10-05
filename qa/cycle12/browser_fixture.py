@@ -6,10 +6,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
-from htrsa.final_report import export_final_report
-from htrsa.qualified_workflow import execute_profile
-from htrsa.schemas import utc_now
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.final_report import export_final_report
+from probe.qualified_workflow import execute_profile
+from probe.schemas import utc_now
 from test_beginner_v4 import prepare, SOURCE
 
 

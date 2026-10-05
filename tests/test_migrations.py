@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from htrsa import database
+from probe import database
 
 
 def test_old_database_upgrades_without_losing_rows(tmp_path):

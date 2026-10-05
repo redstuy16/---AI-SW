@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from htrsa.control_plane import Connection, ControlError, ModelProfile
-from htrsa import product_policy
+from probe.control_plane import Connection, ControlError, ModelProfile
+from probe import product_policy
 from test_workbench import app
 
 

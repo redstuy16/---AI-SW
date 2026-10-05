@@ -5,15 +5,15 @@ import json
 
 import pytest
 
-from htrsa.dashboard import project_evidence, project_experiments, project_overview, project_usage
-from htrsa.context_compiler import ContextCompiler
-from htrsa.database import initialize
-from htrsa.demo import run_demo_a, run_demo_b
-from htrsa.final_report import ReportValidationError, build_final_conclusion, validate_final_conclusion
-from htrsa.release import ReleaseExportError, export_release
-from htrsa.service import StateService
-from htrsa.schemas import ContextPolicy, ContextRef, RefType, ResearchContract, new_id
-from htrsa.storage import Workspace
+from probe.dashboard import project_evidence, project_experiments, project_overview, project_usage
+from probe.context_compiler import ContextCompiler
+from probe.database import initialize
+from probe.demo import run_demo_a, run_demo_b
+from probe.final_report import ReportValidationError, build_final_conclusion, validate_final_conclusion
+from probe.release import ReleaseExportError, export_release
+from probe.service import StateService
+from probe.schemas import ContextPolicy, ContextRef, RefType, ResearchContract, new_id
+from probe.storage import Workspace
 
 
 @pytest.fixture(scope="module")
@@ -70,7 +70,7 @@ def test_qa_release_rejects_post_import_dataset_corruption(qa_demo_a, tmp_path):
 def test_qa_release_rejects_stale_or_forged_report(qa_demo_a, tmp_path):
     _, result, state = qa_demo_a
     rid = result["research_id"]
-    path = state.workspace.path(rid, "research_output/final_report.md")
+    path = (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'final_report.md')
     original = path.read_bytes()
     try:
         path.write_bytes(original + b"\nUnverified estimate: 999\n")
@@ -140,7 +140,7 @@ def test_qa_contradiction_survives_synthesis_and_report(qa_demo_a):
     contradictory = {row["evidence_id"] for row in state._db.execute(
         "SELECT evidence_id FROM evidence WHERE research_id=? AND status='VERIFIED' AND polarity='CONTRADICT'", (rid,))}
     assert contradictory and contradictory <= set(conclusion.contradiction_refs)
-    report = state.workspace.path(rid, "research_output/final_report.md").read_text(encoding="utf-8")
+    report = (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'final_report.md').read_text(encoding="utf-8")
     assert all(identity in report for identity in contradictory)
 
 

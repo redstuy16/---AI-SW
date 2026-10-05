@@ -1,9 +1,9 @@
 import pytest
 
-from htrsa.database import initialize
-from htrsa.mock import MockAnalysisTool, MockExperimentCoordinator, MockManager, MockWorker
-from htrsa.schemas import StagedResult
-from htrsa.service import StateService
+from probe.database import initialize
+from probe.mock import MockAnalysisTool, MockExperimentCoordinator, MockManager, MockWorker
+from probe.schemas import StagedResult
+from probe.service import StateService
 
 
 @pytest.fixture

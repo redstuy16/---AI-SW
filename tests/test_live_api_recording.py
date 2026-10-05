@@ -12,11 +12,11 @@ from uuid import uuid4
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlError, money
-from htrsa.live_api_test import (LiveTestPlan, attempts, capabilities, clean, digest, export_session,
+from probe.control_plane import ControlError, money
+from probe.live_api_test import (LiveTestPlan, attempts, capabilities, clean, digest, export_session,
     generation, recover_sessions, run_session, scan, summarize, verify_manifest, verify_package)
-from htrsa.productization import revision
-from htrsa.workbench import WorkbenchAPI
+from probe.productization import revision
+from probe.workbench import WorkbenchAPI
 from test_multi_provider import app, setup_app, document
 
 
@@ -46,7 +46,7 @@ def factory(calls, fault=None):
         value["model"] = "manual-id"
         value["usage"]["total_tokens"] = 52
         if not is_tool and "text" not in payload:
-            value["output"][0]["content"][0]["text"] = "HTRSA_OK"
+            value["output"][0]["content"][0]["text"] = "PROBE_OK"
         if fault == "wrong_model": value["model"] = "unselected-provider-model"
         if fault == "missing_model": value.pop("model")
         if fault == "missing_usage": value.pop("usage")
@@ -297,8 +297,8 @@ def test_free_ui_routes_preserve_scientific_state_and_never_dispatch(app, monkey
 
 
 def test_gateway_reservation_observer_failure_releases_untransmitted_reserve(app, monkeypatch):
-    from htrsa.control_runtime import RoutedGateway
-    from htrsa.providers.normalized import GenerationRequest
+    from probe.control_runtime import RoutedGateway
+    from probe.providers.normalized import GenerationRequest
     c,p,r,snapshot = setup_app(app, "openai", monkeypatch)
     calls = []
     def observe(phase, _):
@@ -326,8 +326,8 @@ def test_process_crash_recovery_never_reissues_http(app, monkeypatch):
     identity = setup(app, monkeypatch)
     program = """import asyncio,os
 from pathlib import Path
-from htrsa.workbench import WorkbenchAPI
-from htrsa.live_api_test import run_session
+from probe.workbench import WorkbenchAPI
+from probe.live_api_test import run_session
 app=WorkbenchAPI(os.environ['QA_DB'],os.environ['QA_WS'],launch=False,credential_file=Path(os.environ['QA_FILE']))
 def crash(*_): os._exit(71)
 asyncio.run(run_session(app,'m',{'idempotency_key':'fresh-process-live-crash','live_test_budget_cap':'.10','live':True,'consent':True,'cases':['text']},client_factory=crash))
@@ -354,7 +354,7 @@ def test_selected_stream_records_clean_completion_or_unresolved(app, monkeypatch
     def respond(req):
         calls.append(req)
         raw = document("responses"); raw["model"] = "manual-id"
-        parts = [{"type": "response.output_text.delta", "delta": "HTRSA_OK"}]
+        parts = [{"type": "response.output_text.delta", "delta": "PROBE_OK"}]
         if not interrupted: parts.append({"type": "response.completed", "response": raw})
         text = "\n\n".join("data: " + json.dumps(p) for p in parts) + "\n\n"
         return httpx.Response(200, content=text.encode("utf-8"), headers={"Content-Type": "text/event-stream"})
@@ -403,14 +403,24 @@ def test_integration_requires_lower_test_and_records_limited_scope(app, monkeypa
     assert app.store.db.execute("SELECT COUNT(*) FROM research_runs").fetchone()[0] == 0
 
 
-def test_default_fields_preserve_existing_cache_request_identity(app, monkeypatch):
-    from htrsa.control_runtime import RoutedGateway
-    from htrsa.providers.native import compact, REGISTRY
-    from htrsa.providers.normalized import GenerationResult, GenerationUsage
+@pytest.mark.parametrize("include_search_defaults", [False, True])
+@pytest.mark.parametrize("include_search_price_defaults", [False, True])
+def test_default_fields_preserve_existing_cache_request_identity(app, monkeypatch, include_search_defaults, include_search_price_defaults):
+    from probe.control_runtime import RoutedGateway
+    from probe.providers.native import compact, REGISTRY
+    from probe.providers.normalized import GenerationResult, GenerationUsage
     from hashlib import sha256
     c,p,r,snapshot = setup_app(app, "openai", monkeypatch)
-    old_request = r.model_dump(mode="json", exclude={"budget_reservation_id", "native_schema_strict", "explicit_parallel_tool_control"})
-    key = sha256(compact({"rid": "legacy-cache", "request": old_request, "profile": p.model_dump(mode="json"),
+    excluded = {"budget_reservation_id", "native_schema_strict", "explicit_parallel_tool_control"}
+    if not include_search_defaults:
+        excluded.update({"hosted_tools", "max_tool_calls", "include", "hosted_input_token_bound"})
+    old_request = r.model_dump(mode="json", exclude=excluded)
+    old_profile = p.model_dump(mode="json")
+    if not include_search_price_defaults:
+        old_profile.pop("task_output_limits", None)
+        old_profile["price"].pop("web_search_per_call", None)
+        old_profile["price"].pop("web_search_price_source", None)
+    key = sha256(compact({"rid": "legacy-cache", "request": old_request, "profile": old_profile,
                          "adapter_version": REGISTRY.get("openai").version}).encode("utf-8")).hexdigest()
     cached = GenerationResult(model_id="manual-id", output_text="old", usage=GenerationUsage(input_tokens=1, output_tokens=1))
     app.store.db.execute("INSERT INTO control_model_cache VALUES(?,?,?,?,?,?)",
@@ -432,7 +442,7 @@ def test_export_stops_on_existing_public_secret_row(app, monkeypatch):
 
 
 def test_local_auth_canary_in_provider_header_stops_and_keeps_failure_denominator(app, monkeypatch):
-    from htrsa.local_auth import MemorySecrets
+    from probe.local_auth import MemorySecrets
     identity = setup(app, monkeypatch)
     protected = MemorySecrets()
     canary = "local-auth-header-" + uuid4().hex

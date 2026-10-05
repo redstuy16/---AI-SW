@@ -11,18 +11,18 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "qa"))
 from f3p_eval import prepare
-from htrsa.agent_runtime import AgentRuntime
-from htrsa.database import initialize, to_json
-from htrsa.final_report import export_final_report
-from htrsa.literature import LiteralSentenceReviewer, extract_abstract_evidence
-from htrsa.providers.fake import FakeProvider
-from htrsa.research_slice import numeric_equal, shared_dependencies
-from htrsa.research_slice_schemas import NumericSlot, ResearchSliceConfig, VerifierObligation
-from htrsa.schemas import StagedResult
-from htrsa.scholarly import NormalizedSource, source_from_row
-from htrsa.service import StateConflictError, StateService
-from htrsa.storage import Workspace, sha256_file
-from htrsa.release import export_release, ReleaseExportError
+from probe.agent_runtime import AgentRuntime
+from probe.database import initialize, to_json
+from probe.final_report import export_final_report
+from probe.literature import LiteralSentenceReviewer, extract_abstract_evidence
+from probe.providers.fake import FakeProvider
+from probe.research_slice import numeric_equal, shared_dependencies
+from probe.research_slice_schemas import NumericSlot, ResearchSliceConfig, VerifierObligation
+from probe.schemas import StagedResult
+from probe.scholarly import NormalizedSource, source_from_row
+from probe.service import StateConflictError, StateService
+from probe.storage import Workspace, sha256_file
+from probe.release import export_release, ReleaseExportError
 
 ON = ResearchSliceConfig(claim_evidence_provenance=True, verifier_dependency_catalog=True)
 
@@ -68,7 +68,8 @@ def test_default_off_is_schema_and_execution_compatible(tmp_path):
 def test_integrated_claim_is_material_and_semantically_scoped(research):
     db, state, _, rid, result = research
     claim = state.research_slice.current(rid)[0]
-    assert claim.claim_type == "association" and claim.support_state == "SUPPORTED"
+    assert claim.claim_type == "association" and claim.support_state == "INCONCLUSIVE"
+    assert state.research_slice.bindings(claim)[0].relation == "QUALIFIES"
     assert claim.scope["dataset_revision"] and claim.scope["sampling"] == "iid"
     assert {"n", "metrics.estimate", "metrics.p_value", "uncertainty.bounds.0", "uncertainty.bounds.1"} <= {s.name for s in claim.numeric_slots}
     assert {s.unit for s in claim.numeric_slots} == {"observations", "dimensionless"}
@@ -77,7 +78,7 @@ def test_integrated_claim_is_material_and_semantically_scoped(research):
     assert db.execute("SELECT COUNT(*) FROM state_events").fetchone()[0] == 1
 
 
-@pytest.mark.parametrize("fault", ["locator", "wrong_equal_field", "unit", "causal", "text", "revision", "unknown_zero"])
+@pytest.mark.parametrize("fault", ["locator", "wrong_equal_field", "unit", "causal", "text", "revision", "unknown_zero", "relation"])
 def test_claim_faults_are_rejected(research, fault):
     _, state, _, rid, _ = research
     claim, bindings = copied_claim(state, rid)
@@ -89,6 +90,7 @@ def test_claim_faults_are_rejected(research, fault):
     if fault == "text": claim.text = "The method proves a causal effect."
     if fault == "revision": slot.artifact_revision = "99"
     if fault == "unknown_zero": slot.value = None
+    if fault == "relation": bindings[0].relation = "SUPPORTS"
     with pytest.raises(ValueError):
         state.publish_claim(claim, bindings)
     assert state.research_slice.current(rid)[0].revision == 1
@@ -183,7 +185,7 @@ def test_multiple_paths_revalidation_and_contradiction_preservation(research):
     assert state.revalidate_claim(rid, claim.claim_id).support_state == "SUPPORTED"
     _, _, contradicted = add_source(state, rid, suffix="C", contradiction=True)
     assert contradicted.support_state == "NOT_SUPPORTED"
-    from htrsa.research_slice import support_state
+    from probe.research_slice import support_state
     support = state.research_slice.bindings(another)[0]
     contradiction = state.research_slice.bindings(contradicted)[0]
     assert support_state([support, contradiction]) == "CONFLICTED"
@@ -253,7 +255,7 @@ def test_slice_export_hashes_history_and_stale_tamper(research, tmp_path):
     assert not any(str(tmp_path) in to_json(item) for item in payload["bindings"])
     for record in exported["files"]:
         assert sha256_file(tmp_path / "release" / record["path"]) == record["sha256"]
-    path = state.workspace.path(rid, "research_output/research_slice.json")
+    path = (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'research_slice.json')
     path.write_bytes(b"{}")
     with pytest.raises(ReleaseExportError): export_release(state, rid, tmp_path / "tampered-release")
 
@@ -270,14 +272,14 @@ def test_policy_change_resume_is_blocked(research):
 @pytest.mark.parametrize("kind", ["regression", "backtest"])
 def test_other_skills_keep_exact_predictive_and_time_scope(tmp_path, monkeypatch, kind):
     from test_verified_analysis_skills import test_other_skill_paths_commit_and_export
-    monkeypatch.setenv("HTRSA_CLAIM_EVIDENCE_PROVENANCE", "1")
-    monkeypatch.setenv("HTRSA_VERIFIER_DEPENDENCY_CATALOG", "1")
+    monkeypatch.setenv("PROBE_CLAIM_EVIDENCE_PROVENANCE", "1")
+    monkeypatch.setenv("PROBE_VERIFIER_DEPENDENCY_CATALOG", "1")
     test_other_skill_paths_commit_and_export(kind, tmp_path)
     db = initialize(tmp_path / "state.sqlite")
     state = StateService(db, Workspace(tmp_path / "workspace"))
     rid = db.execute("SELECT research_id FROM research_runs").fetchone()[0]
     claim = state.research_slice.current(rid)[0]
-    assert claim.claim_type == "prediction" and claim.support_state == "SUPPORTED"
+    assert claim.claim_type == "prediction" and claim.support_state == "INCONCLUSIVE"
     assert claim.scope["skill_version"] == "1.0.0" and claim.scope["split"]
     metric = next(s for s in claim.numeric_slots if s.name == "metrics.candidate.mae")
     assert metric.unit == ("cm" if kind == "regression" else "units")
@@ -307,8 +309,8 @@ def test_claim_recovery_atomicity_and_export_replay(tmp_path, boundary):
 
 
 def test_consistency_is_separate_from_correctness_and_independence():
-    from htrsa.reliability import compatible, error_correlation
-    from htrsa.research_slice_schemas import StructuredConclusion
+    from probe.reliability import compatible, error_correlation
+    from probe.research_slice_schemas import StructuredConclusion
     a = StructuredConclusion(question_id="q", estimand_id="e", scope={}, support_status="SUPPORTED", estimate=-99,
                              validity_status="VALID")
     assert compatible(a, a.model_copy())
@@ -336,12 +338,12 @@ def test_derivation_cycles_rejected_without_reusing_contradiction_edges(research
 
 
 def test_read_api_projects_typed_current_state_without_mutation(research, tmp_path):
-    from htrsa.dashboard import DashboardReadAPI
+    from probe.dashboard import DashboardReadAPI
     db, state, _, rid, _ = research
     version = state.state_version(rid)
     api = DashboardReadAPI(tmp_path / "state.sqlite", tmp_path / "workspace")
     reply = api.request(f"/api/research/{rid}/research-slice")
-    assert reply.status == 200 and reply.body["claims"][0]["effective_support_state"] == "SUPPORTED"
+    assert reply.status == 200 and reply.body["claims"][0]["effective_support_state"] == "INCONCLUSIVE"
     assert state.state_version(rid) == version
     api.close()
 
@@ -365,7 +367,7 @@ def test_commit_cannot_silently_disable_staged_policy(tmp_path, fault):
 
 @pytest.mark.parametrize("fault", ["qualification", "missing_claim"])
 def test_report_cannot_cite_stale_or_missing_claim(research, fault):
-    from htrsa.final_report import ReportValidationError
+    from probe.final_report import ReportValidationError
     db, state, _, rid, _ = research
     if fault == "qualification":
         ob = state.research_slice.obligation_records(rid)[0]
@@ -377,7 +379,7 @@ def test_report_cannot_cite_stale_or_missing_claim(research, fault):
 
 
 def test_source_snapshot_hash_revision_revokes_current_support(research):
-    from htrsa.scholarly import metadata_digest
+    from probe.scholarly import metadata_digest
     db, state, _, rid, _ = research
     sid, _, claim = add_source(state, rid)
     original = state.research_slice.bindings(claim)[0]
@@ -395,14 +397,14 @@ def test_source_snapshot_hash_revision_revokes_current_support(research):
 
 
 def test_changed_checker_implementation_is_not_current_support(research, monkeypatch):
-    import htrsa.research_slice as module
+    import probe.research_slice as module
     _, state, _, rid, _ = research
     monkeypatch.setattr(module, "implementation_dependencies", lambda check: ["code:" + "f" * 64])
     assert state.research_slice.snapshot(rid)["claims"][0]["effective_support_state"] == "NEEDS_REVALIDATION"
 
 
 def test_changed_checker_version_between_verify_commit_blocks(tmp_path, monkeypatch):
-    import htrsa.research_slice as module
+    import probe.research_slice as module
     db, state, runtime, prepared, _ = prepare(tmp_path, slice_config=ON)
     commit = state.commit
     def changed(mid):

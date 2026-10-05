@@ -10,9 +10,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from htrsa.period_comparison import selected_values, compare_keyed, selection_equivalent, require_meaning
-from htrsa.qualified_profiles import registry
-from htrsa.storage import sha256_file
+from probe.period_comparison import selected_values, compare_keyed, selection_equivalent, require_meaning
+from probe.qualified_profiles import registry
+from probe.storage import sha256_file
 
 
 def main():

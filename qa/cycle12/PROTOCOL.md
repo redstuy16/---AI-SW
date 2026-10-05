@@ -64,7 +64,7 @@
 ```powershell
 .\.venv\Scripts\python.exe -B -X utf8 -m pytest tests/test_cycle12.py tests/test_beginner_v4.py tests/test_real_tools.py -q -p no:cacheprovider --basetemp build/cycle12-reproduce-targeted
 .\.venv\Scripts\python.exe -B -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/cycle12-reproduce-full
-.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -B -X utf8 -m probe.preflight validate-core
 .\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/offline_validation.py
 .\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/reference_review.py
 .\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/cross_domain.py

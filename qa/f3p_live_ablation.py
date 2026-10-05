@@ -10,8 +10,8 @@ import subprocess
 import sys
 from time import perf_counter
 
-from htrsa.database import initialize
-from htrsa.preflight import api_preflight
+from probe.database import initialize
+from probe.preflight import api_preflight
 
 
 def main():
@@ -37,9 +37,9 @@ def main():
             folder.mkdir(parents=True, exist_ok=False)
             source = folder / "snapshot.csv"
             source.write_bytes(snapshot)
-            environment = dict(os.environ, HTRSA_VERIFIED_ANALYSIS_SKILLS_ENABLED="1",
-                               HTRSA_VERIFICATION_REPAIR_ENABLED=enabled, HTRSA_F3P_RIDGE_ARITHMETIC_CHECK="0")
-            command = [sys.executable, "-m", "htrsa.agent_cli", str(folder / "state.sqlite"),
+            environment = dict(os.environ, PROBE_VERIFIED_ANALYSIS_SKILLS_ENABLED="1",
+                               PROBE_VERIFICATION_REPAIR_ENABLED=enabled, PROBE_F3P_RIDGE_ARITHMETIC_CHECK="0")
+            command = [sys.executable, "-m", "probe.agent_cli", str(folder / "state.sqlite"),
                        str(folder / "workspace"), str(source), "--verified-analysis-skills",
                        "--goal", args.goal, "--target-usd", str(args.hard_limit_usd / 4),
                        "--soft-limit-usd", str(args.hard_limit_usd * 0.75),

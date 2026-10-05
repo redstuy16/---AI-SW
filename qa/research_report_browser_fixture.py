@@ -7,12 +7,12 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
-from htrsa.api import APIResponse
-from htrsa.database import to_json
-from htrsa.report_pdf import render_pdf
-from htrsa.research_report import rewrite_report, report_record
-from htrsa.service import StateService
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.api import APIResponse
+from probe.database import to_json
+from probe.report_pdf import render_pdf
+from probe.research_report import rewrite_report, report_record
+from probe.service import StateService
 from test_research_report_flow import rig, run, request
 
 
@@ -34,8 +34,8 @@ def main():
         def command(self, rid, action, body):
             result = super().command(rid, action, body)
             if action in {"start", "resume"} and self.store.run(rid)["status"] in {"STARTING", "RESUMING"}:
-                asyncio.run(__import__("htrsa.control_runtime", fromlist=["execute"]).execute(self.database, self.workspace, rid, provider_factory=gateway))
-                save()
+                asyncio.run(__import__("probe.control_runtime", fromlist=["execute"]).execute(self.database, self.workspace, rid, provider_factory=gateway))
+                save(self)
             return result
         def _request(self, method, path, body=None):
             if method == "GET" and path == "/qa/observed":
@@ -50,11 +50,11 @@ def main():
                 return APIResponse(200, {"fixture": True, "paid_calls": 0})
             if method == "POST" and path.endswith("/rewrite-report"):
                 result = asyncio.run(rewrite_report(self, path.split("/")[4], body, provider_factory=gateway))
-                save()
+                save(self)
                 return APIResponse(200, result)
             return super()._request(method, path, body)
     api = OfflineAPI(folder / "state.sqlite", folder / "workspace", launch=False)
-    from htrsa import search_policy
+    from probe import search_policy
     base_search = search_policy.run_search
     gateway, model_calls, searches = rig(api, Patch(), search="empty" if "--empty" in sys.argv else "ok")
     if '--fulltext' in sys.argv:
@@ -64,7 +64,7 @@ def main():
     if "--many" in sys.argv:
         import httpx
         from decimal import Decimal
-        from htrsa.scholarly import CrossrefProvider, ScholarlyHTTPClient
+        from probe.scholarly import CrossrefProvider, ScholarlyHTTPClient
         from test_research_report_flow import ABSTRACT
         def many_sources(req):
             searches.append(str(req.url))
@@ -76,9 +76,10 @@ def main():
         async def large_search(*args, **kwargs):
             return await base_search(*args, provider=provider, price=Decimal(0), price_source="offline-fixed", **kwargs)
         search_policy.run_search = large_search
-    def save():
+    def save(active_api=None):
+        active_api = active_api or api
         value = {"model_calls": prior_model_calls + model_calls, "searches": len(prior_searches) + len(searches), "paid_calls": 0,
-                 "runs": [dict(r) for r in api.store.db.execute("SELECT research_id,status,error FROM control_runs")]}
+                 "runs": [dict(r) for r in active_api.store.db.execute("SELECT research_id,status,error FROM control_runs")]}
         (folder / "observed.json").write_bytes((to_json(value) + "\n").encode("utf-8", errors="strict"))
     if "--crash" in sys.argv:
         old = StateService.finish_runtime_step
@@ -101,7 +102,7 @@ def main():
         return
     rid = run(api, gateway, **({'fulltext_enabled': True} if '--fulltext' in sys.argv else {}))
     blocked = run(api, gateway, ai_report_enabled=False, public_search_query="", public_search_consent=False)
-    from htrsa.resource_policy import save_preferences
+    from probe.resource_policy import save_preferences
     save_preferences(api.store, {"tutorial_completed": True, "tutorial_do_not_ask": True, "explanation_prompt_dismissed": True})
     board = {}
     if "--board" in sys.argv:

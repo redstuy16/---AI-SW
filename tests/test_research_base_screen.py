@@ -1,10 +1,11 @@
+from probe.report_publication import report_root
 """연구 기본 화면의 상태·현재성·읽기 전용 경계를 확인한다."""
 import json
 
 import pytest
 
-from htrsa.research_screen import screen_summary, status_badge
-from htrsa.research_flow import project_flow
+from probe.research_screen import screen_summary, status_badge
+from probe.research_flow import project_flow
 from test_workbench import app, configure, create
 from test_research_report_flow import rig, run
 from test_execution_flow import demos, demo_api
@@ -35,7 +36,7 @@ def test_screen_is_read_only_and_does_not_dispatch(app, monkeypatch):
 
 @pytest.mark.parametrize('report_status', ['RUNNING', 'PARTIAL'])
 def test_report_without_draft_keeps_verified_card_readable(app, monkeypatch, report_status):
-    from htrsa.research_report import execution_summary
+    from probe.research_report import execution_summary
     gateway, calls, searches = rig(app, monkeypatch)
     rid = run(app, gateway)
     value = execution_summary(app, rid)
@@ -44,7 +45,7 @@ def test_report_without_draft_keeps_verified_card_readable(app, monkeypatch, rep
     value['report'].update(status=report_status, draft=None)
     value['report_ready'] = False
     app.store.db.execute("UPDATE control_runs SET status='RUNNING' WHERE research_id=?", (rid,))
-    monkeypatch.setattr('htrsa.research_report.execution_summary', lambda *_: value)
+    monkeypatch.setattr('probe.research_report.execution_summary', lambda *_: value)
     before = app.store.db.total_changes
     observed = (len(calls), len(searches), app.store.ledger(rid))
     result = screen_summary(app, rid)
@@ -92,7 +93,7 @@ def test_screen_and_graph_agree_after_process_exit(app, monkeypatch):
     configure(app)
     rid = create(app)
     app.store.db.execute("UPDATE control_runs SET status='RUNNING',pid=12345678 WHERE research_id=?", (rid,))
-    monkeypatch.setattr('htrsa.control_plane.process_alive', lambda pid: False)
+    monkeypatch.setattr('probe.control_plane.process_alive', lambda pid: False)
     before = app.store.db.total_changes
     result = screen_summary(app, rid)
     flow = project_flow(app, rid, view='all')
@@ -152,7 +153,7 @@ def test_screen_excludes_internal_agent_payload(app, monkeypatch):
 def test_tampered_report_is_not_current_success(app, monkeypatch):
     gateway, calls, searches = rig(app, monkeypatch)
     rid = run(app, gateway)
-    path = app.read._state.workspace.path(rid, 'research_output/ai_report.json')
+    path = (__import__("probe.report_publication", fromlist=["report_root"]).report_root(app.read._state, rid) / 'ai_report.json')
     assert path.is_file()
     path.write_bytes(path.read_bytes()+b'tampered')
     result = screen_summary(app, rid)
@@ -175,7 +176,7 @@ def test_stale_state_is_consistent_in_list_and_screen(app, monkeypatch):
 
 def test_legacy_report_tamper_is_visible(demo_api):
     api, a, b = demo_api
-    path = api.read._state.workspace.path(b, 'research_output/final_report.md')
+    path = (report_root(api.read._state, b) / 'final_report.md')
     original = path.read_bytes()
     try:
         path.write_bytes(original + b'tampered')

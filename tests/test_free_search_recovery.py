@@ -1,4 +1,4 @@
-"""무료 검색·페이지 근거·보고서 실패의 고정 회귀 사례."""
+"""격리된 기존 제공사 fixture의 페이지 근거·보고서 실패 회귀 사례."""
 import asyncio
 import io
 import json
@@ -8,15 +8,15 @@ from urllib.parse import unquote
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlBoundary, ControlError, Defaults, ModelProfile
-from htrsa.control_runtime import execute
-from htrsa.literature import screen_source, extract_abstract_evidence, _terms
-from htrsa.research_report import report_record, write_report
-from htrsa.search_policy import PolicyProvider, run_search, search_allocation, qualified_literature
-from htrsa.scholarly import OpenAlexProvider, CrossrefProvider, ScholarlyHTTPClient, NormalizedSource, SearchRequest, SearXNGProvider, ScholarlyError
-from htrsa.source_documents import PublicDocumentClient, checked_document, extract_pdf, document_record, validate_public_url
-from htrsa.release import export_release, validate_report_snapshot
-from htrsa.storage import ArtifactIntegrityError
+from probe.control_plane import ControlBoundary, ControlError, Defaults, ModelProfile
+from probe.control_runtime import execute
+from probe.literature import screen_source, extract_abstract_evidence, _terms
+from probe.research_report import report_record, write_report
+from probe.search_policy import PolicyProvider, run_search, search_allocation, qualified_literature
+from probe.scholarly import OpenAlexProvider, CrossrefProvider, ScholarlyHTTPClient, NormalizedSource, SearchRequest, SearXNGProvider, ScholarlyError
+from probe.source_documents import PublicDocumentClient, checked_document, extract_pdf, document_record, validate_public_url
+from probe.release import export_release, validate_report_snapshot
+from probe.storage import ArtifactIntegrityError
 from test_workbench import app, configure
 from test_research_report_flow import rig, run, request, QUESTION, ABSTRACT
 
@@ -58,7 +58,7 @@ def pdf_bytes(*, pages=2, text=ABSTRACT, encrypted=False, blank=False):
 
 def free_rig(app, monkeypatch, *, mode='pdf', report='ok', pdf=None):
     gateway, calls, unused = rig(app, monkeypatch, report=report)
-    import htrsa.search_policy as policy
+    import probe.search_policy as policy
     observed = []
     def metadata(req):
         observed.append((req.url.host, unquote(str(req.url))))
@@ -77,15 +77,17 @@ def free_rig(app, monkeypatch, *, mode='pdf', report='ok', pdf=None):
     transport = httpx.MockTransport(metadata)
     oa = OpenAlexProvider(ScholarlyHTTPClient(retries=0, transport=transport), api_key='')
     cr = CrossrefProvider(ScholarlyHTTPClient(retries=0, transport=transport), mailto='')
-    monkeypatch.setattr('htrsa.scholarly.OpenAlexProvider', lambda *a, **k: oa)
-    monkeypatch.setattr('htrsa.scholarly.CrossrefProvider', lambda *a, **k: cr)
+    monkeypatch.setattr('probe.scholarly.OpenAlexProvider', lambda *a, **k: oa)
+    monkeypatch.setattr('probe.scholarly.CrossrefProvider', lambda *a, **k: cr)
     data = pdf if pdf is not None else pdf_bytes()
     def document(req):
         observed.append((req.url.host, str(req.url)))
         return httpx.Response(200, content=data)
     client = PublicDocumentClient(transport=httpx.MockTransport(document))
     async def offline(*args, **kwargs):
-        return await run_search(*args, document_client=client, **kwargs)
+        kwargs.pop('gateway', None)
+        return await run_search(*args, provider=cr if mode == 'rate' else oa, price=Decimal(0),
+            price_source='isolated-fixture', document_client=client, **kwargs)
     monkeypatch.setattr(policy, 'run_search', offline)
     return gateway, calls, observed
 
@@ -99,7 +101,8 @@ def free_rig(app, monkeypatch, *, mode='pdf', report='ok', pdf=None):
 def test_frozen_relevance_case(title, abstract, expected):
     source = NormalizedSource(title=title, abstract=abstract, provider='scholarly.fake')
     assert screen_source('source', source, QUESTION).relevance == expected
-    assert '온도' in _terms(QUESTION)
+    temperature = _terms("온도")
+    assert temperature and temperature == _terms("temperature") and temperature <= _terms(QUESTION)
 
 
 def test_irrelevant_directional_sentence_and_prompt_are_not_evidence():
@@ -144,7 +147,7 @@ def test_full_free_pipeline_page_quote_pdf_export_and_reuse(app, monkeypatch, tm
     assert all(v['rate'] == '미확인' for v in saved['requested_measurements']['rows'])
     assert calls == ['manager', 'report']
     assert any('temperature' in u for _, u in observed) and any('탄산음료' in u for _, u in observed)
-    assert any('/works/10.5555' in u for _, u in observed)
+    assert source['doi'] == DOI and not any(host == 'api.crossref.org' for host, _ in observed)
     assert sum(host == 'papers.example.org' for host, _ in observed) == 1
     endpoint = f'/api/control/research/{rid}/source-document.pdf?source_id=' + source['source_id']
     assert app.request('GET', endpoint).status == 200
@@ -232,10 +235,14 @@ def test_pdf_page_limit_and_read_failures(tmp_path, monkeypatch):
     path = tmp_path / 'long.pdf'; path.write_bytes(pdf_bytes(pages=42))
     value = extract_pdf(path)
     assert value['total_pages'] == 42 and len(value['pages']) == 40 and value['truncated']
-    import subprocess
-    monkeypatch.setattr('htrsa.source_documents.subprocess.run', lambda *a, **k: (_ for _ in ()).throw(subprocess.TimeoutExpired('fixed', 20)))
-    with pytest.raises(ControlError, match='PDF_EXTRACTION_TIMEOUT'):
-        extract_pdf(path)
+    import threading, time
+    from probe.source_documents import _PDF_CONTROL
+    token = _PDF_CONTROL.set((threading.Event(), time.monotonic() - 1))
+    try:
+        with pytest.raises(ControlError, match='PDF_EXTRACTION_TIMEOUT'):
+            extract_pdf(path)
+    finally:
+        _PDF_CONTROL.reset(token)
 
 
 @pytest.mark.parametrize('kind', ['json', 'disabled'])
@@ -274,26 +281,25 @@ def test_report_single_retry_requires_confirmed_limit_and_settlement(app, monkey
     assert (len(calls), len(searches)) == before
 
 
-def test_optional_searxng_clue_can_complete_doi_pdf_pipeline(app, monkeypatch):
+def test_removed_searxng_configuration_never_triggers_implicit_fallback(app, monkeypatch):
     gateway, calls, observed = free_rig(app, monkeypatch, mode='empty')
     requests = []
     def reply(req):
         requests.append(req)
         return httpx.Response(200, json={'results': [{'title': TITLE, 'url': PDF_URL, 'content': DOI}]})
     provider = SearXNGProvider('http://127.0.0.1:8888', PublicDocumentClient(transport=httpx.MockTransport(reply)))
-    monkeypatch.setattr('htrsa.scholarly.SearXNGProvider', lambda *a, **k: provider)
+    monkeypatch.setattr('probe.scholarly.SearXNGProvider', lambda *a, **k: provider)
     rid = run(app, gateway, fulltext_enabled=True, searxng_url='http://127.0.0.1:8888')
-    assert app.store.run(rid)['status'] == 'COMPLETED', app.store.run(rid)
-    assert len(requests) == 1 and calls == ['manager', 'report']
-    assert sum(host == 'papers.example.org' for host, _ in observed) == 1
-    assert app.store.config('search_attempts', rid)['used'] == len(observed) + 1 <= 10
-    assert report_record(app.read._state, rid)['coverage'] == 'FULLTEXT_PAGES'
+    assert app.store.run(rid)['status'] == 'INSUFFICIENT_DATA', app.store.run(rid)
+    assert not requests and calls == ['manager', 'report']
+    assert not any(host == 'papers.example.org' for host, _ in observed)
+    assert app.store.config('search_attempts', rid)['used'] == len(observed) <= 10
 
 
 @pytest.mark.parametrize('fault', ['search-cache', 'download'])
 def test_search_download_pause_resume_has_no_duplicate_completed_http(app, monkeypatch, fault):
     gateway, calls, observed = free_rig(app, monkeypatch)
-    from htrsa.service import StateService
+    from probe.service import StateService
     fired = []
     if fault == 'download':
         original = extract_pdf
@@ -302,7 +308,7 @@ def test_search_download_pause_resume_has_no_duplicate_completed_http(app, monke
                 fired.append(True)
                 raise ControlBoundary('PAUSE_REQUESTED')
             return original(path)
-        monkeypatch.setattr('htrsa.source_documents.extract_pdf', pause)
+        monkeypatch.setattr('probe.source_documents.extract_pdf', pause)
     else:
         original = StateService.search_cache_put
         def pause(state, *args, **kwargs):
@@ -325,7 +331,7 @@ def test_search_download_pause_resume_has_no_duplicate_completed_http(app, monke
 
 
 def test_task_output_limits_preserve_manual_model_cap():
-    from htrsa.product_policy import task_profile
+    from probe.product_policy import task_profile
     automatic = ModelProfile(profile_id='auto', connection_id='local', model_id='fixed', output_limit=4096,
                              task_output_limits={'planning': 1024, 'report': 4096})
     assert task_profile(automatic, 'planning').output_limit == 1024
@@ -338,14 +344,14 @@ def test_task_output_limits_preserve_manual_model_cap():
 
 def test_local_recalculation_preserves_old_ai_and_rebuilds_current_pdf(app):
     from test_beginner_v4 import run_profile, SOURCE
-    from htrsa.qualified_workflow import execute_profile
-    from htrsa.final_report import export_final_report
-    from htrsa.report_pdf import render_pdf
-    from htrsa.research_report import _save, ReportDraft, validate_draft, input_fingerprint, rebase_local_report
+    from probe.qualified_workflow import execute_profile
+    from probe.final_report import export_final_report
+    from probe.report_pdf import render_pdf
+    from probe.research_report import _save, ReportDraft, validate_draft, input_fingerprint, rebase_local_report
     rid, snapshot, runtime, provider, _ = run_profile(app)
     state = app.read._state
     state.stop_research(rid, 'QUALIFIED_PROCEDURE_COMPLETED')
-    old = {'revision': 1, 'request_key': 'original', 'input_fingerprint': input_fingerprint(state, rid),
+    old = {'revision': 1, 'validation_version': 2, 'request_key': 'original', 'input_fingerprint': input_fingerprint(state, rid),
            'status': 'READY', 'generated_at': '2026-10-05T00:00:00+09:00',
            'draft': validate_draft(state, rid, ReportDraft(summary='원래 검증된 자료를 확인했습니다.'))}
     _save(app.store, 'ai_report', rid, old)
@@ -384,7 +390,7 @@ def test_optional_archive_free_quota_cannot_use_prepaid(app, monkeypatch):
 def test_free_allowance_header_cannot_leak_active_key_into_audit(app, monkeypatch):
     monkeypatch.setenv('OPENALEX_API_KEY', 'header-canary-only-for-qa')
     gateway, calls, observed = free_rig(app, monkeypatch, mode='abstract')
-    from htrsa import scholarly
+    from probe import scholarly
     provider = scholarly.OpenAlexProvider()
     original = provider.client.get_json
     async def reflected(*args, **kwargs):
@@ -399,7 +405,7 @@ def test_free_allowance_header_cannot_leak_active_key_into_audit(app, monkeypatc
 
 @pytest.mark.parametrize('reason,expected', [('max_output_tokens', 'max_output_tokens'), ('content_filter', 'content_filter'), ('secret-canary', None)])
 def test_responses_incomplete_reason_is_recorded_without_arbitrary_text(reason, expected):
-    from htrsa.providers.native import REGISTRY
+    from probe.providers.native import REGISTRY
     from test_multi_provider import config, document
     _, profile, _ = config('openai')
     response = document('responses')
@@ -436,7 +442,7 @@ def test_optional_archive_uses_only_confirmed_free_allowance(app, monkeypatch):
 def test_fulltext_claim_binding_and_tamper_gate(app, monkeypatch):
     gateway, calls, observed = free_rig(app, monkeypatch)
     created = app.create(request(fulltext_enabled=True)); rid = created['research_id']
-    from htrsa.research_slice import ResearchSliceConfig
+    from probe.research_slice import ResearchSliceConfig
     app.read._state.research_slice.configure(rid, ResearchSliceConfig(claim_evidence_provenance=True))
     app.command(rid, 'start', {'expected_version': 0, 'idempotency_key': 'source-slice-once'})
     asyncio.run(execute(app.database, app.workspace, rid, provider_factory=gateway))

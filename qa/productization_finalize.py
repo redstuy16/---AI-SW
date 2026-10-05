@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-from htrsa.preflight import VALIDATION_DIR, _source_fingerprint, environment_status
+from probe.preflight import VALIDATION_DIR, _source_fingerprint, environment_status
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,10 +57,10 @@ def main():
     now = datetime.now(timezone(timedelta(hours=9)))
     elapsed = int((now - first).total_seconds())
     interval = f"{elapsed // 3600}시간 {(elapsed % 3600) // 60}분 {elapsed % 60}초"
-    changed = ["src/htrsa/productization.py", "src/htrsa/desktop.py", "src/htrsa/control_plane.py",
-        "src/htrsa/provider_checks.py", "src/htrsa/workbench.py", "src/htrsa/preflight.py", "src/htrsa/product_policy.py",
-        "src/htrsa/workbench_static/product_ux.js", "src/htrsa/workbench_static/workbench.css", "tests/test_productization.py",
-        "H-TRSA.wsf", "README.md", "docs/development/FEATURE_FREEZE.md", "docs/guides/PRODUCTIZATION.md",
+    changed = ["src/probe/productization.py", "src/probe/desktop.py", "src/probe/control_plane.py",
+        "src/probe/provider_checks.py", "src/probe/workbench.py", "src/probe/preflight.py", "src/probe/product_policy.py",
+        "src/probe/workbench_static/product_ux.js", "src/probe/workbench_static/workbench.css", "tests/test_productization.py",
+        "Probe.wsf", "README.md", "docs/development/FEATURE_FREEZE.md", "docs/guides/PRODUCTIZATION.md",
         "qa/results/productization_baseline_observed.json", "qa/productization_native_probe.py", "qa/local_browser_launcher_probe.py",
         "qa/productization_visual_qa.cjs", "qa/productization_fault_probe.py", "qa/productization_wsf_probe.py", "qa/productization_finalize.py"]
     for name in changed:
@@ -98,7 +98,7 @@ def main():
 3. 동의·키·전송 승인·가격이 없으면 호출 전에 차단한다. 같은 멱등 키의 재전송은 기존 결과를 반환하고 다른 본문은 충돌로 차단한다. 프로세스 중단은 `NEEDS_RECONCILIATION`과 `UNRESOLVED`로 남기고 외부 호출을 다시 보내지 않는다.
 4. 설정/키 변경은 과거 검사 성공을 `STALE`로 표시한다. 환경변수 검증은 해당 프로세스에 한정한다. 모의 HTTP `OFFLINE_VALIDATED`, 실제 HTTP `VALIDATED`, 연구 효능 `NOT_VALIDATED`를 구분한다.
 5. 기본 선택에 권장·빠른·고성능 GPT를 표시하고 수동 ID는 개발자 옵션에 유지한다. 5단계 온보딩, 검사 비용/동의, 월/요청 예산 저장, Windows·기본 브라우저 미검증 표시를 추가했다. 출처 링크는 공식 OpenAI HTTPS 주소만 실행한다.
-6. `H-TRSA.wsf`와 `htrsa.desktop`을 추가했다. 기존 작업대를 `pythonw`로 열고 실패 시 한국어 다시 열기/취소를 제공한다. 실제 `pythonw`+Chrome은 PASS, WSF 파일 연결과 실제 OS 기본 브라우저 인증 완료는 NOT_VALIDATED다.
+6. `Probe.wsf`와 `probe.desktop`을 추가했다. 기존 작업대를 `pythonw`로 열고 실패 시 한국어 다시 열기/취소를 제공한다. 실제 `pythonw`+Chrome은 PASS, WSF 파일 연결과 실제 OS 기본 브라우저 인증 완료는 NOT_VALIDATED다.
 7. 기존 출시 게이트를 유지한다. `product_release_ready`는 기존 `release_ready`와 현재 소스·사용자/컴퓨터의 Windows 저장/교체/삭제/재시작·기본 브라우저 인증을 추가로 요구한다. 오래된 표식·부분 검사·모의 실행을 통과로 사용하지 않는다.
 
 ## 재사용과 호환성
@@ -115,7 +115,7 @@ def main():
 | `.\\.venv\\Scripts\\python.exe -m pytest -q tests/test_productization.py tests/test_preflight.py -p no:cacheprovider --basetemp build/pytest-productization-focus-frozen --junitxml build/productization-focus-final.xml` | 41 PASS, 10.91초 |
 | `.\\.venv\\Scripts\\python.exe qa/qa_day1.py --output-dir build/productization-qa-final` | destructive {stress['pytest']['passed_count']} PASS / {stress['pytest']['duration_sec']}초 wrapper, 실행 가능 19/19 PASS; Demo A/B 각 5/5; 새 프로세스 재개·17파일 export PASS |
 | `{full_command}` | {full}, {current['duration_sec']}초 wrapper; 신규 제품화 {len(new)} PASS |
-| `.\\.venv\\Scripts\\python.exe -m htrsa.preflight validate-core` | {core['passed_count']} PASS, skipped={str(core['skipped']).lower()}, exit={core['exit_code']} |
+| `.\\.venv\\Scripts\\python.exe -m probe.preflight validate-core` | {core['passed_count']} PASS, skipped={str(core['skipped']).lower()}, exit={core['exit_code']} |
 | `.\\.venv\\Scripts\\python.exe qa/productization_fault_probe.py` | 모의 HTTP 14/14 PASS, 같은 키 재전송 0, 검사 canary 노출 0 |
 | `node qa/productization_visual_qa.cjs` | 실제 pythonw·Chrome 18검사·3화면 PASS, 390px/CSS 200%, 저장/오류/외부 요청/비밀 노출 0 |
 | `node qa/gui_visual_qa.cjs` / `node qa/product_visual_qa.cjs` / `node qa/multi_provider_visual_qa.cjs` | 22검사·21화면 / 19검사·19화면 / 7검사 PASS |
@@ -127,7 +127,7 @@ def main():
 | `.\\.venv\\Scripts\\python.exe qa/productization_native_probe.py` | Windows {native['windows_key']['status']} / {native['windows_key'].get('error_code')}; GPT {native['gpt_live']['status']} / {native['gpt_live'].get('error_code')} |
 | `.\\.venv\\Scripts\\python.exe qa/local_browser_launcher_probe.py` | 실제 열기 true, 25초 내 교환/목록 미관측 → NOT_VALIDATED |
 | `.\\.venv\\Scripts\\python.exe qa/productization_wsf_probe.py` | 실제 cscript 설정 읽기 Access is denied / exit 1 → 구문·WSF 실행 NOT_VALIDATED |
-| `.\\.venv\\Scripts\\python.exe -m htrsa.preflight validate-docker` / `smoke-api` / `validate-search` | SKIPPED: DOCKER_UNAVAILABLE / API_UNCONFIGURED / SEARCH_UNCONFIGURED |
+| `.\\.venv\\Scripts\\python.exe -m probe.preflight validate-docker` / `smoke-api` / `validate-search` | SKIPPED: DOCKER_UNAVAILABLE / API_UNCONFIGURED / SEARCH_UNCONFIGURED |
 
 5 SKIP은 Docker 4개와 실제 Windows credential 1개, 2 deselected는 기존 Live API/Search 선택 조건이다. 전체 실행 로그·XML은 [최종 QA](../../build/productization-qa-final/qa_day1_summary.json)의 경로를 따른다. 이전 QA wrapper의 역사적 135 baseline 필드는 이번 기준선으로 사용하지 않았다.
 
@@ -154,7 +154,7 @@ def main():
 
 유료 실서비스 요청은 **{native['gpt_live']['paid_requests']}회**, 검사 범위의 secret exposure는 0이다. 모의 provider를 실제 사용 가능·연구 효능 통과로 표시하지 않았다. WSF shell association, 네이티브 브라우저 확대, 보호 파일의 실제 Windows fallback 재시작을 새로 검증했다고 주장하지 않는다. 저장 키 삭제는 제공사 폐기가 아니며 브라우저/작업대 종료는 이미 실행한 Worker 중지가 아니다. 환경변수의 프로세스 내 직접 교체는 개발자가 재검사해야 한다.
 
-실행법: 저장소 **`H-TRSA.wsf` 더블클릭**, 설정의 GPT 준비/키 등록/유료 연결 검사/예산 확인. CLI 대체·명시적 opt-in은 [제품화 안내](../../docs/guides/PRODUCTIZATION.md)에 있다.
+실행법: 저장소 **`Probe.wsf` 더블클릭**, 설정의 GPT 준비/키 등록/유료 연결 검사/예산 확인. CLI 대체·명시적 opt-in은 [제품화 안내](../../docs/guides/PRODUCTIZATION.md)에 있다.
 
 ## 변경 파일
 
@@ -179,7 +179,7 @@ def main():
 
 1. Windows 키 저장 후 다시 읽기 확인과 기존 fallback 권한의 사전 검사를 추가했다. UTF-8 키 비교 오류를 고쳤다.
 2. 기존 어댑터·Gateway·비용 원장으로 GPT 목록/텍스트/구조화/고정 도구/숙고/사용량 종합 검사를 구현했다. USD 0.10 기본 전체 상한, 최대 생성 5회, 동의·멱등성·미정산 중단 복구·설정/키의 오래된 성공 차단을 적용했다.
-3. 친숙한 GPT 선택, 5단계 온보딩·예산 확인, Windows/기본 브라우저 미검증 표시와 `H-TRSA.wsf`/`pythonw` 실행을 추가했다. 기존 제품 정책·보고서·연구 설정·도움말과 과학 검증/복구/출시 기준을 유지했다. 새 DB migration·dependency는 없다.
+3. 친숙한 GPT 선택, 5단계 온보딩·예산 확인, Windows/기본 브라우저 미검증 표시와 `Probe.wsf`/`pythonw` 실행을 추가했다. 기존 제품 정책·보고서·연구 설정·도움말과 과학 검증/복구/출시 기준을 유지했다. 새 DB migration·dependency는 없다.
 
 ### 실제 검증과 시간
 

@@ -6,7 +6,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 import qa_day1 as qa
-from htrsa.preflight import _source_fingerprint, record_qa_validation, environment_status
+from probe.preflight import _source_fingerprint, record_qa_validation, environment_status
 
 
 def save(path, value):

@@ -4,8 +4,8 @@ import json
 from pathlib import Path
 from uuid import uuid4
 from cycle5_fixtures import science_fixture
-from htrsa.final_report import export_final_report
-from htrsa.preflight import _source_fingerprint
+from probe.final_report import export_final_report
+from probe.preflight import _source_fingerprint
 
 ROOT = Path(__file__).resolve().parents[1]
 

@@ -1,7 +1,7 @@
 import pytest
 
-from htrsa.schemas import StagedResult, ToolResult, Verdict, new_id
-from htrsa.service import DuplicateCommitError, StateConflictError, VerificationRequiredError
+from probe.schemas import StagedResult, ToolResult, Verdict, new_id
+from probe.service import DuplicateCommitError, StateConflictError, VerificationRequiredError
 
 
 def test_mock_research_cycle_commits_verified_result(cycle):

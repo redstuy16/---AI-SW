@@ -8,14 +8,14 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.climate_profile import SOURCE_POLICY
-from htrsa.qualified_workflow import execute_profile
-from htrsa.qualified_profiles import conclusion_card
-from htrsa.recovery import FaultInjector, InjectedCrash
-from htrsa.workbench import WorkbenchAPI
-from htrsa.autonomous_loop import AutonomousResearchLoop
-from htrsa.providers.fake import FakeProvider
-from htrsa.control_plane import ROLES
+from probe.climate_profile import SOURCE_POLICY
+from probe.qualified_workflow import execute_profile
+from probe.qualified_profiles import conclusion_card
+from probe.recovery import FaultInjector, InjectedCrash
+from probe.workbench import WorkbenchAPI
+from probe.autonomous_loop import AutonomousResearchLoop
+from probe.providers.fake import FakeProvider
+from probe.control_plane import ROLES
 from test_beginner_v4 import prepare, SOURCE
 
 

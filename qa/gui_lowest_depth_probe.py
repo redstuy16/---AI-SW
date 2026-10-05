@@ -8,10 +8,10 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_autonomous_loop import CSV, MANAGER, shortlist, initial_coordinator, worker, first_critic
-from htrsa.control_plane import Connection, ModelProfile, ROLES
-from htrsa.control_runtime import execute
-from htrsa.providers.fake import FakeProvider
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import Connection, ModelProfile, ROLES
+from probe.control_runtime import execute
+from probe.providers.fake import FakeProvider
+from probe.workbench import WorkbenchAPI
 
 
 def main():

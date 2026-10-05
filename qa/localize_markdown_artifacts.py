@@ -3,8 +3,8 @@ from pathlib import Path
 from hashlib import sha256
 import json
 
-from htrsa.locale_ko import translate_markdown
-from htrsa.schemas import utc_now
+from probe.locale_ko import translate_markdown
+from probe.schemas import utc_now
 
 
 def main():

@@ -14,18 +14,18 @@ import threading
 import httpx
 import pytest
 
-from htrsa.control_plane import (Connection, ControlBoundary, ControlError, ControlStore, Credentials, DEPTHS,
+from probe.control_plane import (Connection, ControlBoundary, ControlError, ControlStore, Credentials, DEPTHS,
     ModelProfile, NewResearch, PinnedTransport, PriceRecord, admitted_cost, classify_http, micro, process_alive, safe_source, validate_endpoint)
-from htrsa.control_runtime import RoutedGateway, boundary, execute
-from htrsa.database import initialize
-from htrsa.providers.base import ModelProviderError
-from htrsa.providers.fake import FakeProvider
-from htrsa.schemas import utc_now
-from htrsa.workbench import Handler, OwnerSession, SmokeOutput, WorkbenchAPI, redact
+from probe.control_runtime import RoutedGateway, boundary, execute
+from probe.database import initialize
+from probe.providers.base import ModelProviderError
+from probe.providers.fake import FakeProvider
+from probe.schemas import utc_now
+from probe.workbench import Handler, OwnerSession, SmokeOutput, WorkbenchAPI, redact
 from test_autonomous_loop import CSV, fake_replies
 from test_verification_repair import prepare_case, corrupt_first_output
-from htrsa.agent_runtime import RuntimeFailure
-from htrsa.recovery import FaultInjector, InjectedCrash
+from probe.agent_runtime import RuntimeFailure
+from probe.recovery import FaultInjector, InjectedCrash
 
 
 @pytest.fixture
@@ -175,10 +175,69 @@ def test_worker_start_error_is_visible_without_dispatch(app, monkeypatch):
     app.launch = True
     def fail(*_args, **_kwargs):
         raise OSError("cannot start")
-    monkeypatch.setattr("htrsa.workbench.subprocess.Popen", fail)
+    monkeypatch.setattr("probe.workbench.subprocess.Popen", fail)
     with pytest.raises(ControlError, match="WORKER_START_FAILED"):
         app.command(rid, "start", {"idempotency_key": "launch-error", "expected_version": 0})
     assert app.store.run(rid)["status"] == "FAILED"
+    assert not app.store.ledger()["requests"]
+
+
+
+@pytest.mark.parametrize("startup_seconds, succeeds", [(8, True), (31, False)])
+def test_worker_readiness_allows_cold_start_but_remains_bounded(app, monkeypatch, startup_seconds, succeeds):
+    """느린 정상 초기화는 허용하고 대기 한도를 넘으면 요청 없이 종료한다."""
+    from io import BytesIO
+    from types import SimpleNamespace
+
+    configure(app)
+    rid = create(app)
+    app.launch = True
+    child = SimpleNamespace(pid=12345, stdout=None, poll=lambda: 0)
+    waits = []
+    for name in ("USERPROFILE", "HOME", "LOCALAPPDATA"):
+        monkeypatch.setenv(name, str(app.workspace.parent / name.lower()))
+    monkeypatch.setenv("UNRELATED_SECRET_KEY", "must-not-reach-worker")
+
+    def spawn(args, **kwargs):
+        for name in ("USERPROFILE", "HOME", "LOCALAPPDATA"):
+            assert kwargs["env"][name] == os.environ[name]
+        assert "UNRELATED_SECRET_KEY" not in kwargs["env"]
+        token = args[args.index("--ready-token") + 1]
+        child.stdout = BytesIO(("PROBE_WORKER_READY " + token + "\n").encode("ascii"))
+        return child
+
+    class DelayedReader:
+        def __init__(self, *, target, daemon):
+            self.target = target
+            self.pending = True
+
+        def start(self):
+            pass
+
+        def join(self, timeout):
+            waits.append(timeout)
+            if startup_seconds <= timeout:
+                self.target()
+                self.pending = False
+
+        def is_alive(self):
+            return self.pending
+
+    monkeypatch.setattr("probe.workbench.subprocess.Popen", spawn)
+    monkeypatch.setattr("probe.workbench.threading.Thread", DelayedReader)
+    body = {"idempotency_key": "cold-worker-start", "expected_version": 0}
+    if succeeds:
+        result = app.command(rid, "start", body)
+        assert result["status"] == "STARTING"
+        assert app.children == [child]
+        assert app.store.run(rid)["status"] != "FAILED"
+    else:
+        with pytest.raises(ControlError, match="WORKER_READY_TIMEOUT"):
+            app.command(rid, "start", body)
+        assert app.store.run(rid)["status"] == "FAILED"
+        assert app.store.run(rid)["error"] == "WORKER_READY_TIMEOUT"
+        assert not app.children
+    assert waits == [30]
     assert not app.store.ledger()["requests"]
 
 
@@ -200,12 +259,13 @@ def test_worker_broker_failure_keeps_typed_reason_and_no_retries(app):
     assert not app.store.ledger()["requests"]
 
 
-def test_dead_worker_detected_by_read_keeps_liability(app):
+def test_dead_worker_detected_at_startup_keeps_liability(app):
     configure(app)
     rid = create(app)
     reservation = reserve(app.store, rid=rid)
     app.store.transition(reservation, "DISPATCHED")
     app.store.db.execute("UPDATE control_runs SET status='RUNNING',pid=NULL WHERE research_id=?", (rid,))
+    app._recover()
     result = app.request("GET", f"/api/control/research/{rid}/control")
     assert result.body["status"] == "NEEDS_RECONCILIATION"
     assert app.store.ledger(rid)["unresolved"] == "0.6"
@@ -243,9 +303,9 @@ def test_crash_recovery_retains_exposure_and_blocks_replay(app, initial):
     app.store.recover_ledger("r")
     app.store.recover_ledger("r")
     assert app.store.ledger()["unresolved"] == "0.6"
-    with pytest.raises(ControlError):
-        reserve(app.store, bound="0.1")
+    assert reserve(app.store, bound="0.1").startswith("RSV-")
     assert app.store.ledger()["unresolved"] == "0.6"
+    assert app.store.ledger()["reserved"] == "0.1"
 
 
 def test_settlement_idempotency_month_carry_and_no_checkpoint_refund(app):
@@ -348,10 +408,13 @@ def test_spreadsheet_export_escapes_formulas_and_keeps_canonical_archive(tmp_pat
     from hashlib import sha256
     import csv
     import io
-    from htrsa.demo import run_demo_a
-    from htrsa.service import StateService
-    from htrsa.storage import Workspace
-    from htrsa.release import export_release
+    from probe.demo import run_demo_a
+    from probe.service import StateService
+    from probe.storage import Workspace
+    from probe.release import export_release
+    from probe.release import ReleaseExportError
+    from probe.report_publication import report_root, new_revision, selected_revision, publish_revision
+    import shutil
     root = tmp_path / "csv-release"
     result = run_demo_a(root / "state.sqlite", root / "workspace")
     db = initialize(root / "state.sqlite")
@@ -359,7 +422,8 @@ def test_spreadsheet_export_escapes_formulas_and_keeps_canonical_archive(tmp_pat
         state = StateService(db, Workspace(root / "workspace"))
         rid = result["research_id"]
         version = state.state_version(rid)
-        source = state.workspace.path(rid, "research_output")
+        source = new_revision(state, rid)
+        shutil.copytree(report_root(state, rid), source, dirs_exist_ok=True)
         raw = b'label,value\n"=HYPERLINK(\"\"https://evil.example\"\")",-1.2\n+CMD,3\n@SUM(1),4\n-EXEC,5\n\t=CMD,6\n'
         (source / "display.csv").write_bytes(raw)
         hidden = source / "private_diagnostic.json"
@@ -368,6 +432,10 @@ def test_spreadsheet_export_escapes_formulas_and_keeps_canonical_archive(tmp_pat
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         manifest["files"]["display.csv"] = sha256(raw).hexdigest()
         manifest_path.write_bytes(json.dumps(manifest).encode("utf-8", errors="strict"))
+        with selected_revision(state, rid, source), pytest.raises(ReleaseExportError, match="undeclared files"):
+            export_release(state, rid, tmp_path / "mixed-release")
+        hidden.unlink()
+        publish_revision(state, rid, source)
         exported = export_release(state, rid, tmp_path / "release")
         target = Path(exported["output"])
         safe = (target / "research_output/display.csv").read_bytes()
@@ -524,9 +592,9 @@ def test_f3p_ui_tampered_audit_cannot_show_pass(tmp_path):
 @pytest.mark.parametrize("point", ["AFTER_FAILURE_EVIDENCE", "AFTER_REPAIR_DECISION", "AFTER_REPAIRED_EXECUTION",
                                   "DURING_REVALIDATION", "BEFORE_REPAIR_COMMIT", "AFTER_REPAIR_COMMIT"])
 def test_f3p_ui_process_reopen_keeps_history_and_one_commit(tmp_path, point):
-    from htrsa.agent_runtime import AgentRuntime
-    from htrsa.service import StateService
-    from htrsa.storage import Workspace
+    from probe.agent_runtime import AgentRuntime
+    from probe.service import StateService
+    from probe.storage import Workspace
     from test_verified_analysis_skills import MODELS
     db, state, agent, prepared = prepare_case(tmp_path)
     corrupt_first_output(state)
@@ -564,7 +632,7 @@ def test_ridge_ui_displays_actual_check_and_default_off(tmp_path):
 
 def test_sdk_tracing_disabled_before_agent_and_runner(monkeypatch):
     import agents
-    from htrsa.providers.openai_agents import OpenAIAgentsProvider
+    from probe.providers.openai_agents import OpenAIAgentsProvider
     calls = []
     monkeypatch.setattr(agents, "set_tracing_disabled", lambda value: calls.append(("disabled", value)))
     def agent(**kw):
@@ -605,7 +673,7 @@ def test_gateway_settled_response_replay_does_not_repeat_remote_bill(app):
 
 
 def test_depth_change_only_applies_at_safe_boundary_and_preserves_caps(app):
-    from htrsa.autonomous_loop import AutonomousResearchLoop
+    from probe.autonomous_loop import AutonomousResearchLoop
     configure(app)
     rid = create(app)
     snapshot = deepcopy(app.store.run(rid)["snapshot"])
@@ -625,7 +693,7 @@ def test_depth_change_only_applies_at_safe_boundary_and_preserves_caps(app):
 
 
 def test_sandbox_cli_subprocess_never_inherits_provider_credentials(monkeypatch):
-    import htrsa.sandbox as sandbox
+    import probe.sandbox as sandbox
     monkeypatch.setenv("OPENAI_API_KEY", "sk-secret-canary-0123456789")
     monkeypatch.setenv("OTHER_PROVIDER_TOKEN", "private-token")
     monkeypatch.setattr(sandbox.shutil, "which", lambda _: "docker")
@@ -638,15 +706,17 @@ def test_sandbox_cli_subprocess_never_inherits_provider_credentials(monkeypatch)
     assert sandbox.docker_available()
     assert "OPENAI_API_KEY" not in calls[0]["env"]
     assert "OTHER_PROVIDER_TOKEN" not in calls[0]["env"]
-    assert set(calls[0]["env"]) <= set(sandbox.clean_environment())
-    from htrsa.preflight import _run
+    docker_variables = {"DOCKER_HOST", "DOCKER_CONTEXT", "DOCKER_CONFIG", "DOCKER_CERT_PATH", "DOCKER_TLS", "DOCKER_TLS_VERIFY",
+                        "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "XDG_RUNTIME_DIR"}
+    assert set(calls[0]["env"]) <= set(sandbox.clean_environment()) | docker_variables
+    from probe.preflight import _run
     assert _run(["docker", "info"]).returncode == 0
     assert "OPENAI_API_KEY" not in calls[1]["env"]
     assert "OTHER_PROVIDER_TOKEN" not in calls[1]["env"]
 
 
 def test_hybrid_routing_runs_existing_full_loop_through_accounted_gateway(app, monkeypatch):
-    from htrsa.demo import _agent_replies
+    from probe.demo import _agent_replies
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test-only-canary-0123456789")
     configure(app)
     cloud = Connection(connection_id="cloud", display_name="API", adapter_id="openai_compatible", base_url="https://api.openai.com/v1", destination_approved=True)
@@ -701,3 +771,46 @@ def test_f3p_ui_real_failure_scenarios_never_present_success(tmp_path, case_id):
         assert api.store.db.execute("SELECT COUNT(*) FROM state_events").fetchone()[0] == 0
     finally:
         api.close()
+
+
+def test_missing_start_file_is_not_reported_as_permission_or_export_failure(app, monkeypatch):
+    import errno
+    def missing(_request):
+        raise FileNotFoundError(errno.ENOENT, "private-key-not-for-output", "/private/not-for-output")
+    monkeypatch.setattr(app, "prepare", missing)
+    result = app.request("POST", "/api/control/research/preflight", {"question": "자료 비교"})
+    assert result.status == 409
+    assert result.body["error"] == "REQUIRED_FILE_NOT_FOUND"
+    row = app.store.db.execute("SELECT payload FROM control_audit WHERE kind='REQUEST_STORAGE_BLOCKED' ORDER BY seq DESC LIMIT 1").fetchone()
+    details = json.loads(row[0])
+    assert details["diagnostic_id"] == result.body["diagnostic_id"]
+    assert details["errno"] == errno.ENOENT
+    assert details["frames"][-1]["function"] == "missing"
+    assert "private-key-not-for-output" not in row[0]
+    assert "/private/not-for-output" not in row[0]
+
+
+def test_export_validation_error_remains_distinct_from_start_storage_error(app, monkeypatch):
+    from probe.release import ReleaseExportError
+    def invalid(_request):
+        raise ReleaseExportError("EXPORT_VALIDATION_FAILED")
+    monkeypatch.setattr(app, "prepare", invalid)
+    result = app.request("POST", "/api/control/research/preflight", {"question": "자료 비교"})
+    assert result.body["error"] == "EXPORT_VALIDATION_FAILED"
+
+
+def test_previous_run_unresolved_exposure_does_not_block_new_research_preflight(app):
+    configure(app)
+    rid = create(app)
+    reservation = reserve(app.store, rid=rid)
+    app.store.transition(reservation, 'DISPATCHED')
+    app.store.transition(reservation, 'UNRESOLVED')
+    app.store.db.execute("UPDATE control_runs SET status='NEEDS_RECONCILIATION' WHERE research_id=?", (rid,))
+    response = app.request('POST', '/api/control/research/preflight', {'settings_version': 2,
+        'question': '새 연구의 원리 확인', 'model_profile_id': 'm', 'egress': 'selected', 'search_policy': 'DISABLED', 'run_limit_usd': '0.1'})
+    assert response.status == 200 and response.body['ready']
+    assert app.store.ledger()['unresolved'] == '0.6'
+    assert reserve(app.store, rid=rid, bound='0.1').startswith('RSV-')
+    # 다른 연구라도 미정산 노출을 합산한 월 한도는 넘을 수 없다.
+    with pytest.raises(ControlError, match='BUDGET_BLOCKED'):
+        reserve(app.store, rid='new-research', bound='0.5')

@@ -1,4 +1,4 @@
-# H-TRSA 결정적 실행 구조
+# Probe 결정적 실행 구조
 
 첫 실행 순환은 `Agent Output → Speculative Mutation → Deterministic Verification → StateService → Atomic Canonical Commit`이다. Agent의 잠정 결과는 결정적 검증 후에만 정본에 반영한다.
 
@@ -75,7 +75,7 @@ AutonomousResearchLoop는 구조화 작업, 기본 30회 상한과 SHA-256 작�
 
 계획용 모델 출력은 구조화 운영 단계로 저장한다. 완료 전 중단한 호출은 실패 시도로 계산해 재시도·미상 가격 상한을 초기화하지 않는다. 실험별 비판은 중복되지 않으며 가설·작업·간선은 중복 없이 대조한다. 충돌 주입은 접수·도구·잠정 저장·검증·반영·비판·재계획·후속 계약·가설 경계를 새 실행기/제공사로 검사한다. 이전 실험이 무효화되면 재개도 인용하지 않고 종료한다. 동기식 쓰기 담당자 하나를 전제하며 독립적인 동시 재개 프로세스는 지원하지 않는다.
 
-htrsa.preflight는 기계 판독 Docker·API 검사를 제공한다. Docker 검사는 PythonSandboxTool과 동일한 제한 형태를 사용한다. 실제 격리 검사 4개와 실제 Manager 검사 1개는 출시 기준이다. 소스 지문으로 개발 테스트와 출시 준비를 구분하며 Docker·API 설정이 없으면 release_ready=false다.
+probe.preflight는 기계 판독 Docker·API 검사를 제공한다. Docker 검사는 PythonSandboxTool과 동일한 제한 형태를 사용한다. 실제 격리 검사 4개와 실제 Manager 검사 1개는 출시 기준이다. 소스 지문으로 개발 테스트와 출시 준비를 구분하며 Docker·API 설정이 없으면 release_ready=false다.
 
 ## Day 4A 문헌 근거와 보고서 경계
 
@@ -85,17 +85,17 @@ LiteratureResearchRuntime은 기존 자율 실험 전 제한된 문헌 검색과
 
 ## Day 4B 대시보드·데모·출시 경계
 
-htrsa.dashboard는 SQLite와 검증 산출물에서 개요·관계 트리·가설·근거·실험·검증·진행 기록·사용량·자료·보고서·환경을 조회한다. DashboardReadAPI는 최소 GET 경로만 제공하며 StateService 쓰기를 노출하지 않는다. 보고서 Markdown은 이스케이프한 텍스트로 표시하고 산출물 경로는 Workspace.path로만 해석한다.
+probe.dashboard는 SQLite와 검증 산출물에서 개요·관계 트리·가설·근거·실험·검증·진행 기록·사용량·자료·보고서·환경을 조회한다. DashboardReadAPI는 최소 GET 경로만 제공하며 StateService 쓰기를 노출하지 않는다. 보고서 Markdown은 이스케이프한 텍스트로 표시하고 산출물 경로는 Workspace.path로만 해석한다.
 
 오프라인 데모는 고정 CSV와 scholarly.fake를 사용한다. A는 문헌→가설→검증 실험 2회→비판/재계획→보고서다. B는 실험 하나 무효화→경고→대체 실험→수정 결론이다. demo_manifest는 종료 상태·참조·출처·무효화·논리 작업 중복을 검사한다. DEMO 성공은 실제 제공사 검증이 아니다.
 
-htrsa.release는 연구 범위의 research_output만 복사하고 자격 증명 없는 선언 파일·재현 지침·환경 기준을 기록한다. release_ready는 핵심·Docker·실제 LLM 검증을 요구하며 문헌은 AVAILABLE·RATE_LIMITED·UNCONFIGURED·FAILED·VALIDATED로 별도 표시한다. HTTP 429는 제한된 Retry-After를 따르고 무한 반복하지 않는다.
+probe.release는 연구 범위의 research_output만 복사하고 자격 증명 없는 선언 파일·재현 지침·환경 기준을 기록한다. release_ready는 핵심·Docker·실제 LLM 검증을 요구하며 문헌은 AVAILABLE·RATE_LIMITED·UNCONFIGURED·FAILED·VALIDATED로 별도 표시한다. HTTP 429는 제한된 Retry-After를 따르고 무한 반복하지 않는다.
 
 저장소 루트에서 실행한다.
 
 ```text
-python -m htrsa.generate_schemas
+python -m probe.generate_schemas
 python -m pytest -q
-python -m htrsa.runtime path/to/new.sqlite
-python -m htrsa.real_runtime path/to/new.sqlite path/to/workspace tests/fixtures/temperature_growth.csv
+python -m probe.runtime path/to/new.sqlite
+python -m probe.real_runtime path/to/new.sqlite path/to/workspace tests/fixtures/temperature_growth.csv
 ```

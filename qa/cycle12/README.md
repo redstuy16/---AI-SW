@@ -22,7 +22,7 @@
 ## 선택적 사용
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 새 연구에서 기존 모델·예산을 설정하고 다음과 같은 지원 질문을 입력한다.
@@ -36,8 +36,8 @@
 현재 결과에서 **질문 변경 → 저장 → 다시 계산**으로 승인한 기간/단위/기준 변경을 적용한다. 원래 질문과 이전 결과는 이력으로 남고 새 현재 결론은 실제 검증 후에만 표시한다. **자료 갱신**도 같은 변경 영향 경계를 사용한다. 자료 상세와 선택값은 펼칠 때 로컬에서 읽는다. 정책상 선택 대조가 없으면 미수행·한계를 표시하며 필수 대조의 부재는 결과 반영을 막는다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.qualified_replay PATH_TO_EXPORTED_REPLAY_MANIFEST
-.\.venv\Scripts\python.exe -m htrsa.preflight status
+.\.venv\Scripts\python.exe -m probe.qualified_replay PATH_TO_EXPORTED_REPLAY_MANIFEST
+.\.venv\Scripts\python.exe -m probe.preflight status
 ```
 
 `PATH_TO_EXPORTED_REPLAY_MANIFEST`는 실제 내보낸 `replay_manifest.json` 경로로 바꾼다. replay는 저장한 원본·정책·승인 수정본·수치를 다시 검사하며 네트워크로 누락 파일을 대체하지 않는다. 이전 검증기 버전의 기후 결과는 현재성 검사 후 필요한 경우 로컬 재검증한다. 일반 연구·기존 보고서·과거 파일은 유지한다.

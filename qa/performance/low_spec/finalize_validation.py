@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'qa'))
 from flow_offline_validation import save
 import qa_day1 as qa
-from htrsa.preflight import _source_fingerprint, environment_status, record_qa_validation
+from probe.preflight import _source_fingerprint, environment_status, record_qa_validation
 
 FOLDER = Path(__file__).resolve().parent
 
@@ -51,7 +51,7 @@ def main():
     value.update(recorded_at=datetime.now().astimezone().isoformat(), source_fingerprint=source,
         source_fingerprint_status='현재 소스와 CORE·오프라인 검증·마지막 성능 측정 일치',
         core_gate={'status':'PASS', 'passed':core['passed_count'], 'skipped':False,
-            'command':'.venv\\Scripts\\python.exe -X utf8 -m htrsa.preflight validate-core',
+            'command':'.venv\\Scripts\\python.exe -X utf8 -m probe.preflight validate-core',
             'marker':'not live_api and not live_search and not docker_integration and not os_secret_integration'},
         final_regression={'status':'PASS', 'passed':845, 'skipped':5, 'deselected':2, 'seconds':807.97,
             'result_path':'build/flow-final-regression-v3.xml',
@@ -80,7 +80,7 @@ def main():
         text=text.replace('실행 중; 완료 결과 추가 예정', f"최종 전체 오프라인 CORE {core['passed_count']} passed, skipped=false")
         if f.parent.name=='research_flow':
             text=text.replace('| 파일 52개, hash·참조·secret canary 이상 0 |', f'| canary·clean 합계 {total}개 파일, hash·참조·secret 이상 0 |')
-            text=text.replace('기존 363개 화면 검사는', 'CORE 명령 `.venv\\Scripts\\python.exe -X utf8 -m htrsa.preflight validate-core`는 최종 '+str(core['passed_count'])+' passed, skipped=false였다. 기존 363개 화면 검사는')
+            text=text.replace('기존 363개 화면 검사는', 'CORE 명령 `.venv\\Scripts\\python.exe -X utf8 -m probe.preflight validate-core`는 최종 '+str(core['passed_count'])+' passed, skipped=false였다. 기존 363개 화면 검사는')
         ready=', '.join(k+'='+str(env[k]).lower() for k in ('demo_ready','release_ready','product_release_ready'))
         extra=f"\n\n최종 gate: **{ready}**. Docker는 {env['docker']['status']}, Live LLM은 {env['provider']['status']}, Live Search는 {env['search']['status']}다. OS 기본 브라우저·Windows 키 실환경은 NOT_VALIDATED, Skills/F3-P Live 효능은 NOT_VALIDATED다. 최종 기본 release {release['file_count']}개, F3-P canary·clean {total}개 파일을 검증했고 hash·누락·참조·secret canary 이상은 0이었다. 최종 후처리 명령은 `.venv\\Scripts\\python.exe -X utf8 qa/performance/low_spec/finalize_validation.py`다.\n"
         text=text.split('\n\n최종 gate:')[0]+extra

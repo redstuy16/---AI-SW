@@ -1,5 +1,6 @@
 """기존 동작과 검증 경계를 확인하는 회귀 테스트."""
 from __future__ import annotations
+from probe.report_publication import report_root
 
 import asyncio
 import hashlib
@@ -9,18 +10,18 @@ from pathlib import Path
 import httpx
 import pytest
 
-from htrsa.dashboard import (DashboardReadAPI, project_artifacts, project_environment,
+from probe.dashboard import (DashboardReadAPI, project_artifacts, project_environment,
                              project_evidence, project_experiments, project_hypotheses,
                              project_overview, project_report, project_timeline,
                              project_tree, project_usage)
-from htrsa.database import initialize
-from htrsa.demo import run_demo_a, run_demo_b
-from htrsa.preflight import search_status_from_error
-from htrsa.release import ReleaseExportError, export_release
-from htrsa.scholarly import ScholarlyError, ScholarlyHTTPClient
-from htrsa.schemas import ResearchContract, new_id
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.database import initialize
+from probe.demo import run_demo_a, run_demo_b
+from probe.preflight import search_status_from_error
+from probe.release import ReleaseExportError, export_release
+from probe.scholarly import ScholarlyError, ScholarlyHTTPClient
+from probe.schemas import ResearchContract, new_id
+from probe.service import StateService
+from probe.storage import Workspace
 
 
 @pytest.fixture(scope="module")
@@ -143,7 +144,7 @@ def test_report_viewer_escapes_html(demo_a):
     root, result = demo_a
     db = initialize(root / "state.sqlite")
     state = StateService(db, Workspace(root / "workspace"))
-    path = state.workspace.path(result["research_id"], "research_output/final_report.md")
+    path = (report_root(state, result["research_id"]) / "final_report.md")
     original = path.read_bytes()
     path.write_bytes(original + b"\n<script>alert(1)</script>\n")
     report = project_report(state, result["research_id"])
@@ -210,9 +211,9 @@ def test_release_secret_exclusion(demo_a, tmp_path):
     root, result = demo_a
     db = initialize(root / "state.sqlite")
     state = StateService(db, Workspace(root / "workspace"))
-    secret = state.workspace.path(result["research_id"], "research_output/.env")
+    secret = (report_root(state, result["research_id"]) / ".env")
     secret.write_text("OPENAI_API_KEY=should-not-export\n", encoding="utf-8")
-    with pytest.raises(ReleaseExportError, match="secret"):
+    with pytest.raises(ReleaseExportError, match="undeclared files"):
         export_release(state, result["research_id"], tmp_path / "secret-release")
     secret.unlink()
     db.close()
@@ -223,7 +224,7 @@ def test_clean_reproduction_instructions(demo_a, tmp_path):
     db = initialize(root / "state.sqlite")
     exported = export_release(StateService(db, Workspace(root / "workspace")), result["research_id"], tmp_path / "release")
     instructions = (tmp_path / "release" / "REPRODUCE.md").read_text(encoding="utf-8")
-    assert "validate-core" in instructions and "htrsa.demo" in instructions
+    assert "validate-core" in instructions and "probe.demo" in instructions
     db.close()
 
 

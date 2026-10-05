@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
-from htrsa.preflight import VALIDATION_DIR, _source_fingerprint, environment_status
+from probe.preflight import VALIDATION_DIR, _source_fingerprint, environment_status
 
 ROOT = Path(__file__).resolve().parents[1]
 QA = ROOT / "build/cycle5-qa-final-source"
@@ -69,7 +69,7 @@ def main():
 
 ## 구현한 동작과 파일
 
-- `src/htrsa/cycle5.py`: SourceSemanticRecord·TransformationLineage·GoalWitness, 소유자 검토·수정본·계약/계획 바인딩·CLI. 물리량/단위/기준을 분리한다. CSV 키별 변환을 실제 재계산하며 Worker 자기 승인과 의미 변경을 거절한다.
+- `src/probe/cycle5.py`: SourceSemanticRecord·TransformationLineage·GoalWitness, 소유자 검토·수정본·계약/계획 바인딩·CLI. 물리량/단위/기준을 분리한다. CSV 키별 변환을 실제 재계산하며 Worker 자기 승인과 의미 변경을 거절한다.
 - `service.py`, `research_slice.py`, `scientific_verifier.py`, `agent_schemas.py`: 기존 정본 반영·의존 관계·provenance·의무에 네 검사를 연결한다. 변경된 의미 수정본·질문·계약·파일·Worker 계획은 기존 PASS를 재사용하지 못한다.
 - `verification_repair.py`: F3-P가 켜진 소유자 요청에 한해 고정 계약의 PENDING TRANSFORM_CSV를 최대 2회 복구한다. 새 파일·감사 수정본·전체 계보 재검산을 사용한다. 원자료·질문·물리량·기준·추정 대상은 수정하지 않으며 과학 정본 반영을 자동 승인하지 않는다.
 - `agent_runtime.py`, `autonomous_loop.py`, `control_runtime.py`, `context_compiler.py`: 검토 전 분석 대기, 검토 이벤트 검증 후 기존 커서 재개, stale 결과 차단. F3-P 원문은 보존하고 중복 문맥만 참조 해시로 줄여 기존 문맥 상한을 유지했다.
@@ -91,7 +91,7 @@ def main():
 ```powershell
 .\\.venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp build/pytest-cycle5-baseline --junitxml build/cycle5-baseline.xml
 .\\.venv\\Scripts\\python.exe qa/qa_day1.py --output-dir build/cycle5-qa-final-source
-.\\.venv\\Scripts\\python.exe -m htrsa.preflight validate-core
+.\\.venv\\Scripts\\python.exe -m probe.preflight validate-core
 .\\.venv\\Scripts\\python.exe qa/reliability_lab.py --enable --cycle5 --output-dir build/cycle5-lab-final
 .\\.venv\\Scripts\\python.exe qa/cycle5_recovery_probe.py --all
 .\\.venv\\Scripts\\python.exe qa/cycle5_export_probe.py
@@ -118,9 +118,9 @@ def main():
 .\\.venv\\Scripts\\python.exe qa/productization_native_probe.py
 .\\.venv\\Scripts\\python.exe qa/productization_wsf_probe.py
 .\\.venv\\Scripts\\python.exe qa/local_browser_launcher_probe.py
-.\\.venv\\Scripts\\python.exe -m htrsa.preflight validate-docker
-.\\.venv\\Scripts\\python.exe -m htrsa.preflight smoke-api
-.\\.venv\\Scripts\\python.exe -m htrsa.preflight validate-search
+.\\.venv\\Scripts\\python.exe -m probe.preflight validate-docker
+.\\.venv\\Scripts\\python.exe -m probe.preflight smoke-api
+.\\.venv\\Scripts\\python.exe -m probe.preflight validate-search
 ```
 
 core 명령은 QA wrapper 안에서 실제 실행했다. 전체 pytest의 XML/log와 실제 임시 경로는 [최종 실행 JSON](cycle5_final_validation.json)의 `current`에 있다. QA Day1 helper의 역사적 baseline 숫자는 사용하지 않았다.

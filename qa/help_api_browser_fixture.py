@@ -8,13 +8,13 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "qa"), str(ROOT / "tests")]
 
 import httpx
-from htrsa.api import APIResponse
-from htrsa.control_plane import Connection, Credentials, Defaults, ModelProfile
-from htrsa.product_policy import resolve_catalog_profile
-from htrsa.provider_checks import check_model
-from htrsa.resource_policy import save_preferences
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
-from htrsa.control_runtime import RoutedGateway, execute
+from probe.api import APIResponse
+from probe.control_plane import Connection, Credentials, Defaults, ModelProfile
+from probe.product_policy import resolve_catalog_profile
+from probe.provider_checks import check_model
+from probe.resource_policy import save_preferences
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.control_runtime import RoutedGateway, execute
 from tutorial_browser_fixture import TutorialAPI, MemoryStore
 from test_multi_provider import document
 from test_autonomous_loop import MANAGER

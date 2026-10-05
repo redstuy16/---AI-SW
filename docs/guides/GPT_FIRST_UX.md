@@ -4,7 +4,7 @@
 
 ```powershell
 # 저장소 폴더에서 실행
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace --port 8766
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace --port 8766
 ```
 
 기본 브라우저에서 자동으로 인증한 뒤 연구 목록을 연다. 터미널 코드를 입력하지 않는다. `--port`를 생략하면 OS 배정 포트를 사용한다. 자동 열기 실패나 `--no-browser`에서는 출력된 1회용 링크를 클릭한다. 기존 DB·작업 공간을 사용하려면 두 경로를 해당 경로로 바꾼다. CSV는 작업 공간의 `inputs` 아래에 둔다.

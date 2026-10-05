@@ -4,7 +4,7 @@ const {spawn}=require('child_process'),fs=require('fs'),path=require('path');
 (async()=>{
  const samples=[];const root=process.cwd();
  for(let i=0;i<3;i++){
-  const t=performance.now();const child=spawn(path.join(root,'.venv/Scripts/python.exe'),['-X','utf8','-m','htrsa.workbench','build/flow-opt-fixture/state.sqlite','build/flow-opt-fixture/workspace','--no-browser'],{cwd:root,windowsHide:true});
+  const t=performance.now();const child=spawn(path.join(root,'.venv/Scripts/python.exe'),['-X','utf8','-m','probe.workbench','build/flow-opt-fixture/state.sqlite','build/flow-opt-fixture/workspace','--no-browser'],{cwd:root,windowsHide:true});
   let buffer='',resolve;const url=new Promise(r=>resolve=r);child.stdout.on('data',d=>{buffer+=d;const m=buffer.match(/http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]+/);if(m)resolve(m[0]);});
   let browser;try{
    browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage();let requests=0,bytes=0;const pending=[];

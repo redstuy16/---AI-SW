@@ -4,6 +4,7 @@
 
 | 작업 | 구현 보고서 | 최종 결과 |
 |---|---|---|
+| 고교 과학 루프·AI 검색·시각 보고서 | [보고서](science_inquiry_20261005.md) | [JSON](science_inquiry_20261005.json) |
 | 연구 기본 화면·실시간 진행 v8 | [보고서](research_base_v8_report.md) | [JSON](research_base_v8_report.json) |
 | 검색 자동화·근거 부족 시 설계 이어가기 | [보고서](search_automatic_settings_report.md) | [JSON](search_automatic_settings_report.json) |
 | 무료 검색·공개 원문·연구 완료율 개선 | [보고서](free_search_implementation.md) | [JSON](free_search_implementation.json) |

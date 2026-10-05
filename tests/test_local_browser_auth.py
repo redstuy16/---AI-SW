@@ -8,10 +8,10 @@ import threading
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlError
-from htrsa.local_auth import contains_auth_material
-from htrsa.release import _secret_free
-from htrsa.workbench import OwnerSession, WorkbenchAPI, create_server, open_browser, redact
+from probe.control_plane import ControlError
+from probe.local_auth import contains_auth_material
+from probe.release import _secret_free
+from probe.workbench import OwnerSession, WorkbenchAPI, create_server, open_browser, redact
 
 
 class ProtectedString(str):
@@ -56,7 +56,7 @@ def local(tmp_path):
 
 
 def exchange(local, **extra):
-    headers = {"Origin": local["origin"], "X-H-TRSA-Bootstrap": "1", **extra}
+    headers = {"Origin": local["origin"], "X-Probe-Bootstrap": "1", **extra}
     return local["client"].post("/auth/bootstrap", json={"ticket": local["ticket"]}, headers=headers)
 
 
@@ -92,7 +92,7 @@ def test_auth_boot_03_expired_rejected(local):
 @pytest.mark.parametrize("kind", ["random", "empty", "unicode", "object", "long"])
 def test_auth_boot_04_invalid_ticket(local, kind):
     value = {"random": secrets.token_urlsafe(32), "empty": "", "unicode": "가" * 43, "object": {}, "long": "x" * 1000}[kind]
-    response = local["client"].post("/auth/bootstrap", json={"ticket": value}, headers={"Origin": local["origin"], "X-H-TRSA-Bootstrap": "1"})
+    response = local["client"].post("/auth/bootstrap", json={"ticket": value}, headers={"Origin": local["origin"], "X-Probe-Bootstrap": "1"})
     assert response.status_code == 403
     assert not local["session"].used
 
@@ -117,7 +117,7 @@ def test_auth_boot_07_unexpected_origin(local, origin):
 
 
 def test_auth_boot_08_cross_origin_cors(local):
-    response = local["client"].options("/auth/bootstrap", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "x-h-trsa-bootstrap"})
+    response = local["client"].options("/auth/bootstrap", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "x-probe-bootstrap"})
     assert response.status_code == 403
     assert not any(k.startswith("access-control-allow") for k in response.headers)
 
@@ -205,7 +205,7 @@ def test_bootstrap_custom_header_missing_origin_and_rate_limit(local):
     assert local["client"].post("/auth/bootstrap", json={"ticket": local["ticket"]}).status_code == 403
     assert local["client"].post("/auth/bootstrap", json={"ticket": local["ticket"]}, headers={"Origin": local["origin"]}).status_code == 403
     for _ in range(5):
-        assert local["client"].post("/auth/bootstrap", json={"ticket": secrets.token_urlsafe(32)}, headers={"Origin": local["origin"], "X-H-TRSA-Bootstrap": "1"}).status_code == 403
+        assert local["client"].post("/auth/bootstrap", json={"ticket": secrets.token_urlsafe(32)}, headers={"Origin": local["origin"], "X-Probe-Bootstrap": "1"}).status_code == 403
     assert exchange(local).status_code == 429
     local["clock"][0] = 61
     assert exchange(local).status_code == 410
@@ -216,7 +216,7 @@ def test_auth_query_fragment_and_redirect_never_accepted(local):
         response = local["client"].get(path)
         assert response.status_code in (400, 405)
         assert local["ticket"] not in response.text
-    response = local["client"].post("/auth/bootstrap", json={"ticket": local["ticket"], "redirect": "https://evil.example"}, headers={"Origin": local["origin"], "X-H-TRSA-Bootstrap": "1"})
+    response = local["client"].post("/auth/bootstrap", json={"ticket": local["ticket"], "redirect": "https://evil.example"}, headers={"Origin": local["origin"], "X-Probe-Bootstrap": "1"})
     assert response.status_code == 403 and "location" not in response.headers
 
 

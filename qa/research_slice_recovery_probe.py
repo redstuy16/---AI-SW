@@ -13,16 +13,16 @@ from uuid import uuid4
 
 from f3p_eval import prepare, MODELS, ROOT
 from f3p_recovery_probe import BOUNDARIES as REPAIR_BOUNDARIES
-from htrsa.agent_runtime import AgentRuntime
-from htrsa.database import initialize, to_json
-from htrsa.final_report import export_final_report
-from htrsa.providers.fake import FakeProvider
-from htrsa.recovery import FaultInjector, InjectedCrash
-from htrsa.research_slice import ResearchSlice
-from htrsa.research_slice_schemas import ResearchSliceConfig
-from htrsa.release import export_release
-from htrsa.service import StateService
-from htrsa.storage import Workspace, sha256_file
+from probe.agent_runtime import AgentRuntime
+from probe.database import initialize, to_json
+from probe.final_report import export_final_report
+from probe.providers.fake import FakeProvider
+from probe.recovery import FaultInjector, InjectedCrash
+from probe.research_slice import ResearchSlice
+from probe.research_slice_schemas import ResearchSliceConfig
+from probe.release import export_release
+from probe.service import StateService
+from probe.storage import Workspace, sha256_file
 
 ON = ResearchSliceConfig(claim_evidence_provenance=True, verifier_dependency_catalog=True)
 BOUNDARIES = REPAIR_BOUNDARIES + ["AFTER_CLAIM_STAGE", "DURING_CLAIM_COMMIT", "AFTER_PARENT_INVALIDATION", "DURING_CLAIM_REVALIDATION", "AFTER_EXPORT"]
@@ -100,7 +100,7 @@ def probe(phase, folder, boundary, policy="V2"):
         asyncio.run(runtime.resume(rid))
     snapshot = state.research_slice.snapshot(rid)
     current = [c for c in snapshot["claims"] if c["current"]]
-    expected_state = "NEEDS_REVALIDATION" if boundary == "AFTER_PARENT_INVALIDATION" else "INCONCLUSIVE" if boundary == "DURING_CLAIM_REVALIDATION" else "SUPPORTED"
+    expected_state = "NEEDS_REVALIDATION" if boundary == "AFTER_PARENT_INVALIDATION" else "INCONCLUSIVE"
     # 같은 무효화 요청의 재실행으로 수정본을 중복 생성하지 않는다.
     before = len(snapshot["claims"])
     if boundary == "AFTER_PARENT_INVALIDATION":

@@ -28,6 +28,8 @@
 ## 개발과 기록
 
 - [CLI·검증 명령](development/CLI.md)
+- [보고서 일괄 재작성](development/REPORT_MAINTENANCE.md)
+- [Probe 개선 적용 결과](development/PROBE_IMPROVEMENT_RESULTS.md)
 - [실행 구조](development/ARCHITECTURE.md)
 - [기능 동결 범위](development/FEATURE_FREEZE.md)
 - [폴더 구성·경로 변경](development/REPOSITORY.md)

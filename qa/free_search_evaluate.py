@@ -8,14 +8,14 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / 'src'), str(ROOT / 'tests')]
 import pytest
-from htrsa.workbench import WorkbenchAPI
-from htrsa.scholarly import NormalizedSource
-from htrsa.literature import screen_source
-from htrsa.final_report import _validate_literature_provenance
-from htrsa.research_report import report_record
-from htrsa.report_pdf import render_pdf
-from htrsa.preflight import _source_fingerprint
-from htrsa.schemas import utc_now
+from probe.workbench import WorkbenchAPI
+from probe.scholarly import NormalizedSource
+from probe.literature import screen_source
+from probe.final_report import _validate_literature_provenance
+from probe.research_report import report_record
+from probe.report_pdf import render_pdf
+from probe.preflight import _source_fingerprint
+from probe.schemas import utc_now
 from test_free_search_recovery import free_rig, TITLE, ABSTRACT, QUESTION
 from test_research_report_flow import run
 

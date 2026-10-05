@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
 const {chromium}=require('./browser_runtime.cjs');
 const root=path.resolve(__dirname,'..'),fixture=JSON.parse(fs.readFileSync(path.join(root,'build/product_visual_fixture.json'),'utf8'));
 const output=path.join(root,'output/playwright/product');fs.mkdirSync(output,{recursive:true});
-const server=spawn(path.join(root,'.venv/Scripts/python.exe'),['-m','htrsa.workbench',fixture.database,fixture.workspace,'--mode','DEMO','--no-browser','--port','8881'],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],env:{...process.env,LOCALAPPDATA:path.join(root,'build/qa-key-disabled')}});
+const server=spawn(path.join(root,'.venv/Scripts/python.exe'),['-m','probe.workbench',fixture.database,fixture.workspace,'--mode','DEMO','--no-browser','--port','8881'],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],env:{...process.env,LOCALAPPDATA:path.join(root,'build/qa-key-disabled')}});
 let browser;
 async function main(){
  const handoff=await new Promise((resolve,reject)=>{let text='';server.stdout.on('data',b=>{text+=b.toString();const m=text.match(/(http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]{43})/);if(m)resolve(m[1]);});server.on('exit',c=>reject(Error('서버 종료 '+c)));setTimeout(()=>reject(Error('서버 시작 시간 초과')),15000).unref();});

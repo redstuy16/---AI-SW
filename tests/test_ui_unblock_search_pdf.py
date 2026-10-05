@@ -1,15 +1,16 @@
+from probe.report_publication import report_root
 """실제 HTTP 재시도 상한과 PDF의 위조·오래된 상태 차단을 검사한다."""
 import asyncio
 from decimal import Decimal
 import io
 import pytest
 import httpx
-from htrsa.control_plane import ControlError,Defaults
-from htrsa.report_pdf import render_pdf
-from htrsa.release import ReleaseExportError,export_release
-from htrsa.search_policy import PolicyProvider,qualified_literature,run_search
-from htrsa.scholarly import CrossrefProvider,ScholarlyHTTPClient,SearchRequest
-from htrsa.database import to_json
+from probe.control_plane import ControlError,Defaults
+from probe.report_pdf import render_pdf
+from probe.release import ReleaseExportError,export_release
+from probe.search_policy import PolicyProvider,qualified_literature,run_search
+from probe.scholarly import CrossrefProvider,ScholarlyHTTPClient,SearchRequest
+from probe.database import to_json
 from test_workbench import app,configure
 from test_qa_day1 import qa_demo_a
 
@@ -72,7 +73,7 @@ def test_pdf_structure_unicode_deterministic_and_hash(qa_demo_a):
     reader=PdfReader(io.BytesIO(first["data"]))
     text="\n".join(p.extract_text() for p in reader.pages)
     assert "한계와 미해결 문제" in text and "SHA-256" in text
-    sources=__import__("json").loads(state.workspace.path(result["research_id"],"research_output/evidence/sources.json").read_text(encoding="utf-8"))
+    sources=__import__("json").loads((report_root(state, result["research_id"]) / "evidence/sources.json").read_text(encoding="utf-8"))
     links=[str(item.get_object().get("/A",{}).get("/URI","")) for page in reader.pages for item in page.get("/Annots",[])]
     assert all(source["url"] in text and source["url"] in links for source in sources if source.get("url","").startswith("https://"))
 
@@ -80,7 +81,7 @@ def test_pdf_structure_unicode_deterministic_and_hash(qa_demo_a):
 @pytest.mark.parametrize("fault",["tamper","stale","secret"])
 def test_pdf_current_integrity_gate(qa_demo_a,fault):
     _,result,state=qa_demo_a;rid=result["research_id"]
-    path=state.workspace.path(rid,"research_output/final_report.md")
+    path=(report_root(state, rid) / "final_report.md")
     original=path.read_bytes();version=state.state_version(rid)
     try:
         if fault=="stale":
@@ -99,7 +100,7 @@ def test_pdf_current_integrity_gate(qa_demo_a,fault):
 
 
 def test_schema2_export_includes_real_pdf_and_manifest_hash(qa_demo_a,tmp_path):
-    from htrsa.control_plane import ControlStore
+    from probe.control_plane import ControlStore
     from hashlib import sha256
     _,result,state=qa_demo_a;rid=result["research_id"]
     store=ControlStore(state._db)

@@ -8,10 +8,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests"), str(ROOT / "qa")]
 
 from tutorial_browser_fixture import TutorialAPI, MemoryStore
-from htrsa.workbench import OwnerSession, create_server
-from htrsa.control_plane import Credentials
-from htrsa.final_report import export_final_report
-from htrsa.resource_policy import save_preferences
+from probe.workbench import OwnerSession, create_server
+from probe.control_plane import Credentials
+from probe.final_report import export_final_report
+from probe.resource_policy import save_preferences
 from test_research_design import execute
 
 

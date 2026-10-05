@@ -5,10 +5,10 @@ from decimal import Decimal
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlError, Defaults
-from htrsa.product_policy import completion_budget
-from htrsa.search_policy import PolicyProvider, decision, search_allocation
-from htrsa.scholarly import CrossrefProvider, ScholarlyHTTPClient, SearchRequest
+from probe.control_plane import ControlError, Defaults
+from probe.product_policy import completion_budget
+from probe.search_policy import PolicyProvider, decision, search_allocation
+from probe.scholarly import CrossrefProvider, ScholarlyHTTPClient, SearchRequest
 from test_workbench import app, configure
 from test_product_ux import paid
 
@@ -44,8 +44,8 @@ def test_search_permission_remains_separate(egress, consent, query, status):
 
 
 def test_new_search_defaults_derive_question_but_preserve_explicit_and_legacy_denials(app):
-    from htrsa.control_plane import NewResearch
-    from htrsa.search_policy import public_query
+    from probe.control_plane import NewResearch
+    from probe.search_policy import public_query
     configure(app)
     value = app.prepare({'beginner_mode': True, 'question': '탄산음료의 온도에 따른 CO₂ 방출 속도', 'model_profile_id': 'm', 'ai_report_enabled': True})
     assert value['public_search_consent'] is True and value['public_search_query'] == ''
@@ -59,7 +59,7 @@ def test_new_search_defaults_derive_question_but_preserve_explicit_and_legacy_de
 
 
 def test_auto_query_private_text_is_checked_before_truncation(app):
-    from htrsa.research_report import search_suggestion
+    from probe.research_report import search_suggestion
     configure(app)
     value = app.prepare({'beginner_mode': True, 'question': '탄산음료 온도 ' * 60 + ' secret@example.com', 'model_profile_id': 'm', 'ai_report_enabled': True})
     assert decision(value) == 'SEARCH_PRIVATE_QUERY_BLOCKED'
@@ -93,7 +93,7 @@ def test_automatic_query_and_permission_need_no_user_input_or_extra_model_call(a
     assert created['snapshot']['public_search_consent'] is True
     assert created['snapshot']['public_search_query'] == ''
     app.command(rid, 'start', {'expected_version':0,'idempotency_key':'automatic-search-start'})
-    from htrsa.control_runtime import execute
+    from probe.control_runtime import execute
     asyncio.run(execute(app.database,app.workspace,rid,provider_factory=gateway))
     assert app.store.run(rid)['status'] == 'COMPLETED'
     assert calls == ['manager','report'] and len(searches)==5

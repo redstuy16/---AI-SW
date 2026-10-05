@@ -10,8 +10,8 @@ def write(p,v):
  s=json.dumps(v,ensure_ascii=False,indent=2)+'\n';s.encode('utf-8',errors='strict');p.parent.mkdir(parents=True,exist_ok=True);p.write_text(s,encoding='utf-8')
 def summary(values):return {'median':statistics.median(values),'min':min(values),'max':max(values),'samples':values}
 def prepare(folder):
- from htrsa.demo import run_demo_a,run_demo_b
- from htrsa.workbench import WorkbenchAPI
+ from probe.demo import run_demo_a,run_demo_b
+ from probe.workbench import WorkbenchAPI
  folder.mkdir(parents=True,exist_ok=True)
  a=run_demo_a(folder/'state.sqlite',folder/'workspace')
  b=run_demo_b(folder/'state.sqlite',folder/'workspace')
@@ -38,7 +38,7 @@ def prepare(folder):
  write(folder/'fixture.json',{'small':a['research_id'],'large':large,'demo_a':a['validation'],'demo_b':b['validation'],'synthetic':True,'note':'복제한 합성 대형 행은 INVALIDATED/ROLLED_BACK. 과학 정답/출시 통과 자료로 쓰지 않음'})
 def cold(folder,idle):
  started=time.perf_counter()
- from htrsa.workbench import WorkbenchAPI
+ from probe.workbench import WorkbenchAPI
  api=WorkbenchAPI(folder/'cold.sqlite',folder/'workspace',launch=False)
  ready=(time.perf_counter()-started)*1000
  import psutil
@@ -57,12 +57,12 @@ def demo(folder,label):
    samples.append((sum(q.memory_info().rss for q in [p,*children] if q.is_running())/1024**2,p.cpu_percent(),1+len(children)))
  t=Thread(target=sample,daemon=True);t.start()
  try:
-  from htrsa.demo import run_demo_a,run_demo_b
+  from probe.demo import run_demo_a,run_demo_b
   start=time.perf_counter();v=(run_demo_a if label=='A' else run_demo_b)(folder/'demo.sqlite',folder/'workspace');elapsed=(time.perf_counter()-start)*1000
  finally:stop.set();t.join()
  return {'duration_ms':elapsed,'passed':v['validation']['passed'],'peak_ram_mb':max(x[0] for x in samples),'peak_cpu_percent':max(x[1] for x in samples),'peak_process_count':max(x[2] for x in samples)}
 def loads(fixture,folder):
- from htrsa.workbench import WorkbenchAPI
+ from probe.workbench import WorkbenchAPI
  shutil.copytree(fixture/'workspace',folder/'workspace');shutil.copy2(fixture/'state.sqlite',folder/'state.sqlite')
  api=WorkbenchAPI(folder/'state.sqlite',folder/'workspace',launch=False)
  ids=json.loads((fixture/'fixture.json').read_text(encoding='utf-8'))
@@ -95,7 +95,7 @@ def main():
    if label=='cold' and i==0:command+=['--idle','60']
    c=subprocess.run(command,capture_output=True,text=True,encoding='utf-8',timeout=180);assert c.returncode==0,c.stderr;values[label].append(json.loads(c.stdout))
  result=loads(args.fixture,folder/'loads')
- from htrsa.preflight import _source_fingerprint
+ from probe.preflight import _source_fingerprint
  result.update(source_fingerprint=_source_fingerprint(),environment={'python':sys.version.split()[0],'os':os.name,'logical_cpu':os.cpu_count()},cold=values['cold'],demos={'A':values['A'],'B':values['B']},local_model_metrics='NOT_APPLICABLE',gpu_metrics='NOT_APPLICABLE',browser_ready_ms='MEASURE_SEPARATELY',scope='별도 Python 본체+분석 자식 프로세스 · CPU는 한 코어 100% · 브라우저 RAM 제외',fixture=str(args.fixture.relative_to(ROOT)))
  write(args.output,result);print(json.dumps({'output':str(args.output.resolve().relative_to(ROOT)),'cold_median_ms':statistics.median(v['cold_start_ms'] for v in values['cold']),'list_repeat_ms':result['research_list_repeat_ms'],'counts':result['fixture_counts']}))
 if __name__=='__main__':main()

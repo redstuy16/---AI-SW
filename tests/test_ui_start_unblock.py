@@ -3,9 +3,9 @@ import asyncio
 import json
 import httpx
 import pytest
-from htrsa.control_plane import ROLES
-from htrsa.control_runtime import RoutedGateway, execute
-from htrsa.provider_checks import check_model
+from probe.control_plane import ROLES
+from probe.control_runtime import RoutedGateway, execute
+from probe.provider_checks import check_model
 from test_autonomous_loop import MANAGER
 from test_workbench import app, configure
 
@@ -52,7 +52,7 @@ def test_start_02_fixed_smoke_without_question_files_or_research(app):
     def respond(request):
         calls.append(json.loads(request.content))
         return httpx.Response(200, json={"id":"offline-smoke", "model":"manual-id",
-            "choices":[{"message":{"role":"assistant","content":"HTRSA_OK"},"finish_reason":"stop"}],
+            "choices":[{"message":{"role":"assistant","content":"PROBE_OK"},"finish_reason":"stop"}],
             "usage":{"prompt_tokens":5,"completion_tokens":5}})
     value = asyncio.run(check_model(app, "m", {"mode":"text","consent":True},
         client_factory=lambda *_: httpx.AsyncClient(transport=httpx.MockTransport(respond))))
@@ -84,8 +84,8 @@ def test_evidence_policy_runs_planning_before_honest_stop(app,required,reason):
 
 
 def test_advanced_reasoning_sent_without_sampling_or_breadth_override(app):
-    from htrsa.providers.normalized import CapabilityEvidence
-    from htrsa.schemas import utc_now
+    from probe.providers.normalized import CapabilityEvidence
+    from probe.schemas import utc_now
     configure(app)
     profile=app.store.config("model","m")
     profile.update(reasoning_levels=["LOW","HIGH"],reasoning_policy="LOW",temperature=0,

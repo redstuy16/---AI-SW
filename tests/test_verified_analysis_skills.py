@@ -5,24 +5,25 @@ import asyncio
 from datetime import datetime, timedelta, timezone
 from hashlib import sha256
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
 from pydantic import ValidationError
 from scipy import stats
 
-from htrsa.analysis_skills import SkillApplicabilityError, SkillPlan, SkillRequest, execute_skill
-from htrsa.agent_runtime import AgentRuntime
-from htrsa.agent_policy import validate_contract
-from htrsa.database import initialize
-from htrsa.final_report import export_final_report
-from htrsa.providers.fake import FakeProvider
-from htrsa.recovery import FaultInjector, InjectedCrash
-from htrsa.real_tools import VerifiedAnalysisSkillTool
-from htrsa.release import export_release, ReleaseExportError
-from htrsa.schemas import ContextRef, RefType, ResearchContract
-from htrsa.service import ContractViolationError, StateConflictError, StateService
-from htrsa.storage import Workspace
+from probe.analysis_skills import SkillApplicabilityError, SkillPlan, SkillRequest, execute_skill
+from probe.agent_runtime import AgentRuntime
+from probe.agent_policy import validate_contract
+from probe.database import initialize
+from probe.final_report import export_final_report
+from probe.providers.fake import FakeProvider
+from probe.recovery import FaultInjector, InjectedCrash
+from probe.real_tools import VerifiedAnalysisSkillTool
+from probe.release import export_release, ReleaseExportError
+from probe.schemas import ContextRef, RefType, ResearchContract
+from probe.service import ContractViolationError, StateConflictError, StateService
+from probe.storage import Workspace
 
 
 HASH = "a" * 64
@@ -221,8 +222,7 @@ def test_enabled_agent_skill_verification_resume_report_and_release(tmp_path, cr
     assert db.execute("SELECT COUNT(*) FROM tool_calls WHERE tool_name='analysis.skill'").fetchone()[0] == 1
     state.stop_research(result["research_id"], "BUDGET_EXHAUSTED")
     exported_report = export_final_report(state, result["research_id"])
-    assert "pearson_correlation" in (tmp_path / "workspace" / result["research_id"] /
-                                     "research_output" / "final_report.md").read_text(encoding="utf-8")
+    assert "pearson_correlation" in Path(exported_report["report"]).read_text(encoding="utf-8")
     release = export_release(state, result["research_id"], tmp_path / "release")
     assert release["files"] and exported_report["report"]
     assert len([item for item in release["files"] if item["path"].startswith("analysis_artifacts/")]) == 3

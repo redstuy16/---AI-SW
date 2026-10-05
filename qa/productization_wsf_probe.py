@@ -5,21 +5,21 @@ import shutil
 import subprocess
 from uuid import uuid4
 
-from htrsa.preflight import _source_fingerprint
-from htrsa.sandbox import clean_environment
+from probe.preflight import _source_fingerprint
+from probe.sandbox import clean_environment
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    original = (ROOT / "H-TRSA.wsf").read_text(encoding="utf-8", errors="strict")
+    original = (ROOT / "Probe.wsf").read_text(encoding="utf-8", errors="strict")
     root_line = "root = files.GetParentFolderName(WScript.ScriptFullName)"
     dispatch_line = "shell.Run command, 0, False"
     assert original.count(root_line) == original.count(dispatch_line) == 1
     # 사용자 자료를 열지 않고 실제 구문과 가상환경 경로까지만 확인한다.
-    code = original.replace(root_line, 'root = "' + str(ROOT).replace('"', '""') + '"').replace(dispatch_line, 'WScript.Echo "HTRSA_WSF_PREPARED"')
-    code = "\n".join('  WScript.Echo "HTRSA_WSF_MISSING_RUNTIME"' if line.strip().startswith("MsgBox ") else line for line in code.splitlines()) + "\n"
+    code = original.replace(root_line, 'root = "' + str(ROOT).replace('"', '""') + '"').replace(dispatch_line, 'WScript.Echo "PROBE_WSF_PREPARED"')
+    code = "\n".join('  WScript.Echo "PROBE_WSF_MISSING_RUNTIME"' if line.strip().startswith("MsgBox ") else line for line in code.splitlines()) + "\n"
     data = code.encode("utf-8", errors="strict")
     folder = ROOT / "build/productization-wsf" / uuid4().hex
     folder.mkdir(parents=True)
@@ -33,7 +33,7 @@ def main():
                                       env=clean_environment(), timeout=10, check=False)
         except (OSError, subprocess.TimeoutExpired):
             pass
-    passed = bool(observed and observed.returncode == 0 and b"HTRSA_WSF_PREPARED" in observed.stdout)
+    passed = bool(observed and observed.returncode == 0 and b"PROBE_WSF_PREPARED" in observed.stdout)
     result = {"passed": passed, "status": "VALIDATED" if passed else "NOT_VALIDATED", "source_fingerprint": _source_fingerprint(),
               "script_host_present": bool(executable), "actual_script_host": True if observed else False,
               "exit_code": observed.returncode if observed else None, "production_launch_dispatched": False,

@@ -5,7 +5,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from htrsa.tutorial_guide import render_tutorial_guide
+from probe.tutorial_guide import render_tutorial_guide
 
 
 def main():

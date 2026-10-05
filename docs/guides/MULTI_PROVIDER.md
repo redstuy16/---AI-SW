@@ -6,14 +6,14 @@
 
 ```powershell
 # 저장소 폴더에서 실행
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 설정 → **API 연결**에서 제공사·API 키를 함께 저장한 뒤 **모델**에서 사용할 모델과 연결을 선택한다. 상단 5개와 접힌 제공사별 더보기를 제공하며 추천·속도·성능 배지는 표시하지 않는다. 직접 모델 ID와 역할별 구성은 **고급 설정**, 실제 기능 검사는 **API 검사**에 있다. 저장은 모델 API를 호출하지 않으며 검사에는 비용 동의가 필요하다. 기존 Agent CLI의 OpenAI Agents SDK 경로도 유지한다.
 
 새 연결의 키 참조는 연결별로 자동 생성한다. 아래 표의 환경변수는 기존 기본 연결에서 계속 사용할 수 있다. 공식 주소는 자동 설정하고 고급 항목에 숨긴다. 로컬 서버는 loopback 주소로 시작하지만 외부 전달 차단이 검증된 것으로 표시하지 않는다.
 
-2026-10-02 공식 문서 확인 모델은 `src/htrsa/product_catalog.json`에 기록했다. Gemini 3.8 Flash 단가는 확인되지 않아 자동으로 입력하지 않는다. 확인한 가격을 등록하기 전 유료 요청은 기존 `PRICE_REQUIRED` 기준으로 차단한다.
+2026-10-02 공식 문서 확인 모델은 `src/probe/product_catalog.json`에 기록했다. Gemini 3.8 Flash 단가는 확인되지 않아 자동으로 입력하지 않는다. 확인한 가격을 등록하기 전 유료 요청은 기존 `PRICE_REQUIRED` 기준으로 차단한다.
 
 | 제공사 | 기본 프로토콜 | 자격 증명 참조 |
 | --- | --- | --- |

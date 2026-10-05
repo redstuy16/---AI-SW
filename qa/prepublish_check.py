@@ -144,7 +144,7 @@ def inspect(root, *, max_bytes=10_000_000):
                 findings.extend(scan_text('history/' + relative, blob.stdout.decode('utf-8')))
             except UnicodeError:
                 pass
-    required = ['src/htrsa/workbench.py', 'tests/test_workbench.py', 'docs/README.md', 'db/migrations/001_initial.sql', '.env.example', 'qa/fixtures/f3p_eval_config.json', '.github/workflows/offline.yml']
+    required = ['src/probe/workbench.py', 'tests/test_workbench.py', 'docs/README.md', 'db/migrations/001_initial.sql', '.env.example', 'qa/fixtures/f3p_eval_config.json', '.github/workflows/offline.yml']
     ignored_required = [p for p in required if spec.match_file(p)]
     for p in ignored_required:
         findings.append({'path': p, 'kind': 'IGNORED_REQUIRED_SOURCE', 'severity': 'P1'})
@@ -185,7 +185,7 @@ def main():
         report = args.output.parent / name
         if report.is_file():
             value[field] = json.loads(report.read_text(encoding='utf-8', errors='strict'))
-    from htrsa.preflight import ROOT as runtime_root, _source_fingerprint
+    from probe.preflight import ROOT as runtime_root, _source_fingerprint
     record = {}
     marker = args.root.resolve() / 'build/validation/core.json'
     if args.root.resolve() == runtime_root.resolve() and marker.is_file():

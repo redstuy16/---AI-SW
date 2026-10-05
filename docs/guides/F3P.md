@@ -7,14 +7,14 @@ DB migration과 dependency 추가는 없다.
 ## 실행
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build/f3p-live.sqlite build/f3p-live-workspace input.csv --verified-analysis-skills --verification-repair --goal "문서화된 관측 단위와 sampling 조건에 따라 분석하라"
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build/f3p-live.sqlite build/f3p-live-workspace --resume RESEARCH_ID --verified-analysis-skills --verification-repair
+.\.venv\Scripts\python.exe -m probe.agent_cli build/f3p-live.sqlite build/f3p-live-workspace input.csv --verified-analysis-skills --verification-repair --goal "문서화된 관측 단위와 sampling 조건에 따라 분석하라"
+.\.venv\Scripts\python.exe -m probe.agent_cli build/f3p-live.sqlite build/f3p-live-workspace --resume RESEARCH_ID --verified-analysis-skills --verification-repair
 ```
 
 실제 Agent 실행에는 기존 provider 자격 증명과 model 설정이 필요하다.
 Skills를 끈 legacy 경로에도 `--verification-repair`만 적용할 수 있다.
-환경 변수는 `HTRSA_VERIFICATION_REPAIR_ENABLED=1`이다.
-Ridge 검사는 별도로 `--ridge-arithmetic-check` 또는 `HTRSA_F3P_RIDGE_ARITHMETIC_CHECK=1`을 설정한다.
+환경 변수는 `PROBE_VERIFICATION_REPAIR_ENABLED=1`이다.
+Ridge 검사는 별도로 `--ridge-arithmetic-check` 또는 `PROBE_F3P_RIDGE_ARITHMETIC_CHECK=1`을 설정한다.
 Ridge 플래그는 Repair ON을 요구하며, Repair ON만으로 자동 활성화되지 않는다.
 Resume에서는 저장된 플래그와 정책 버전을 일치시켜야 한다. 누락·불일치 시 오류로 중단하며 최신 정책으로 대체하지 않는다.
 

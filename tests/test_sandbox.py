@@ -1,13 +1,14 @@
 import csv
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from htrsa.real_tools import ToolRegistry
-from htrsa.sandbox import PythonSandboxTool, docker_available
-from htrsa.schemas import ContextRef, RefType
+from probe.real_tools import ToolRegistry
+from probe.sandbox import PythonSandboxTool, docker_available
+from probe.schemas import ContextRef, RefType
 
 from test_real_tools import real_context, imported, request
 
@@ -33,7 +34,7 @@ def sandbox_setup(real_context):
 
 def test_docker_unavailable_fails_closed(real_context, monkeypatch):
     registry, _, research_id, contract, task_id = sandbox_setup(real_context)
-    monkeypatch.setattr("htrsa.sandbox.docker_available", lambda: False)
+    monkeypatch.setattr("probe.sandbox.docker_available", lambda: False)
     result = registry.dispatch(contract.contract_id, request(research_id, task_id, "python.execute", {"code": "print(1+1)"}))
     assert not result.ok
     assert result.error.startswith("DOCKER_UNAVAILABLE")
@@ -64,20 +65,26 @@ def test_sandbox_rejects_untrusted_artifact_id(real_context):
 
 def test_timeout_error_mapping_and_container_cleanup(real_context, monkeypatch):
     registry, _, research_id, contract, task_id = sandbox_setup(real_context)
-    monkeypatch.setattr("htrsa.sandbox.docker_available", lambda: True)
+    monkeypatch.setattr("probe.sandbox.docker_available", lambda: True)
     calls = []
 
+    original = subprocess.Popen
+    children = []
+    def calculation(command, **kwargs):
+        child = original([sys.executable, '-B', '-X', 'utf8', '-c', 'import time; time.sleep(60)'], **kwargs)
+        children.append(child)
+        return child
     def fake_run(command, **kwargs):
         calls.append(command)
-        if command[1] == "run":
-            raise subprocess.TimeoutExpired(command, 1)
         return subprocess.CompletedProcess(command, 0, "", "")
 
-    monkeypatch.setattr("htrsa.sandbox.subprocess.run", fake_run)
+    monkeypatch.setattr("probe.sandbox_io.subprocess.Popen", calculation)
+    monkeypatch.setattr("probe.sandbox.subprocess.run", fake_run)
     result = registry.dispatch(contract.contract_id, request(research_id, task_id, "python.execute",
         {"code": "while True: pass", "timeout_sec": 1}))
     assert not result.ok and result.error.startswith("TIMEOUT")
     assert any(command[1:3] == ["rm", "-f"] for command in calls)
+    assert children and all(child.poll() is not None for child in children)
 
 
 @pytest.mark.docker_integration

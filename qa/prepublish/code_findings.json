@@ -11,7 +11,7 @@
   "confirmed_new_p0_p1": 0,
   "reviewed": [
     {
-      "path": "src/htrsa/agent_policy.py",
+      "path": "src/probe/agent_policy.py",
       "line": 52,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -19,7 +19,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 17,
       "rule": "B404",
       "tool_severity": "LOW",
@@ -27,7 +27,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 306,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -35,7 +35,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 397,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -43,7 +43,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 402,
       "rule": "B607",
       "tool_severity": "LOW",
@@ -51,7 +51,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 402,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -59,7 +59,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 499,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -67,7 +67,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 507,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -75,7 +75,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 536,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -83,7 +83,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/control_plane.py",
+      "path": "src/probe/control_plane.py",
       "line": 538,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -91,7 +91,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/database.py",
+      "path": "src/probe/database.py",
       "line": 75,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -99,7 +99,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/database.py",
+      "path": "src/probe/database.py",
       "line": 75,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -107,7 +107,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/database.py",
+      "path": "src/probe/database.py",
       "line": 76,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -115,7 +115,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/live_api_test.py",
+      "path": "src/probe/live_api_test.py",
       "line": 286,
       "rule": "B105",
       "tool_severity": "LOW",
@@ -123,7 +123,7 @@
       "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
     },
     {
-      "path": "src/htrsa/live_api_test.py",
+      "path": "src/probe/live_api_test.py",
       "line": 597,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -131,7 +131,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/live_api_test.py",
+      "path": "src/probe/live_api_test.py",
       "line": 602,
       "rule": "B105",
       "tool_severity": "LOW",
@@ -139,7 +139,7 @@
       "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
     },
     {
-      "path": "src/htrsa/live_api_test.py",
+      "path": "src/probe/live_api_test.py",
       "line": 692,
       "rule": "B105",
       "tool_severity": "LOW",
@@ -147,7 +147,7 @@
       "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
     },
     {
-      "path": "src/htrsa/preflight.py",
+      "path": "src/probe/preflight.py",
       "line": 11,
       "rule": "B404",
       "tool_severity": "LOW",
@@ -155,7 +155,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/preflight.py",
+      "path": "src/probe/preflight.py",
       "line": 27,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -163,7 +163,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/release.py",
+      "path": "src/probe/release.py",
       "line": 15,
       "rule": "B404",
       "tool_severity": "LOW",
@@ -171,7 +171,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/release.py",
+      "path": "src/probe/release.py",
       "line": 81,
       "rule": "B607",
       "tool_severity": "LOW",
@@ -179,7 +179,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/release.py",
+      "path": "src/probe/release.py",
       "line": 81,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -187,7 +187,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/research_slice.py",
+      "path": "src/probe/research_slice.py",
       "line": 445,
       "rule": "B110",
       "tool_severity": "LOW",
@@ -195,7 +195,7 @@
       "reason": "유효성 검사 실패 후 새 claim 검증 또는 브라우저 실패의 기존 대체 인증 경로로 진행한다. 성공을 임의 확정하지 않는다."
     },
     {
-      "path": "src/htrsa/research_slice.py",
+      "path": "src/probe/research_slice.py",
       "line": 462,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -203,7 +203,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/resource_policy.py",
+      "path": "src/probe/resource_policy.py",
       "line": 53,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -211,7 +211,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/resource_policy.py",
+      "path": "src/probe/resource_policy.py",
       "line": 56,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -219,7 +219,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 8,
       "rule": "B404",
       "tool_severity": "LOW",
@@ -227,7 +227,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 34,
       "rule": "B607",
       "tool_severity": "LOW",
@@ -235,7 +235,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 34,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -243,7 +243,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 72,
       "rule": "B108",
       "tool_severity": "MEDIUM",
@@ -251,7 +251,7 @@
       "reason": "호스트 임시 파일이 아니라 용량 제한·nosuid를 지정한 Docker 컨테이너 tmpfs이다. Docker 격리는 미검증이다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 105,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -259,7 +259,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 109,
       "rule": "B607",
       "tool_severity": "LOW",
@@ -267,7 +267,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/sandbox.py",
+      "path": "src/probe/sandbox.py",
       "line": 109,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -275,7 +275,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/schemas.py",
+      "path": "src/probe/schemas.py",
       "line": 138,
       "rule": "B105",
       "tool_severity": "LOW",
@@ -283,7 +283,7 @@
       "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
     },
     {
-      "path": "src/htrsa/service.py",
+      "path": "src/probe/service.py",
       "line": 273,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -291,7 +291,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/service.py",
+      "path": "src/probe/service.py",
       "line": 582,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -299,7 +299,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/service.py",
+      "path": "src/probe/service.py",
       "line": 625,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -307,7 +307,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/service.py",
+      "path": "src/probe/service.py",
       "line": 1112,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -315,7 +315,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/service.py",
+      "path": "src/probe/service.py",
       "line": 1224,
       "rule": "B608",
       "tool_severity": "MEDIUM",
@@ -323,7 +323,7 @@
       "reason": "SQL 구조·테이블·열은 고정 코드에서 선택하고 외부 값은 바인딩한다. migration SQL은 신뢰한 저장소 파일이다."
     },
     {
-      "path": "src/htrsa/workbench.py",
+      "path": "src/probe/workbench.py",
       "line": 16,
       "rule": "B404",
       "tool_severity": "LOW",
@@ -331,7 +331,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/workbench.py",
+      "path": "src/probe/workbench.py",
       "line": 51,
       "rule": "B105",
       "tool_severity": "LOW",
@@ -339,7 +339,7 @@
       "reason": "검증 상태·토큰 추정 방식·과금 수치의 상수이며 비밀번호 값이 아니다."
     },
     {
-      "path": "src/htrsa/workbench.py",
+      "path": "src/probe/workbench.py",
       "line": 339,
       "rule": "B603",
       "tool_severity": "LOW",
@@ -347,7 +347,7 @@
       "reason": "셸 문자열에 사용자 입력을 합치지 않는 argv 호출이다. PATH·Docker·OS 실행 파일 신뢰는 로컬 환경 전제이며 실환경 검증과 구분한다."
     },
     {
-      "path": "src/htrsa/workbench.py",
+      "path": "src/probe/workbench.py",
       "line": 926,
       "rule": "B110",
       "tool_severity": "LOW",

@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from time import perf_counter
 
-from htrsa.analysis_skills import SkillApplicabilityError, SkillPlan, execute_skill
+from probe.analysis_skills import SkillApplicabilityError, SkillPlan, execute_skill
 
 
 ROOT = Path(__file__).resolve().parents[1]

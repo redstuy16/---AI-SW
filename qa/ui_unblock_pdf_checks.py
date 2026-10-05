@@ -8,12 +8,12 @@ from hashlib import sha256
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/"src"),str(ROOT/"qa")]
-from htrsa.database import initialize
-from htrsa.demo import run_demo_a,run_demo_b
-from htrsa.final_report import export_final_report
-from htrsa.report_pdf import render_pdf
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.database import initialize
+from probe.demo import run_demo_a,run_demo_b
+from probe.final_report import export_final_report
+from probe.report_pdf import render_pdf
+from probe.service import StateService
+from probe.storage import Workspace
 from f3p_eval import prepare
 from pypdf import PdfReader
 import pypdfium2 as pdfium
@@ -37,7 +37,7 @@ def main():
     assert asyncio.run(healthy.resume(healthy_prepared["research_id"]))["verdict"]=="PASS"
     state3.stop_research(healthy_prepared["research_id"],"INSUFFICIENT_DATA")
     export_final_report(state3,healthy_prepared["research_id"])
-    from htrsa.report_ux import friendly_report
+    from probe.report_ux import friendly_report
     assert friendly_report(state3,healthy_prepared["research_id"])["support_level"]=="INCONCLUSIVE"
     records.insert(1,("inconclusive",state3,healthy_prepared["research_id"]))
     db2,state2,agent,prepared,_=prepare(folder/"repaired")

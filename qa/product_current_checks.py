@@ -7,7 +7,7 @@ import sys
 import time
 
 import qa_day1 as qa
-from htrsa.preflight import _source_fingerprint, _validation_marker
+from probe.preflight import _source_fingerprint, _validation_marker
 
 
 def main():

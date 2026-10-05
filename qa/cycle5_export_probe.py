@@ -7,10 +7,10 @@ from pathlib import Path
 from uuid import uuid4
 
 from cycle5_fixtures import GOLD_ROWS, completed_science, science_fixture, transform_fixture
-from htrsa.final_report import export_final_report, ReportValidationError
-from htrsa.preflight import _source_fingerprint
-from htrsa.release import export_release, ReleaseExportError
-from htrsa.verification_repair import repair_transformation
+from probe.final_report import export_final_report, ReportValidationError
+from probe.preflight import _source_fingerprint
+from probe.release import export_release, ReleaseExportError
+from probe.verification_repair import repair_transformation
 
 ROOT = Path(__file__).resolve().parents[1]
 

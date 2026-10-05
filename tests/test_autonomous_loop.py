@@ -7,18 +7,20 @@ from pathlib import Path
 
 import pytest
 
-from htrsa.agent_runtime import RuntimeFailure
-from htrsa.autonomous_loop import AutonomousResearchLoop, LoopConfig
-from htrsa.context_compiler import ContextCompiler
-from htrsa.database import initialize
-from htrsa.providers.fake import FakeProvider
-from htrsa.schemas import ContextPolicy, ContextRef, RefType, ResearchContract, new_id
-from htrsa.service import ContractViolationError, StateService
-from htrsa.storage import Workspace
-from htrsa.research_tree import build_research_tree
+from probe.agent_runtime import RuntimeFailure
+from probe.autonomous_loop import AutonomousResearchLoop, LoopConfig
+from probe.context_compiler import ContextCompiler
+from probe.database import initialize
+from probe.providers.fake import FakeProvider
+from probe.schemas import ContextPolicy, ContextRef, RefType, ResearchContract, new_id
+from probe.service import ContractViolationError, StateService
+from probe.storage import Workspace
+from probe.research_tree import build_research_tree
 
 
-CSV = Path(__file__).parent / "fixtures" / "monotonic_nonlinear.csv"
+# 완료·복구 시나리오는 두 사전 지정 방법 모두 유의한 기존 자료를 사용한다.
+# 극단값 자료의 비유의 결과는 신뢰성 경계 테스트에서 별도로 확인한다.
+CSV = Path(__file__).parent / "fixtures" / "temperature_growth.csv"
 MODELS = {"manager": "fake-manager", "experiment_coordinator": "fake-coordinator",
           "analysis_planner_worker": "fake-worker", "verification_coordinator": "fake-critic"}
 MANAGER = {"decision_type": "INITIAL_PLAN", "research_question": "How are temperature and growth associated?",
@@ -31,7 +33,7 @@ SCORE = {"plausibility": 0.8, "testability": 0.9, "data_availability": 1,
 def shortlist():
     return {"hypotheses": [
         {"statement": "Temperature and growth have a monotonic association.",
-         "rationale": "Both columns are measured in the same sample.", "score": SCORE},
+         "rationale": "Both columns are measured in the same sample.", "score": SCORE, "criterion": {"method": "pearson_correlation", "confirmatory_methods": ["spearman_correlation"], "variables": {"x": "temperature", "y": "growth"}, "expected_direction": "positive", "alpha": 0.05}},
         {"statement": "Temperature and growth are unrelated.",
          "rationale": "Null alternative is testable.",
          "score": {**SCORE, "information_value": 0.2}},

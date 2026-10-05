@@ -10,12 +10,12 @@ async function main(){
  let stderr='';child.stderr.on('data',v=>stderr+=v);
  const url=await new Promise((resolve,reject)=>{let out='';child.stdout.on('data',v=>{out+=v;const match=out.match(/http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]{43}/);if(match)resolve(match[0]);});child.on('exit',()=>reject(Error(stderr.slice(-2000))));setTimeout(()=>reject(Error('검사 서버 준비 시간 초과')),30000).unref();});
  const profile=path.join(folder,'chrome-profile');fs.mkdirSync(path.join(profile,'Default'),{recursive:true});
- const prefs=JSON.stringify({partition:{default_zoom_level:{x:process.env.HTRSA_DESIGN_ZOOM==='1'?Math.log(2)/Math.log(1.2):0}}});Buffer.from(prefs,'utf8').toString('utf8');fs.writeFileSync(path.join(profile,'Default/Preferences'),prefs);
+ const prefs=JSON.stringify({partition:{default_zoom_level:{x:process.env.PROBE_DESIGN_ZOOM==='1'?Math.log(2)/Math.log(1.2):0}}});Buffer.from(prefs,'utf8').toString('utf8');fs.writeFileSync(path.join(profile,'Default/Preferences'),prefs);
  context=await chromium.launchPersistentContext(profile,{channel:'chrome',headless:false,viewport:{width:1280,height:900}});
  const page=await context.newPage();page.setDefaultTimeout(20000);const origin=new URL(url).origin;
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(origin+'/')&&!r.url().startsWith('blob:'))errors.push('외부 요청');});
  await page.goto(url);await page.locator('#list-new').waitFor();const before=await page.evaluate(()=>api('/qa/state'));
- if(process.env.HTRSA_DESIGN_ZOOM==='1')check('Chrome 자체 200% 확대',await page.evaluate(()=>devicePixelRatio===2&&innerWidth===640));
+ if(process.env.PROBE_DESIGN_ZOOM==='1')check('Chrome 자체 200% 확대',await page.evaluate(()=>devicePixelRatio===2&&innerWidth===640));
  await page.locator('#list-new').click();await page.locator('#research-input-mode').waitFor();
  check('간단 입력에는 기존 주제·질문과 선택 버튼만 추가',await page.locator('[name=title]').count()===1&&await page.locator('[name=question]').count()===1&&!await page.locator('#design-body').isVisible());
  await page.locator('[name=title]').fill('상세 입력 검사');await page.locator('[name=question]').fill('자료를 살펴본다');
@@ -46,7 +46,7 @@ async function main(){
  await page.locator('[name=question]').fill('1981~2000년과 2001~2020년의 전 지구 연간 기온 편차 평균 비교');await page.locator('[data-section="2"]>summary').click();await page.locator('[data-field=period]').fill('1990~2000, 2001~2010');await page.locator('#design-review').click();await page.waitForFunction(()=>document.querySelector('#design-feedback').textContent.includes('기간이 다릅니다'));
  check('기간 충돌은 한 항목으로 안내',await page.locator('#design-feedback').innerText().then(s=>s.includes('기간이 다릅니다')));
  await page.locator('#design-feedback').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(shots,'05-clarification.png')});
- const width=process.env.HTRSA_DESIGN_ZOOM==='1'?640:390;if(process.env.HTRSA_DESIGN_ZOOM!=='1')await page.setViewportSize({width,height:900});
+ const width=process.env.PROBE_DESIGN_ZOOM==='1'?640:390;if(process.env.PROBE_DESIGN_ZOOM!=='1')await page.setViewportSize({width,height:900});
  check('좁은 화면 상세 카드 가로 넘침 없음',await page.locator('#editor').evaluate(n=>n.scrollWidth<=n.clientWidth+2)&&await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));
  check('버튼 클릭 높이 44px 이상',await page.locator('[name=design_mode][value=detailed]').evaluate(n=>n.closest('label').getBoundingClientRect().height>=44));
  await page.locator('[name=design_mode][value=simple]').focus();await page.keyboard.press('Space');check('Space로 일반 설정 선택하고 초점 유지',await page.locator('[name=design_mode][value=simple]').evaluate(n=>n===document.activeElement&&n.checked));
@@ -67,6 +67,6 @@ async function main(){
  await page.evaluate(async()=>{app.tab='report';await render();});await page.locator('.research-design-summary').waitFor();check('보고서 탭의 조건 요약은 한 번만 표시',await page.locator('.research-design-summary').count()===1);
  const after=await page.evaluate(()=>api('/qa/state'));check('편집·제안·조회에서 추가 연구·Agent·원장·유료 검사 생성 없음',before.researches===after.researches&&before.agents===after.agents&&after.requests===0&&after.checks===0);
  check('브라우저 오류·외부 요청 없음',errors.length===0);
- const result={passed:true,checks,errors,paid_calls:0,execution:'REAL_CHROME_OFFLINE_REAL_TOOLS_FAKE_AGENT',folder:path.relative(root,folder),screenshots:path.relative(root,shots),zoom:process.env.HTRSA_DESIGN_ZOOM==='1'?200:100};save(result);console.log(JSON.stringify({passed:true,checks:checks.length,paid_calls:0,folder:result.folder}));
+ const result={passed:true,checks,errors,paid_calls:0,execution:'REAL_CHROME_OFFLINE_REAL_TOOLS_FAKE_AGENT',folder:path.relative(root,folder),screenshots:path.relative(root,shots),zoom:process.env.PROBE_DESIGN_ZOOM==='1'?200:100};save(result);console.log(JSON.stringify({passed:true,checks:checks.length,paid_calls:0,folder:result.folder}));
 }
 main().catch(e=>{save({passed:false,checks,errors,error:e.message});console.error(e.stack);process.exitCode=1;}).finally(async()=>{if(context)await context.close();child?.kill();});

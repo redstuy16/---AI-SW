@@ -8,18 +8,18 @@ import json
 
 import pytest
 
-from htrsa.agent_runtime import AgentRuntime, RuntimeFailure
-from htrsa.agent_schemas import AnalysisPlan
-from htrsa.analysis_skills import execute_skill
-from htrsa.database import initialize, to_json
-from htrsa.final_report import export_final_report
-from htrsa.providers.fake import FakeProvider
-from htrsa.recovery import FaultInjector, InjectedCrash
-from htrsa.release import export_release, ReleaseExportError
-from htrsa.schemas import VerificationCheck, Verdict
-from htrsa.service import StateService, StateConflictError
-from htrsa.storage import Workspace, ArtifactIntegrityError, DatasetIntegrityError
-from htrsa.verification_repair import (
+from probe.agent_runtime import AgentRuntime, RuntimeFailure
+from probe.agent_schemas import AnalysisPlan
+from probe.analysis_skills import execute_skill
+from probe.database import initialize, to_json
+from probe.final_report import export_final_report
+from probe.providers.fake import FakeProvider
+from probe.recovery import FaultInjector, InjectedCrash
+from probe.release import export_release, ReleaseExportError
+from probe.schemas import VerificationCheck, Verdict
+from probe.service import StateService, StateConflictError
+from probe.storage import Workspace, ArtifactIntegrityError, DatasetIntegrityError
+from probe.verification_repair import (
     VerificationFailureEvidence, frozen_plan_matches, qualify_association,
     ridge_arithmetic_check, REPAIR_POLICY_VERSION)
 from test_verified_analysis_skills import (
@@ -199,13 +199,23 @@ def test_faulty_checker_does_not_corrupt_correct_analysis(tmp_path):
 
 
 def test_shared_wrong_result_is_blocked_independently(tmp_path, monkeypatch):
-    import htrsa.real_tools as real_tools
-    execute = real_tools.execute_skill
-    def wrong(*args):
-        result = execute(*args)
-        result.metrics["estimate"] = 0.125
+    from probe.analysis_process import run_tool
+    def wrong(state, contract, request, expires):
+        result = run_tool(state, contract, request, expires)
+        if request.tool_name != 'analysis.skill' or not result.ok:
+            return result
+        result.result["metrics"]["estimate"] = 0.125
+        for record in state.computed_artifacts:
+            if record['kind'] != 'SKILL_RESULT':
+                continue
+            path = state.workspace.path(request.research_id, record['relative'])
+            document = json.loads(path.read_text(encoding='utf-8'))
+            document['result']['metrics']['estimate'] = 0.125
+            data = to_json(document).encode('utf-8', errors='strict')
+            path.write_bytes(data)
+            record['sha256'] = sha256(data).hexdigest()
         return result
-    monkeypatch.setattr(real_tools, "execute_skill", wrong)
+    monkeypatch.setattr('probe.analysis_process.run_tool', wrong)
     db, state, agent, prepared = prepare_case(tmp_path)
     with pytest.raises(RuntimeFailure, match="REPAIR_INCOMPLETE"):
         asyncio.run(agent.resume(prepared["research_id"]))
@@ -298,9 +308,9 @@ def test_repaired_export_keeps_integrity_and_secret_gates(tmp_path, fault):
         with db:
             db.execute("UPDATE research_runs SET state_version=state_version+1 WHERE research_id=?", (rid,))
     elif fault == "unresolved_ref":
-        state.workspace.path(rid, "research_output/final_report.md").write_bytes(b"{{NUM:unresolved}}")
+        (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'final_report.md').write_bytes(b"{{NUM:unresolved}}")
     else:
-        state.workspace.path(rid, "research_output/credentials.env").write_bytes(b"OPENAI_API_KEY=sk-f3p-canary-0123456789")
+        (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'credentials.env').write_bytes(b"OPENAI_API_KEY=sk-f3p-canary-0123456789")
     with pytest.raises((ReleaseExportError, ArtifactIntegrityError)):
         export_release(state, rid, tmp_path / "bad-release")
     assert db.execute("SELECT COUNT(*) FROM state_events").fetchone()[0] == 1
@@ -392,7 +402,7 @@ def test_reopened_state_service_enforces_recorded_f3p_policy(tmp_path):
         db.execute("DELETE FROM runtime_steps WHERE step_key=?", (f"worker_plan:{pending['contract_id']}",))
     verification = reopened.verify(pending["mutation_id"])
     assert "F3P_FROZEN_PLAN_AVAILABLE" in verification.errors
-    from htrsa.service import VerificationRequiredError
+    from probe.service import VerificationRequiredError
     with pytest.raises(VerificationRequiredError):
         reopened.commit(pending["mutation_id"])
     assert db.execute("SELECT COUNT(*) FROM state_events").fetchone()[0] == 0
@@ -400,7 +410,7 @@ def test_reopened_state_service_enforces_recorded_f3p_policy(tmp_path):
 
 
 def test_known_price_reserves_proposal_plus_full_recovery(tmp_path):
-    from htrsa.agent_policy import Price, PricingRegistry
+    from probe.agent_policy import Price, PricingRegistry
     db, state, agent, prepared = prepare_case(tmp_path)
     corrupt_first_output(state)
     agent.pricing = PricingRegistry({("fake", model): Price(1, 1, 1, 0.2) for model in MODELS.values()})
@@ -416,7 +426,7 @@ def test_known_price_reserves_proposal_plus_full_recovery(tmp_path):
 
 @pytest.mark.parametrize("crash", [False, True])
 def test_autonomous_loop_repair_keeps_critic_and_followup_flow(tmp_path, crash):
-    from htrsa.autonomous_loop import AutonomousResearchLoop
+    from probe.autonomous_loop import AutonomousResearchLoop
     from test_autonomous_loop import CSV, MODELS as LOOP_MODELS, fake_replies
     db = initialize(tmp_path / "state.sqlite")
     state = StateService(db, Workspace(tmp_path / "workspace"))
@@ -452,7 +462,7 @@ def test_autonomous_loop_repair_keeps_critic_and_followup_flow(tmp_path, crash):
 
 
 def test_known_proposal_cost_is_not_reserved_twice(tmp_path):
-    from htrsa.agent_policy import Price, PricingRegistry
+    from probe.agent_policy import Price, PricingRegistry
     db, state, agent, prepared = prepare_case(tmp_path)
     corrupt_first_output(state)
     agent.pricing = PricingRegistry({("fake", model): Price(10000, 10000, 10000, 0.2) for model in MODELS.values()})

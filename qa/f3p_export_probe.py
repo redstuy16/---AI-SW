@@ -9,11 +9,11 @@ from pathlib import Path
 import re
 from uuid import uuid4
 
-from htrsa.dashboard import DashboardReadAPI
-from htrsa.database import initialize
-from htrsa.release import export_release
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.dashboard import DashboardReadAPI
+from probe.database import initialize
+from probe.release import export_release
+from probe.service import StateService
+from probe.storage import Workspace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,7 +27,7 @@ def main():
     canary = "sk-f3p-env-canary-0123456789abcdef"
     if not args.clean:
         os.environ["OPENAI_API_KEY"] = canary
-        os.environ["HTRSA_MANAGER_MODEL"] = "f3p-canary-model"
+        os.environ["PROBE_MANAGER_MODEL"] = "f3p-canary-model"
     cases = []
     manifests = list(args.evaluation_dir.rglob("release_manifest.json"))
     for name in ("single_repairable", "successful_legacy_repair"):

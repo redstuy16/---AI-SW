@@ -1,7 +1,7 @@
 // 격리된 비용 원장과 실제 Chrome 화면의 갱신·이동을 검사한다.
 const {chromium}=require('./browser_runtime.cjs');
 const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
-const root=path.resolve(__dirname,'..'),folder=path.join(root,'build/cost-display-browser-'+(process.env.HTRSA_COST_MOBILE==='1'?'mobile':'desktop')+'-'+Date.now());
+const root=path.resolve(__dirname,'..'),folder=path.join(root,'build/cost-display-browser-'+(process.env.PROBE_COST_MOBILE==='1'?'mobile':'desktop')+'-'+Date.now());
 const output=path.join(root,'output/playwright/research_cost');
 fs.mkdirSync(folder,{recursive:true});fs.mkdirSync(output,{recursive:true});
 const checks=[],errors=[];let browser,child;
@@ -12,7 +12,7 @@ async function main(){
  child=spawn(path.join(root,'.venv/Scripts/python.exe'),['-B','-X','utf8','qa/research_cost_browser_fixture.py',folder],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],env});
  let stderr='';child.stderr.on('data',v=>stderr+=v);
  const url=await new Promise((resolve,reject)=>{let text='';child.stdout.on('data',v=>{text+=v;const m=text.match(/http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]{43}/);if(m)resolve(m[0]);});child.on('exit',()=>reject(Error(stderr.slice(-1400))));setTimeout(()=>reject(Error('서버 시간 초과')),15000).unref();});
- const origin=new URL(url).origin,mobile=process.env.HTRSA_COST_MOBILE==='1',zoom=process.env.HTRSA_COST_ZOOM==='1';
+ const origin=new URL(url).origin,mobile=process.env.PROBE_COST_MOBILE==='1',zoom=process.env.PROBE_COST_ZOOM==='1';
  let page;
  if(zoom){
   const profile=path.join(folder,'chrome-profile');fs.mkdirSync(path.join(profile,'Default'),{recursive:true});

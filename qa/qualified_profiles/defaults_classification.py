@@ -6,9 +6,9 @@ from uuid import uuid4
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path[:0]=[str(ROOT/"src"),str(ROOT/"tests")]
-from htrsa.control_plane import NewResearch
-from htrsa.product_policy import resolve_effective_settings
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import NewResearch
+from probe.product_policy import resolve_effective_settings
+from probe.workbench import WorkbenchAPI
 from test_workbench import configure
 
 

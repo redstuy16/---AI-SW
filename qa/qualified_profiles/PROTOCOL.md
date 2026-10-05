@@ -18,7 +18,7 @@
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 qa/qualified_profiles/evaluate.py
 .\.venv\Scripts\python.exe -X utf8 qa/qualified_profiles/architecture_benchmark.py --folder build/architecture-pilot --model ACTUAL_FRONTIER_MODEL_ID --budget 0.10
-.\.venv\Scripts\python.exe -X utf8 qa/qualified_profiles/architecture_benchmark.py --folder build/architecture-pilot --htrsa-capture HTRSA_CAPTURE.json --single-agent-capture SINGLE_AGENT_CAPTURE.json
+.\.venv\Scripts\python.exe -X utf8 qa/qualified_profiles/architecture_benchmark.py --folder build/architecture-pilot --probe-capture PROBE_CAPTURE.json --single-agent-capture SINGLE_AGENT_CAPTURE.json
 ```
 
 유료 실행과 외부 제품 계정 조작은 이 준비 명령에 포함하지 않는다.

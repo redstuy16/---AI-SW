@@ -3,7 +3,7 @@
     "cli_present": false,
     "daemon_reachable": false,
     "image_present": false,
-    "image": "htrsa-sandbox:3.13",
+    "image": "probe-sandbox:3.13",
     "image_id": null,
     "isolation_probe_passed": false,
     "available": false,

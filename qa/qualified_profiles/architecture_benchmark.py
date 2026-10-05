@@ -8,9 +8,9 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from htrsa.climate_profile import MEANING, parse_source, independent_comparison, transform_rows
-from htrsa.storage import sha256_bytes
-from htrsa.schemas import utc_now
+from probe.climate_profile import MEANING, parse_source, independent_comparison, transform_rows
+from probe.storage import sha256_bytes
+from probe.schemas import utc_now
 
 SOURCE = Path(__file__).parent / "public/gistemp.txt"
 COMMON = {
@@ -76,7 +76,7 @@ def prepare(folder, *, model, budget):
             "source_semantics":metadata,"conditions":conditions}
         if revision:manifest["source_revision"]="source_revision.txt"
         if draft:manifest["analysis_draft"]="analysis_draft.json"
-        for arm in ["htrsa","strong_single_agent"]:
+        for arm in ["probe","strong_single_agent"]:
             root=folder/"agent_visible"/arm/identity;root.mkdir(parents=True,exist_ok=True)
             source.decode("utf-8",errors="strict").encode("utf-8",errors="strict")
             (root/"source.txt").write_bytes(source)
@@ -141,10 +141,10 @@ def main():
     parser.add_argument("--folder",type=Path,required=True)
     parser.add_argument("--model")
     parser.add_argument("--budget",type=float,default=.10)
-    parser.add_argument("--htrsa-capture",type=Path)
+    parser.add_argument("--probe-capture",type=Path)
     parser.add_argument("--single-agent-capture",type=Path)
     args=parser.parse_args()
-    result=score(args.folder,{"htrsa":args.htrsa_capture,"strong_single_agent":args.single_agent_capture}) if args.htrsa_capture and args.single_agent_capture else prepare(args.folder,model=args.model,budget=args.budget)
+    result=score(args.folder,{"probe":args.probe_capture,"strong_single_agent":args.single_agent_capture}) if args.probe_capture and args.single_agent_capture else prepare(args.folder,model=args.model,budget=args.budget)
     print(json.dumps(result,ensure_ascii=False))
 
 

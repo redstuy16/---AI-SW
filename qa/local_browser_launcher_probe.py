@@ -8,13 +8,13 @@ import threading
 import time
 from uuid import uuid4
 
-from htrsa.preflight import VALIDATION_DIR, _source_fingerprint, native_environment_id
-from htrsa.schemas import utc_now
+from probe.preflight import VALIDATION_DIR, _source_fingerprint, native_environment_id
+from probe.schemas import utc_now
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CODE = '''import sys,webbrowser
-from htrsa.workbench import main,OwnerSession,WorkbenchAPI
+from probe.workbench import main,OwnerSession,WorkbenchAPI
 original_open,original_exchange,original_request=webbrowser.open,OwnerSession.exchange,WorkbenchAPI.request
 def observed_open(*args,**kwargs):
  try: result=original_open(*args,**kwargs)
@@ -32,7 +32,7 @@ def observed_request(self,method,path,body=None):
 webbrowser.open=observed_open
 OwnerSession.exchange=observed_exchange
 WorkbenchAPI.request=observed_request
-sys.argv=['htrsa.workbench',*sys.argv[1:]]
+sys.argv=['probe.workbench',*sys.argv[1:]]
 main()
 '''
 
@@ -49,7 +49,7 @@ def main():
             # 일반 시작 표식만 전달하고 대체 링크는 수집하지 않는다.
             if line.startswith("QA_"):
                 messages.put(line.strip())
-            elif line.startswith("H-TRSA: http://127.0.0.1:"):
+            elif line.startswith("Probe: http://127.0.0.1:"):
                 messages.put(line.strip())
     thread = threading.Thread(target=read, daemon=True)
     thread.start()
@@ -65,7 +65,7 @@ def main():
             opened |= line == "QA_BROWSER_OPEN:True"
             exchanged |= line == "QA_BOOTSTRAP_EXCHANGED"
             listed |= line == "QA_OWNER_LIST_READ"
-            if line.startswith("H-TRSA: "): origin = line.removeprefix("H-TRSA: ")
+            if line.startswith("Probe: "): origin = line.removeprefix("Probe: ")
             if opened and exchanged and listed: break
     finally:
         child.terminate()

@@ -9,11 +9,11 @@ from time import perf_counter
 from uuid import uuid4
 
 from cycle5_fixtures import GOLD_ROWS, transform_fixture
-from htrsa.database import to_json
-from htrsa.preflight import _source_fingerprint
-from htrsa.reliability import truth_aware_metrics
-from htrsa.storage import sha256_file
-from htrsa.verification_repair import repair_transformation
+from probe.database import to_json
+from probe.preflight import _source_fingerprint
+from probe.reliability import truth_aware_metrics
+from probe.storage import sha256_file
+from probe.verification_repair import repair_transformation
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "qa/fixtures/cycle5_gold_fixtures.json"

@@ -10,19 +10,19 @@ from pathlib import Path
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlBoundary, ControlError, Credentials, ModelProfile, PriceRecord, ROLES
-from htrsa.control_runtime import RoutedGateway, boundary, execute
-from htrsa.database import to_json
-from htrsa.final_report import export_final_report
-from htrsa.product_policy import catalog, completion_budget, effective_cap, effective_snapshot, maybe_select_worker, optional_admission
-from htrsa.providers.fake import FakeProvider
-from htrsa.providers.normalized import CapabilityEvidence
-from htrsa.report_ux import friendly_report, markdown_report
-from htrsa.research_settings import apply_pending, projection, queue
-from htrsa.release import export_release, ReleaseExportError, _secret_free, _PROTECTED_VALUES
-from htrsa.schemas import utc_now
-from htrsa.secret_store import WindowsCredentialStore
-from htrsa.storage import sha256_file
+from probe.control_plane import ControlBoundary, ControlError, Credentials, ModelProfile, PriceRecord, ROLES
+from probe.control_runtime import RoutedGateway, boundary, execute
+from probe.database import to_json
+from probe.final_report import export_final_report
+from probe.product_policy import catalog, completion_budget, effective_cap, effective_snapshot, maybe_select_worker, optional_admission
+from probe.providers.fake import FakeProvider
+from probe.providers.normalized import CapabilityEvidence
+from probe.report_ux import friendly_report, markdown_report
+from probe.research_settings import apply_pending, projection, queue
+from probe.release import export_release, ReleaseExportError, _secret_free, _PROTECTED_VALUES
+from probe.schemas import utc_now
+from probe.secret_store import WindowsCredentialStore
+from probe.storage import sha256_file
 from test_workbench import app, configure, create, gateway, invoke
 from test_autonomous_loop import fake_replies
 from test_verification_repair import prepare_case, corrupt_first_output
@@ -239,10 +239,10 @@ def test_normal_runtime_partial_report_no_skipped_critic(app):
 def test_report_fixture_numeric_provenance_and_tamper(tmp_path, kind):
     if kind == "timeseries":
         from test_verified_analysis_skills import backtest_plan, series_rows, MODELS
-        from htrsa.agent_runtime import AgentRuntime
-        from htrsa.database import initialize
-        from htrsa.service import StateService
-        from htrsa.storage import Workspace
+        from probe.agent_runtime import AgentRuntime
+        from probe.database import initialize
+        from probe.service import StateService
+        from probe.storage import Workspace
         source = tmp_path / "series.csv"
         data = "time,y\n" + "".join(row["time"] + "," + row["y"] + "\n" for row in series_rows())
         source.write_bytes(data.encode("utf-8", errors="strict"))
@@ -294,7 +294,7 @@ def test_secret_query_never_saved_or_echoed(app, path):
 
 @pytest.mark.parametrize("case", range(1, 15))
 def test_key_canary_covered_paths(tmp_path, monkeypatch, case):
-    name, value = "HTRSA_QA_KEY", "qa-private-canary-" + str(case) + "-0123456789"
+    name, value = "PROBE_QA_KEY", "qa-private-canary-" + str(case) + "-0123456789"
     credentials = Credentials(tmp_path / "repo", tmp_path / "workspace", tmp_path / "private/secrets.env")
     class MemoryStore:
         available = True
@@ -317,7 +317,7 @@ def test_key_canary_covered_paths(tmp_path, monkeypatch, case):
         assert value in credentials.active_secrets([name])
         assert credentials.metadata(name)["shadowed_saved_key"]
     elif case == 7:
-        from htrsa.sandbox import clean_environment
+        from probe.sandbox import clean_environment
         monkeypatch.setenv(name, value); assert value not in json.dumps(clean_environment())
     elif case in {8, 9, 10}:
         token = _PROTECTED_VALUES.set((value,))
@@ -342,10 +342,10 @@ def test_key_canary_covered_paths(tmp_path, monkeypatch, case):
 @pytest.mark.skipif(os.name != "nt", reason="Windows OS 저장소 검사")
 def test_real_windows_store_isolated_canary_roundtrip():
     import secrets
-    store = WindowsCredentialStore("H-TRSA-QA-" + secrets.token_hex(8))
+    store = WindowsCredentialStore("Probe-QA-" + secrets.token_hex(8))
     value = "OS-canary-not-a-real-key-123456789"
     try:
-        from htrsa.secret_store import SecretStoreUnavailable
+        from probe.secret_store import SecretStoreUnavailable
         try:
             store.write("QA_KEY", value)
         except SecretStoreUnavailable as exc:
@@ -404,8 +404,8 @@ def test_os_read_session_unavailable_falls_back_but_permission_error_blocks(tmp_
     if os.name != "nt":
         return
     import ctypes
-    from htrsa.secret_store import SecretStoreUnavailable
-    store = WindowsCredentialStore("H-TRSA-QA-read-only")
+    from probe.secret_store import SecretStoreUnavailable
+    store = WindowsCredentialStore("Probe-QA-read-only")
     class FailingRead:
         def CredReadW(self, *args): return False
     store.dll = FailingRead()
@@ -419,7 +419,7 @@ def test_os_read_session_unavailable_falls_back_but_permission_error_blocks(tmp_
 
 
 def test_owner_semantic_request_blocks_different_method_before_tools(tmp_path):
-    from htrsa.service import ContractViolationError
+    from probe.service import ContractViolationError
     db, state, agent, prepared = prepare_case(tmp_path)
     rid = prepared["research_id"]
     try:
@@ -453,7 +453,7 @@ def test_windows_junction_secret_path_rejected_before_write(tmp_path):
     if os.name != "nt":
         pytest.skip("Windows junction 검사")
     import subprocess
-    from htrsa.sandbox import clean_environment
+    from probe.sandbox import clean_environment
     target = tmp_path / "target"
     target.mkdir()
     junction = tmp_path / "private-junction"
@@ -465,3 +465,32 @@ def test_windows_junction_secret_path_rejected_before_write(tmp_path):
     with pytest.raises(ControlError, match="SECRET_PATH_UNSAFE"):
         credentials.save("QA_KEY", "junction-canary-0123456789")
     assert not (target / "secrets.env").exists()
+
+
+@pytest.mark.parametrize("changes,expected", [
+    ({}, "LOW"),
+    ({"model_reasoning": "HIGH"}, "HIGH"),
+    ({"model_reasoning": "MAX"}, "MAX"),
+    ({"model_reasoning": "AUTO"}, "AUTO"),
+    ({"role_reasoning": {"manager": "HIGH"}}, "HIGH"),
+])
+def test_roomy_budget_keeps_default_reasoning_low_and_preserves_choices(app, changes, expected):
+    """충분한 예산과 심화 연구 범위가 추론 수준을 자동으로 올리지 않는다."""
+    configure(app)
+    raw = app.store.config("model", "m")
+    raw.update(reasoning_levels=["LOW", "MEDIUM", "HIGH", "MAX"],
+        capabilities={**raw.get("capabilities", {}), "reasoning":
+            CapabilityEvidence(status="SUPPORTED", source="STATIC_ADAPTER_RULE").model_dump(mode="json")})
+    app.store.put("model", "m", ModelProfile.model_validate(raw), 1)
+    snapshot = product(app, settings_version=2, performance_profile="MAX", run_limit_usd="10", **changes)["snapshot"]
+    assert snapshot["models"]["manager"]["reasoning_policy"] == expected
+    assert snapshot["research_depth"] == "focused"
+
+
+def test_unverified_low_reasoning_uses_provider_default(app):
+    configure(app)
+    raw = app.store.config("model", "m")
+    raw.update(reasoning_levels=["LOW", "HIGH"], capabilities={})
+    app.store.put("model", "m", ModelProfile.model_validate(raw), 1)
+    snapshot = product(app, settings_version=2, run_limit_usd="10")["snapshot"]
+    assert snapshot["models"]["manager"]["reasoning_policy"] == "AUTO"

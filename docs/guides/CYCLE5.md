@@ -18,8 +18,8 @@
 
 ```powershell
 $py = '.\.venv\Scripts\python.exe'
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID enable
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID show
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID enable
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID show
 ```
 
 기존 Research Slice 정책이 아직 저장되지 않았으면 provenance·의존 카탈로그를 함께 켠다. 이미 저장된 OFF 정책이나 이미 시작한 분석의 정책은 바꾸지 않는다. 새 연구를 만든다.
@@ -27,10 +27,10 @@ $py = '.\.venv\Scripts\python.exe'
 `show`의 dataset ID·해시·열을 사용하여 JSON을 작성한다. 필드 정의는 `schemas/generated/source_semantic_record.schema.json`, `schemas/generated/goal_witness.schema.json`, `schemas/generated/transformation_lineage.schema.json`에 있다. source JSON의 `proposed_by`는 CLI의 소유자 요청이면 `owner`, 최초 `revision`은 1, `review_status`는 `NEEDS_REVIEW`다.
 
 ```powershell
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID source --json source-column.json
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID review --record-id SM-column --revision 1
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID goal --json goal-witness.json
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID lineage --json transformation.json
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID source --json source-column.json
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID review --record-id SM-column --revision 1
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID goal --json goal-witness.json
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID lineage --json transformation.json
 ```
 
 승인은 새 수정본으로 기록된다. 예를 들어 첫 source 제안 1을 승인하면 승인된 수정본은 2다. lineage의 `semantic_refs`에는 승인된 수정본 번호를 쓴다. `original_question`은 저장된 원질문과 정확히 같아야 한다. Worker `AnalysisPlan.semantic_scope`는 소유자 `GoalWitness.scope`와 같아야 한다. 의미 검토 대기는 기존 작업대의 PAUSED 경계에서 처리하고 검토 후 재개한다.
@@ -42,7 +42,7 @@ HTTP 조회는 `GET /api/research/RESEARCH_ID/cycle5`다. 변경은 기존 Owner
 F3-P v0.3이 별도로 켜져 있고 원래 계약이 명확할 때만 `PENDING` 상태의 `TRANSFORM_CSV` 산출물을 최대 2회 복구한다. 입력 dataset·질문·기준·추정 대상·물리량·범위는 바꾸지 않는다. 의미 변경은 새 AnalysisPlan/검토가 필요하다.
 
 ```powershell
-& $py -m htrsa.cycle5 DB WORKSPACE RESEARCH_ID repair --record-id TL-transform --revision 1
+& $py -m probe.cycle5 DB WORKSPACE RESEARCH_ID repair --record-id TL-transform --revision 1
 ```
 
 복구는 새 파일에 기록하며 기존 입력·산출물 바이트를 보존한다. 복구 후 전체 계보를 재검산하고 산출물은 PENDING을 유지한다. 과학 결과의 PASS·정본 반영은 기존 검증 경계를 별도로 통과해야 한다. 재시작 시 완료된 복구를 중복 반영하지 않는다.

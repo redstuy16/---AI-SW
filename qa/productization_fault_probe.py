@@ -13,9 +13,9 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_productization import body, prepare, run
-from htrsa.preflight import _source_fingerprint
-from htrsa.productization import qualify
-from htrsa.workbench import WorkbenchAPI
+from probe.preflight import _source_fingerprint
+from probe.productization import qualify
+from probe.workbench import WorkbenchAPI
 
 
 def main():

@@ -4,9 +4,9 @@ import sqlite3
 import pytest
 from pydantic import ValidationError
 
-from htrsa.generate_schemas import MODELS, generate
-from htrsa.schemas import ContextRef, ResearchContract, Verdict
-from htrsa.service import InvalidStateTransitionError
+from probe.generate_schemas import MODELS, generate
+from probe.schemas import ContextRef, ResearchContract, Verdict
+from probe.service import InvalidStateTransitionError
 
 
 def test_invalid_contract_rejected():

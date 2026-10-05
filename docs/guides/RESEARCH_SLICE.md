@@ -7,8 +7,8 @@
 ## 사용
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build/slice.sqlite build/slice-workspace input.csv --claim-evidence-provenance --verifier-dependency-catalog --goal "문서화된 관측 단위를 분석하라"
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build/slice.sqlite build/slice-workspace --resume RESEARCH_ID --claim-evidence-provenance --verifier-dependency-catalog
+.\.venv\Scripts\python.exe -m probe.agent_cli build/slice.sqlite build/slice-workspace input.csv --claim-evidence-provenance --verifier-dependency-catalog --goal "문서화된 관측 단위를 분석하라"
+.\.venv\Scripts\python.exe -m probe.agent_cli build/slice.sqlite build/slice-workspace --resume RESEARCH_ID --claim-evidence-provenance --verifier-dependency-catalog
 .\.venv\Scripts\python.exe qa/reliability_lab.py --enable --output-dir build/reliability-lab
 .\.venv\Scripts\python.exe qa/research_slice_recovery_probe.py --all
 ```
@@ -16,8 +16,8 @@
 Agent 실행에는 기존 provider 자격 증명·model이 필요하다. Skills는
 `--verified-analysis-skills`, F3-P는 `--verification-repair`, 실험적 Ridge는
 `--ridge-arithmetic-check`로 별도 활성화한다. 기본값을 바꾸지 않는다.
-환경 변수는 `HTRSA_CLAIM_EVIDENCE_PROVENANCE=1`,
-`HTRSA_VERIFIER_DEPENDENCY_CATALOG=1`이다. Reliability Lab은 CLI의
+환경 변수는 `PROBE_CLAIM_EVIDENCE_PROVENANCE=1`,
+`PROBE_VERIFIER_DEPENDENCY_CATALOG=1`이다. Reliability Lab은 CLI의
 `--enable` 없이는 실행되지 않는다. `ResearchSliceConfig`의 내부 평가
 옵션으로 P1/P2 invalidation과 V1/V2 dependency metadata를 비교한다.
 Resume는 저장된 flag와 정책 버전의 누락·변경을 차단한다.

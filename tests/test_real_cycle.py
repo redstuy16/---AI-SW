@@ -3,10 +3,10 @@ import math
 
 import pytest
 
-from htrsa.real_runtime import execute_real_tools, run_real_cycle
-from htrsa.schemas import StagedResult, Verdict
-from htrsa.service import VerificationRequiredError
-from htrsa.storage import sha256_file
+from probe.real_runtime import execute_real_tools, run_real_cycle
+from probe.schemas import StagedResult, Verdict
+from probe.service import VerificationRequiredError
+from probe.storage import sha256_file
 
 from test_real_tools import CSV, real_context
 
@@ -90,7 +90,7 @@ def test_artifact_changed_after_pass_is_rechecked_at_commit(real_context):
     path = workspace.path(ids["research_id"], record["relative_path"])
     with path.open("ab") as stream:
         stream.write(b"X")
-    from htrsa.service import StateConflictError
+    from probe.service import StateConflictError
     with pytest.raises(StateConflictError):
         state.commit(mutation_id)
     assert state.state_version(ids["research_id"]) == 0

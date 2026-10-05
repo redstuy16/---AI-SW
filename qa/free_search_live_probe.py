@@ -1,21 +1,24 @@
-"""익명 학술 검색을 실제로 조회한다. 모델 호출·과금·사용자 연구 수정은 없다."""
+"""과거 무료 검색 probe를 명시 LEGACY 실행으로 격리하며 현행 AI 검색 검증에서 제외한다."""
 import asyncio
 import json
+import os
 from pathlib import Path
 import sys
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / 'src'), str(ROOT / 'tests')]
-from htrsa.workbench import WorkbenchAPI
-from htrsa.search_policy import run_search, qualified_literature
-from htrsa.schemas import utc_now
-from htrsa.database import to_json
+from probe.workbench import WorkbenchAPI
+from probe.search_policy import run_search, qualified_literature
+from probe.schemas import utc_now
+from probe.database import to_json
 from test_workbench import configure
 from test_research_report_flow import request
 
 
 async def main():
+    if os.environ.get('PROBE_LEGACY_LIVE_SEARCH') != '1':
+        raise SystemExit('LEGACY_LIVE_SEARCH_DISABLED: 과거 probe에는 PROBE_LEGACY_LIVE_SEARCH=1이 필요합니다. 현행 검사는 science_live_validation.py를 사용하세요.')
     folder = ROOT / 'build/free-search/live' / uuid4().hex
     api = WorkbenchAPI(folder / 'state.sqlite', folder / 'workspace', launch=False)
     configure(api)

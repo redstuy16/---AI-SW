@@ -32,7 +32,7 @@ def main():
     folder=args.output/uuid4().hex
     folder.mkdir(parents=True)
     start=perf_counter()
-    from htrsa.workbench import WorkbenchAPI
+    from probe.workbench import WorkbenchAPI
     api=WorkbenchAPI(folder/'cold.sqlite',folder/'cold-workspace',launch=False)
     cold=perf_counter()-start
     import psutil
@@ -52,7 +52,7 @@ def main():
     thread=Thread(target=sample,daemon=True)
     thread.start()
     try:
-        from htrsa.demo import run_demo_a
+        from probe.demo import run_demo_a
         start=perf_counter()
         demo=run_demo_a(folder/'fresh-demo.sqlite',folder/'fresh-demo-workspace')
         result['demo_sec']=perf_counter()-start

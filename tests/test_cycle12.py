@@ -1,3 +1,4 @@
+from probe.report_publication import report_root
 """Cycle 12의 선택값·의미·수정본을 실제 저장 경계에서 검사한다."""
 import asyncio
 from copy import deepcopy
@@ -5,10 +6,10 @@ import json
 
 import pytest
 
-from htrsa.climate_profile import MEANING, parse_source, selected_rows
-from htrsa.period_comparison import compare_periods
-from htrsa.qualified_profiles import conclusion_card
-from htrsa.qualified_workflow import execute_profile, update_source
+from probe.climate_profile import MEANING, parse_source, selected_rows
+from probe.period_comparison import compare_periods
+from probe.qualified_profiles import conclusion_card
+from probe.qualified_workflow import execute_profile, update_source
 from test_beginner_v4 import SOURCE, QUESTION, prepare, run_profile, revise
 from test_workbench import app
 
@@ -43,7 +44,7 @@ def test_c12_01_real_tools_keyed_pair_and_frozen_policy(app):
 
 @pytest.mark.parametrize("kind", ["wrong_value", "wrong_scale", "mean_preserving_swap"])
 def test_c12_02_03_12_recomputed_capture_hash_cannot_hide_key_conflict(app, kind):
-    from htrsa.control_plane import ControlError
+    from probe.control_plane import ControlError
     text = SOURCE.read_text(encoding="utf-8")
     if kind == "wrong_value":
         text = revise(text, 2005, 10)
@@ -75,7 +76,7 @@ def test_c12_04_05_06_applicable_meaning_fields_are_checked(field, bad):
 
 
 def test_c12_07_conversion_direction_and_baseline_recalculated_from_data():
-    from htrsa.climate_profile import transform_rows, independent_comparison
+    from probe.climate_profile import transform_rows, independent_comparison
     rows = parse_source(SOURCE.read_text(encoding="utf-8"), MEANING)
     periods = [[1981, 2000], [2001, 2020]]
     means, difference = independent_comparison(rows, periods)
@@ -98,7 +99,7 @@ def test_c12_08_source_row_permutation_preserves_mean_dependencies(app):
 
 @pytest.mark.parametrize("method,expected", [("unweighted_mean", True), ("two_period_comparison", True), ("ordered_timeseries", False)])
 def test_c12_08_09_method_aware_group_order(method, expected):
-    from htrsa.period_comparison import selection_equivalent
+    from probe.period_comparison import selection_equivalent
     original = {"groups": {"A": ["a", "b"], "B": ["c"]}, "direction": "B-A", "weights": None}
     changed = deepcopy(original)
     changed["groups"]["A"].reverse()
@@ -109,7 +110,7 @@ def test_c12_08_09_method_aware_group_order(method, expected):
 
 @pytest.mark.parametrize("value,code", [(None,"MISSING"),("","MISSING"),("not numeric","INVALID"),(True,"INVALID"),("NaN","NONFINITE"),("Infinity","NONFINITE")])
 def test_c12_10_bad_selected_values_are_typed(value, code):
-    from htrsa.period_comparison import selected_values, SelectedDataError
+    from probe.period_comparison import selected_values, SelectedDataError
     with pytest.raises(SelectedDataError, match="SELECTED_VALUE_" + code):
         selected_values([{"year":2000,"value":value}], [2000])
 
@@ -122,7 +123,7 @@ def test_c12_11_unselected_missing_value_does_not_block():
 
 @pytest.mark.parametrize("change", ["duplicate", "missing", "substitution", "reassignment", "weights"])
 def test_c12_12_scope_membership_is_not_silently_changed(change):
-    from htrsa.period_comparison import selection_equivalent
+    from probe.period_comparison import selection_equivalent
     original = {"groups":{"A":["a","b"],"B":["c","d"]},"weights":None}
     candidate = deepcopy(original)
     if change == "duplicate":candidate["groups"]["A"] = ["a","a"]
@@ -142,8 +143,8 @@ def test_c12_13_optional_absence_is_recorded_without_false_check_pass(app):
 
 
 def test_c12_14_required_absent_cannot_complete(app,monkeypatch):
-    from htrsa.climate_profile import SOURCE_POLICY
-    from htrsa.control_plane import ControlError
+    from probe.climate_profile import SOURCE_POLICY
+    from probe.control_plane import ControlError
     monkeypatch.setitem(SOURCE_POLICY,"secondary_required",True)
     rid,snapshot,runtime,provider=prepare(app)
     with pytest.raises(ControlError,match="CHECK_PENDING"):
@@ -159,7 +160,7 @@ def test_c12_15_missing_meaning_is_review_not_default_success(app):
 
 
 def test_c12_16_21_typed_selection_wrong_against_question_cannot_commit(app):
-    from htrsa.control_plane import ControlError
+    from probe.control_plane import ControlError
     rid,snapshot,runtime,provider=prepare(app)
     def wrong(payload):
         value=payload.model_copy(deep=True)
@@ -173,9 +174,9 @@ def test_c12_16_21_typed_selection_wrong_against_question_cannot_commit(app):
 def test_c12_17_owner_amendment_changes_selection_history_and_pdf(app):
     import io
     from pypdf import PdfReader
-    from htrsa.final_report import export_final_report
-    from htrsa.report_pdf import render_pdf
-    from htrsa.qualified_replay import replay
+    from probe.final_report import export_final_report
+    from probe.report_pdf import render_pdf
+    from probe.qualified_replay import replay
     rid,snapshot,runtime,provider,result=paired(app)
     state=app.read._state
     state.stop_research(rid,"QUALIFIED_PROCEDURE_COMPLETED")
@@ -190,7 +191,7 @@ def test_c12_17_owner_amendment_changes_selection_history_and_pdf(app):
     assert len(provider.calls)==1 and card["changes"]["groups"]["A"]["removed"]
     assert card["analysis_history"][1]["historical"] and card["changes"]["values"]
     export_final_report(state,rid)
-    assert replay(state.workspace.path(rid,"research_output/replay_manifest.json"))["representation_status"]=="MATCHED_SELECTED_KEYS"
+    assert replay((report_root(state, rid) / "replay_manifest.json"))["representation_status"]=="MATCHED_SELECTED_KEYS"
     pdf=render_pdf(state,rid)["data"]
     text="".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf)).pages)
     assert "이전 질문" in text and "현재 질문" in text and "독립 관측" in text
@@ -198,7 +199,7 @@ def test_c12_17_owner_amendment_changes_selection_history_and_pdf(app):
 
 @pytest.mark.parametrize("field",["owner_approved","qualification","secondary_required"])
 def test_c12_19_worker_authority_fields_rejected_at_commit_boundary(app,field):
-    from htrsa.control_plane import ControlError
+    from probe.control_plane import ControlError
     rid,snapshot,runtime,provider=prepare(app)
     def forged(payload):
         value=payload.model_copy(deep=True)
@@ -229,11 +230,11 @@ def test_c12_20_shared_wrong_source_roots_remain_explicit_limit(app):
 def test_c12_22_checker_change_and_latest_capture_tamper_are_stale(app,monkeypatch):
     rid,snapshot,runtime,provider,result=run_profile(app)
     state=app.read._state
-    monkeypatch.setattr("htrsa.climate_profile.CHECKER_VERSION","next-version")
+    monkeypatch.setattr("probe.climate_profile.CHECKER_VERSION","next-version")
     assert not conclusion_card(state,rid)["current"]
     monkeypatch.undo()
     update_source(state,rid,revise(SOURCE.read_text(encoding="utf-8"),1900,10))
-    from htrsa.qualified_workflow import latest_source
+    from probe.qualified_workflow import latest_source
     path=state.workspace.path(rid,latest_source(state,rid)["source_relative"])
     path.write_bytes(path.read_bytes()+b"tampered")
     assert not conclusion_card(state,rid)["current"]
@@ -250,8 +251,8 @@ def test_c12_23_unused_change_reuses_numbers_and_unrelated_research_does_not_sta
 
 
 def test_c12_24_context_change_between_verify_and_commit_blocks(app):
-    from htrsa.recovery import FaultInjector
-    from htrsa.service import StateConflictError
+    from probe.recovery import FaultInjector
+    from probe.service import StateConflictError
     rid,snapshot,runtime,provider=prepare(app)
     state=app.read._state
     runtime.faults=FaultInjector(lambda point: state.set_research_question(rid,QUESTION.replace("1981~2000","1986~1995")) if point=="profile_after_verify" else None)
@@ -261,8 +262,8 @@ def test_c12_24_context_change_between_verify_and_commit_blocks(app):
 
 
 def test_c12_26_budget_boundary_after_verify_cannot_commit_partial(app):
-    from htrsa.control_plane import ControlError
-    from htrsa.recovery import FaultInjector
+    from probe.control_plane import ControlError
+    from probe.recovery import FaultInjector
     rid,snapshot,runtime,provider=prepare(app)
     def boundary():raise ControlError("RUN_BUDGET_BLOCKED")
     runtime.faults=FaultInjector(lambda point:setattr(runtime,"control_boundary",boundary) if point=="profile_after_verify" else None)
@@ -273,31 +274,31 @@ def test_c12_26_budget_boundary_after_verify_cannot_commit_partial(app):
 
 @pytest.mark.parametrize("snapshot_change",[{"search_policy":"DISABLED"},{"egress":"none"},{"public_search_query":"sk-qaSecretCanary1234567890"},{"search_attempt_limit":0}])
 def test_c12_28_secondary_cannot_bypass_search_egress_or_secret_policy(app,monkeypatch,snapshot_change):
-    from htrsa.qualified_workflow import fetch_secondary
+    from probe.qualified_workflow import fetch_secondary
     rid,snapshot,runtime,provider=prepare(app)
     snapshot.update(search_policy="ALLOWED",search_required=True,public_search_consent=True,public_search_query="NASA annual GISTEMP")
     snapshot.update(snapshot_change)
     async def forbidden(*args):raise AssertionError("금지한 전송")
-    monkeypatch.setattr("htrsa.qualified_workflow._fetch_text",forbidden)
+    monkeypatch.setattr("probe.qualified_workflow._fetch_text",forbidden)
     assert asyncio.run(fetch_secondary(app.read._state,rid,snapshot)) is None
     assert app.store.ledger()["requests"]==[]
 
 
 def test_c12_28_registered_opaque_secret_blocks_secondary_before_request(app,monkeypatch):
-    from htrsa.qualified_workflow import fetch_secondary
-    from htrsa.control_plane import Credentials
+    from probe.qualified_workflow import fetch_secondary
+    from probe.control_plane import Credentials
     rid,snapshot,runtime,provider=prepare(app)
     secret="qa-opaque-registered-credential-1234567890"
     snapshot.update(search_policy="ALLOWED",search_required=True,public_search_consent=True,public_search_query="NASA "+secret)
     monkeypatch.setattr(Credentials,"active_secrets",lambda *args:(secret,))
     async def forbidden(*args):raise AssertionError("등록한 비밀값으로 자료 대조를 요청했습니다")
-    monkeypatch.setattr("htrsa.qualified_workflow._fetch_text",forbidden)
+    monkeypatch.setattr("probe.qualified_workflow._fetch_text",forbidden)
     assert asyncio.run(fetch_secondary(app.read._state,rid,snapshot)) is None
     assert app.store.ledger()["requests"]==[]
 
 
 def test_c12_29_inspector_is_lazy_and_currentness_is_not_pdf_fabrication(app,monkeypatch):
-    from htrsa.final_report import export_final_report
+    from probe.final_report import export_final_report
     rid,snapshot,runtime,provider,result=paired(app)
     state=app.read._state
     basic=app.request("GET",f"/api/control/research/{rid}/source-inspection").body
@@ -312,18 +313,18 @@ def test_c12_29_inspector_is_lazy_and_currentness_is_not_pdf_fabrication(app,mon
 
 @pytest.mark.parametrize("defect",["missing","corrupt"])
 def test_c12_30_secondary_replay_failures_never_refetch(app,monkeypatch,defect):
-    from htrsa.final_report import export_final_report
-    from htrsa.qualified_replay import replay
+    from probe.final_report import export_final_report
+    from probe.qualified_replay import replay
     rid,snapshot,runtime,provider,result=paired(app)
     state=app.read._state
     state.stop_research(rid,"QUALIFIED_PROCEDURE_COMPLETED");export_final_report(state,rid)
-    manifest=state.workspace.path(rid,"research_output/replay_manifest.json")
+    manifest=(report_root(state, rid) / "replay_manifest.json")
     binding=json.loads(manifest.read_text(encoding="utf-8"))["binding"]
     alternate=manifest.parent/"qualified_sources"/binding["secondary"]["source_relative"].rsplit("/",1)[-1]
     if defect=="missing":alternate.unlink()
     else:alternate.write_bytes(alternate.read_bytes()+b"tamper")
     async def forbidden(*args):raise AssertionError("네트워크를 읽었습니다")
-    monkeypatch.setattr("htrsa.qualified_workflow._fetch_text",forbidden)
+    monkeypatch.setattr("probe.qualified_workflow._fetch_text",forbidden)
     with pytest.raises(ValueError,match="SECONDARY"):
         replay(manifest)
 
@@ -331,8 +332,8 @@ def test_c12_30_secondary_replay_failures_never_refetch(app,monkeypatch,defect):
 def test_c12_31_astronomy_uses_generic_selected_values_without_climate_fields():
     import csv
     from pathlib import Path
-    from htrsa.period_comparison import selected_values, compare_keyed, require_meaning
-    from htrsa.qualified_profiles import registry
+    from probe.period_comparison import selected_values, compare_keyed, require_meaning
+    from probe.qualified_profiles import registry
     root=Path(__file__).resolve().parents[1]/"qa/cycle12/public"
     records=list(csv.DictReader((root/"trappist1_default.csv").read_text(encoding="utf-8").splitlines()))
     alternate=json.loads((root/"trappist1_default.json").read_text(encoding="utf-8"))
@@ -359,7 +360,7 @@ def test_c12_32_beginner_start_has_no_new_required_witness_fields(app):
 
 
 def test_c12_24_source_update_and_invalidation_roll_back_together(app,monkeypatch):
-    from htrsa.qualified_workflow import latest_source
+    from probe.qualified_workflow import latest_source
     rid,snapshot,runtime,provider,result=run_profile(app)
     state=app.read._state
     version=state.state_version(rid)
@@ -376,7 +377,7 @@ def test_c12_24_source_update_and_invalidation_roll_back_together(app,monkeypatc
 
 
 def test_c12_22_27_stale_result_cannot_be_returned_as_resumed_current(app):
-    from htrsa.control_plane import ControlError
+    from probe.control_plane import ControlError
     rid,snapshot,runtime,provider,result=run_profile(app)
     update_source(app.read._state,rid,revise(SOURCE.read_text(encoding="utf-8"),2005,10))
     with pytest.raises(ControlError,match="REVALIDATION_REQUIRED"):
@@ -392,12 +393,12 @@ def test_c12_25_compound_fault_repair_rechecks_every_obligation(tmp_path):
     module=importlib.util.module_from_spec(specification);specification.loader.exec_module(module)
     record=module.run_case({"id":"compound_defect","expected":"REPAIR_INCOMPLETE","initially_correct":False},tmp_path/"compound",3911)
     assert record["observed"]=="REPAIR_INCOMPLETE" and record["committed"]==0
-    from htrsa.verification_repair import MAX_REPAIR_ATTEMPTS
+    from probe.verification_repair import MAX_REPAIR_ATTEMPTS
     assert record["repair_attempts"]==MAX_REPAIR_ATTEMPTS and record["verification_executions"]>=2
 
 
 def test_c12_oracle_csv_read_is_rejected_by_actual_qualified_tool_permissions(app,tmp_path):
-    from htrsa.schemas import ToolRequest,new_id
+    from probe.schemas import ToolRequest,new_id
     rid,snapshot,runtime,provider=prepare(app)
     app.read._state.configure_budget(rid,0.025,0.075,0.1)
     contract,task=runtime._role_contract(rid,"experiment_coordinator","승인된 입력만 읽습니다.","QualifiedProfileImport",allowed_tools=["data.import"],max_tool_calls=1)
@@ -412,7 +413,7 @@ def test_c12_oracle_csv_read_is_rejected_by_actual_qualified_tool_permissions(ap
 
 
 def test_c12_source_secret_canary_is_blocked_before_archive(app):
-    from htrsa.control_plane import ControlError
+    from probe.control_plane import ControlError
     rid,snapshot,runtime,provider=prepare(app)
     text=SOURCE.read_text(encoding="utf-8")+"\nsk-c12SecretCanary1234567890\n"
     with pytest.raises(ControlError,match="SOURCE_SECRET_BLOCKED"):
@@ -422,14 +423,14 @@ def test_c12_source_secret_canary_is_blocked_before_archive(app):
 
 def test_c12_http_capture_only_records_observed_headers(app,monkeypatch):
     import httpx
-    from htrsa.qualified_workflow import _fetch_text,_source
+    from probe.qualified_workflow import _fetch_text,_source
     rid,snapshot,runtime,provider=prepare(app)
     original=httpx.AsyncClient
     seen=[]
     def handler(request):
         seen.append(str(request.url))
         return httpx.Response(200,headers={"ETag":"observed-tag"},content=SOURCE.read_bytes())
-    monkeypatch.setattr("htrsa.qualified_workflow.httpx.AsyncClient",lambda **kwargs:original(transport=httpx.MockTransport(handler),**kwargs))
+    monkeypatch.setattr("probe.qualified_workflow.httpx.AsyncClient",lambda **kwargs:original(transport=httpx.MockTransport(handler),**kwargs))
     captured=asyncio.run(_fetch_text("https://data.giss.nasa.gov/gistemp/tabledata_v4/GLB.Ts+dSST.txt"))
     saved=_source(app.read._state,rid,captured)
     assert saved["capture"]["http_observed"] and saved["capture"]["headers"]["etag"]=="observed-tag"
@@ -439,7 +440,7 @@ def test_c12_http_capture_only_records_observed_headers(app,monkeypatch):
 
 
 def test_c12_10_missing_selected_value_preserves_actual_draft_and_capture(app):
-    from htrsa.period_comparison import SelectedDataError
+    from probe.period_comparison import SelectedDataError
     rid,snapshot,runtime,provider=prepare(app)
     lines=SOURCE.read_text(encoding="utf-8").splitlines()
     index=next(i for i,line in enumerate(lines) if line.startswith("2005 "))
@@ -452,7 +453,7 @@ def test_c12_10_missing_selected_value_preserves_actual_draft_and_capture(app):
 
 
 def test_c12_05_optional_present_semantic_conflict_is_not_ignored(app):
-    from htrsa.climate_profile import CSV_MEANING
+    from probe.climate_profile import CSV_MEANING
     rid,snapshot,runtime,provider,result=paired(app)
     changed=update_source(app.read._state,rid,SOURCE.read_text(encoding="utf-8"),secondary_text=CSV_TEXT,
                           secondary_semantics=dict(CSV_MEANING,baseline=[1961,1990]))
@@ -462,7 +463,7 @@ def test_c12_05_optional_present_semantic_conflict_is_not_ignored(app):
 
 
 def test_c12_14_requirement_frozen_through_source_update(app,monkeypatch):
-    from htrsa.climate_profile import SOURCE_POLICY
+    from probe.climate_profile import SOURCE_POLICY
     monkeypatch.setitem(SOURCE_POLICY,"secondary_required",True)
     rid,snapshot,runtime,provider,result=paired(app)
     monkeypatch.setitem(SOURCE_POLICY,"secondary_required",False)
@@ -472,21 +473,21 @@ def test_c12_14_requirement_frozen_through_source_update(app,monkeypatch):
 
 
 def test_c12_30_latest_unused_capture_missing_also_blocks_frozen_replay(app):
-    from htrsa.final_report import export_final_report
-    from htrsa.qualified_replay import replay
+    from probe.final_report import export_final_report
+    from probe.qualified_replay import replay
     rid,snapshot,runtime,provider,result=run_profile(app)
     state=app.read._state
     changed=update_source(state,rid,revise(SOURCE.read_text(encoding="utf-8"),1900,10))
     state.stop_research(rid,"QUALIFIED_PROCEDURE_COMPLETED");export_final_report(state,rid)
-    manifest=state.workspace.path(rid,"research_output/replay_manifest.json")
+    manifest=(report_root(state, rid) / "replay_manifest.json")
     (manifest.parent/"qualified_sources"/changed["source"]["source_relative"].rsplit("/",1)[-1]).unlink()
     with pytest.raises(ValueError,match="CAPTURE_UNSAFE_OR_MISSING"):
         replay(manifest)
 
 
 def test_c12_capture_timing_incompatible_is_review_not_replacement(app):
-    from htrsa.qualified_workflow import CapturedText,_pair_source
-    from htrsa.climate_profile import representation_check
+    from probe.qualified_workflow import CapturedText,_pair_source
+    from probe.climate_profile import representation_check
     rid,snapshot,runtime,provider=prepare(app)
     a=CapturedText(SOURCE.read_text(encoding="utf-8"),{"http_observed":True,"retrieved_at":"2026-10-03T00:00:00+00:00"})
     b=CapturedText(CSV_TEXT,{"http_observed":True,"retrieved_at":"2026-10-03T01:00:00+00:00"})

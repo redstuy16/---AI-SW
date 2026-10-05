@@ -7,9 +7,9 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.workbench import WorkbenchAPI
-from htrsa.research_design import current_design, summary
-from htrsa.qualified_profiles import conclusion_card
+from probe.workbench import WorkbenchAPI
+from probe.research_design import current_design, summary
+from probe.qualified_profiles import conclusion_card
 from test_research_design import execute, intent, variable
 from test_beginner_v4 import QUESTION
 
@@ -72,7 +72,7 @@ def main():
         finally:
             app.close()
     negative = []
-    from htrsa.research_design import resolve_design
+    from probe.research_design import resolve_design
     unclear = resolve_design(QUESTION, {"fields": {"period": intent("2020년 상반기")}})
     natural = resolve_design(QUESTION, {"fields": {"period": intent("1981년부터 2000년까지와 2001년부터 2020년까지")}})
     assert any(i["field"] == "period" for i in unclear["issues"]) and not natural["issues"]
@@ -85,8 +85,8 @@ def main():
         app = WorkbenchAPI(folder / "state.sqlite", folder / "workspace", launch=False)
         try:
             from test_research_design import detailed, SOURCE
-            from htrsa.control_plane import ControlError
-            from htrsa.qualified_workflow import execute_profile
+            from probe.control_plane import ControlError
+            from probe.qualified_workflow import execute_profile
             import asyncio
             rid, snap, runtime, provider = detailed(app, design)
             try:
@@ -104,7 +104,7 @@ def main():
     folder.mkdir(parents=True)
     app = WorkbenchAPI(folder / "state.sqlite", folder / "workspace", launch=False)
     try:
-        from htrsa.qualified_workflow import amend_question
+        from probe.qualified_workflow import amend_question
         rid, snap, runtime, provider, result = execute(app, {"fields": {"period": intent("1981~2000, 2001~2020")}})
         amend_question(app.read._state, rid, QUESTION.replace("2001~2020", "2011~2020"),
                        expected_version=app.read._state.state_version(rid))
@@ -119,8 +119,8 @@ def main():
     finally:
         app.close()
     from test_verification_repair import prepare_case, corrupt_first_output
-    from htrsa.research_design import initialize_design
-    from htrsa.service import StateService
+    from probe.research_design import initialize_design
+    from probe.service import StateService
     from unittest.mock import patch
     (base / "skills-f3p").mkdir(parents=True)
     original_issue = StateService.issue_contract
@@ -145,11 +145,11 @@ def main():
         negative.append({"case": "opt_in_skills_f3p_design_binding", "passed": True,
                          "analysis_skill_calls": calls, "intent_unchanged": True, "paid_calls": 0})
         from test_verified_analysis_skills import backtest_plan, series_rows
-        from htrsa.real_tools import ToolRegistry, DataImportTool, DataProfileTool, VerifiedAnalysisSkillTool
-        from htrsa.schemas import ToolRequest, ContextRef, RefType, Constraints, new_id
-        from htrsa.mock import MockManager
-        from htrsa.analysis_skills import SkillRequest
-        from htrsa.research_design import amend_design
+        from probe.real_tools import ToolRegistry, DataImportTool, DataProfileTool, VerifiedAnalysisSkillTool
+        from probe.schemas import ToolRequest, ContextRef, RefType, Constraints, new_id
+        from probe.mock import MockManager
+        from probe.analysis_skills import SkillRequest
+        from probe.research_design import amend_design
         inputs = state.workspace.root / "inputs"
         inputs.mkdir(exist_ok=True)
         rows = series_rows()

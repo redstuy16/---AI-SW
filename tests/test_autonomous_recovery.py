@@ -6,16 +6,16 @@ import json
 
 import pytest
 
-from htrsa.autonomous_loop import AutonomousResearchLoop
-from htrsa.agent_runtime import RuntimeFailure
-from htrsa.agent_policy import UnknownPriceLimits
-from htrsa.agent_schemas import ManagerDecision
-from htrsa.database import initialize
-from htrsa.providers.base import ModelProviderError
-from htrsa.providers.fake import FakeProvider
-from htrsa.recovery import FaultInjector, InjectedCrash, ResearchRuntimeCursor
-from htrsa.service import LoopDetectedError, StateConflictError, StateService
-from htrsa.storage import Workspace
+from probe.autonomous_loop import AutonomousResearchLoop
+from probe.agent_runtime import RuntimeFailure
+from probe.agent_policy import UnknownPriceLimits
+from probe.agent_schemas import ManagerDecision
+from probe.database import initialize
+from probe.providers.base import ModelProviderError
+from probe.providers.fake import FakeProvider
+from probe.recovery import FaultInjector, InjectedCrash, ResearchRuntimeCursor
+from probe.service import LoopDetectedError, StateConflictError, StateService
+from probe.storage import Workspace
 
 from test_autonomous_loop import CSV, MANAGER, MODELS, fake_replies
 

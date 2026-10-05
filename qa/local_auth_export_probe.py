@@ -7,8 +7,8 @@ from pathlib import Path
 import secrets
 from uuid import uuid4
 
-from htrsa.release import export_release, _secret_free
-from htrsa.workbench import OwnerSession, WorkbenchAPI, redact
+from probe.release import export_release, _secret_free
+from probe.workbench import OwnerSession, WorkbenchAPI, redact
 
 
 ROOT = Path(__file__).resolve().parents[1]

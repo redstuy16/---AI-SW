@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="PROBE_SUBMISSION">
+<script language="VBScript"><![CDATA[
+Option Explicit
+Dim files, shell, root, python, command
+Set files = CreateObject("Scripting.FileSystemObject")
+Set shell = CreateObject("WScript.Shell")
+root = files.GetParentFolderName(WScript.ScriptFullName)
+python = files.BuildPath(root, ".venv\Scripts\pythonw.exe")
+If Not files.FileExists(python) Then
+  MsgBox "가상환경이 없습니다. README의 설치 명령을 실행한 뒤 다시 열어 주세요.", 16, "Probe"
+  WScript.Quit 1
+End If
+shell.CurrentDirectory = root
+command = Chr(34) & python & Chr(34) & " -m probe.desktop --submission"
+shell.Run command, 0, False
+]]></script>
+</job>

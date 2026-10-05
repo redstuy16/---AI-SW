@@ -3,10 +3,10 @@ requires = ["setuptools>=70"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "htrsa"
+name = "probe"
 version = "0.1.0"
-requires-python = ">=3.11"
-dependencies = ["pydantic==2.13.5", "numpy==2.5.3", "scipy==1.18.1", "matplotlib==3.11.2", "httpx>=0.27,<1", "reportlab>=4.4,<5"]
+requires-python = ">=3.12"
+dependencies = ["pydantic==2.13.5", "numpy==2.5.3", "scipy==1.18.1", "matplotlib==3.11.2", "httpx>=0.27,<1", "reportlab>=4.4,<5", "pypdf>=5,<7"]
 
 [project.optional-dependencies]
 literature = ["pypdf>=5,<7"]
@@ -18,11 +18,11 @@ security = ["pathspec==1.1.1", "pip-audit==2.10.1", "bandit==1.9.4", "psutil==7.
 where = ["src"]
 
 [tool.setuptools.package-data]
-"htrsa.prompts" = ["*.md"]
-"htrsa" = ["workbench_static/*.html", "workbench_static/*.css", "workbench_static/*.js", "workbench_static/pdfjs/manifest.json", "workbench_static/pdfjs/LICENSE", "workbench_static/pdfjs/build/*.mjs", "workbench_static/pdfjs/web/cmaps/*", "workbench_static/pdfjs/web/standard_fonts/*", "workbench_static/pdfjs/web/wasm/*", "product_catalog.json"]
+"probe.prompts" = ["*.md"]
+"probe" = ["report_examples/*.md", "workbench_static/*.html", "workbench_static/*.css", "workbench_static/*.js", "workbench_static/pdfjs/manifest.json", "workbench_static/pdfjs/LICENSE", "workbench_static/pdfjs/build/*.mjs", "workbench_static/pdfjs/web/cmaps/*", "workbench_static/pdfjs/web/standard_fonts/*", "workbench_static/pdfjs/web/wasm/*", "product_catalog.json"]
 
 [tool.setuptools.data-files]
-"share/htrsa/migrations" = ["db/migrations/001_initial.sql", "db/migrations/002_real_tools.sql", "db/migrations/003_agent_runtime.sql", "db/migrations/004_research_loop.sql", "db/migrations/005_runtime_recovery.sql", "db/migrations/006_literature.sql"]
+"share/probe/migrations" = ["db/migrations/001_initial.sql", "db/migrations/002_real_tools.sql", "db/migrations/003_agent_runtime.sql", "db/migrations/004_research_loop.sql", "db/migrations/005_runtime_recovery.sql", "db/migrations/006_literature.sql"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

@@ -11,15 +11,15 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_autonomous_loop import CSV, fake_replies
-from htrsa.control_plane import Connection, ModelProfile, PriceRecord
-from htrsa.control_runtime import RoutedGateway, execute
-from htrsa.product_policy import completion_budget, effective_snapshot
-from htrsa.research_settings import queue
-from htrsa.report_ux import friendly_report
-from htrsa.release import export_release
-from htrsa.schemas import utc_now
-from htrsa.storage import sha256_file
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import Connection, ModelProfile, PriceRecord
+from probe.control_runtime import RoutedGateway, execute
+from probe.product_policy import completion_budget, effective_snapshot
+from probe.research_settings import queue
+from probe.report_ux import friendly_report
+from probe.release import export_release
+from probe.schemas import utc_now
+from probe.storage import sha256_file
+from probe.workbench import WorkbenchAPI
 
 
 def probe(name, adaptive, cap="1", tighten=None):

@@ -10,17 +10,17 @@ import time
 
 import pytest
 
-from htrsa.control_plane import ControlBoundary, ControlError, ControlStore
-from htrsa.control_runtime import execute
-from htrsa.dashboard import project_overview, project_experiments, project_verification
-from htrsa.database import connect
-from htrsa.demo import run_demo_a, run_demo_b
-from htrsa.providers.fake import FakeProvider
-from htrsa.providers.native import normalized_error
-from htrsa.resource_policy import low_spec, preferences, save_preferences
-from htrsa.resource_queue import ResourcePool, resource_key
-from htrsa.research_flow import project_flow, flow_node
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import ControlBoundary, ControlError, ControlStore
+from probe.control_runtime import execute
+from probe.dashboard import project_overview, project_experiments, project_verification
+from probe.database import connect
+from probe.demo import run_demo_a, run_demo_b
+from probe.providers.fake import FakeProvider
+from probe.providers.native import normalized_error
+from probe.resource_policy import low_spec, preferences, save_preferences
+from probe.resource_queue import ResourcePool, resource_key
+from probe.research_flow import project_flow, flow_node
+from probe.workbench import WorkbenchAPI
 from test_workbench import app, configure, create
 from test_autonomous_loop import fake_replies
 from test_verification_repair import prepare_case, corrupt_first_output
@@ -31,12 +31,21 @@ from test_verification_repair import prepare_case, corrupt_first_output
 def test_failed_figure_save_closes_figure_without_commit(tmp_path, monkeypatch, skill, failure):
     import matplotlib.pyplot as plt
     from matplotlib.figure import Figure
-    from htrsa.agent_runtime import RuntimeFailure
+    from probe.agent_runtime import RuntimeFailure
     db, state, agent, prepared = prepare_case(tmp_path, skill=skill)
     before = set(plt.get_fignums())
     def fail(*args, **kwargs):
         raise failure('합성 그림 저장 실패')
     monkeypatch.setattr(Figure, 'savefig', fail)
+    from probe.analysis_process import run_tool
+    from probe.real_tools import VerifiedAnalysisSkillTool, VisualizationTool
+    def injected_save(state, contract, request, expires):
+        if request.tool_name == 'stats.run':
+            return run_tool(state, contract, request, expires)
+        # 그림 도구의 정리 동작과 부모의 실패 전파를 같은 오류로 확인한다.
+        tool = VerifiedAnalysisSkillTool if request.tool_name == 'analysis.skill' else VisualizationTool
+        return tool(state, contract.contract_id).run(request)
+    monkeypatch.setattr('probe.analysis_process.run_tool', injected_save)
     try:
         with pytest.raises(RuntimeFailure):
             asyncio.run(agent.resume(prepared['research_id']))
@@ -121,7 +130,7 @@ def test_global_queue_shared_by_connections_and_processes(app):
     assert resource_key(connection)==resource_key(connection.model_copy(update={'connection_id':'other','base_url':connection.base_url.replace('/v1','/other')}))
     first=ResourcePool(app.store).enqueue(rid,'manager','shared',capacity=1,purpose='research')
     assert ResourcePool(app.store).try_start(first)
-    code="from htrsa.database import connect;from htrsa.control_plane import ControlStore;from htrsa.resource_queue import ResourcePool;import sys;d=connect(sys.argv[1]);p=ResourcePool(ControlStore(d));v=p.enqueue(sys.argv[2],'worker','shared',capacity=1,purpose='research');assert p.try_start(v) is False;d.close()"
+    code="from probe.database import connect;from probe.control_plane import ControlStore;from probe.resource_queue import ResourcePool;import sys;d=connect(sys.argv[1]);p=ResourcePool(ControlStore(d));v=p.enqueue(sys.argv[2],'worker','shared',capacity=1,purpose='research');assert p.try_start(v) is False;d.close()"
     child=subprocess.run([sys.executable,'-c',code,str(app.database),rid],capture_output=True,timeout=15)
     assert child.returncode==0,child.stderr
     with app.store.transaction():ResourcePool(app.store).recover()
@@ -189,8 +198,8 @@ def test_network_and_server_limits_acquired_atomically(app):
 
 def test_gateway_queue_wait_cancel_does_not_reserve_or_dispatch(app):
     import httpx
-    from htrsa.control_runtime import RoutedGateway
-    from htrsa.providers.normalized import GenerationRequest
+    from probe.control_runtime import RoutedGateway
+    from probe.providers.normalized import GenerationRequest
     configure(app);rid=create(app);sent=[]
     async def scenario():
         entered,release=asyncio.Event(),asyncio.Event()
@@ -216,8 +225,8 @@ def test_gateway_queue_wait_cancel_does_not_reserve_or_dispatch(app):
 
 def test_gateway_oom_releases_resource_and_keeps_uncertain_billing(app):
     import httpx
-    from htrsa.control_runtime import RoutedGateway
-    from htrsa.providers.normalized import GenerationRequest,GenerationError
+    from probe.control_runtime import RoutedGateway
+    from probe.providers.normalized import GenerationRequest,GenerationError
     configure(app);rid=create(app);sent=[]
     def response(request):sent.append(request);return httpx.Response(500,json={'error':{'code':'out_of_memory'}})
     gateway=RoutedGateway(app.store,app.credentials,rid,app.store.run(rid)['snapshot'],client_factory=lambda *_:httpx.AsyncClient(transport=httpx.MockTransport(response)))
@@ -230,8 +239,8 @@ def test_gateway_oom_releases_resource_and_keeps_uncertain_billing(app):
 @pytest.mark.parametrize('mode', ['NORMAL', 'LOW_SPEC'])
 def test_distinct_local_servers_share_inference_limit(app, mode):
     import httpx
-    from htrsa.control_runtime import RoutedGateway
-    from htrsa.providers.normalized import GenerationRequest
+    from probe.control_runtime import RoutedGateway
+    from probe.providers.normalized import GenerationRequest
     connection, model = configure(app)
     save_preferences(app.store, {'low_spec_mode':mode})
     first_rid = create(app)
@@ -384,7 +393,7 @@ def test_ledger_pagination_preserves_full_exposure(app):
 
 
 def test_summary_activity_lazy_and_private_fields_excluded(app):
-    from htrsa.resource_policy import activity_detail
+    from probe.resource_policy import activity_detail
     configure(app);rid=create(app)
     app.read._state.runtime_event(rid,'PRIVATE_FIELD_PROBE',{'contract_id':'c','input_text':'private-input','hidden_answer':'private-oracle','nested':{'cot':'private-thought','visible':'참조'}})
     page=app.request('GET',f'/api/control/research/{rid}/activity?summary=1&limit=1').body
@@ -409,7 +418,7 @@ def test_flow_does_not_return_tool_prompts_or_hidden_oracle(demo_api):
 def test_flow_routes_require_owner_session(app,endpoint):
     from threading import Thread
     import httpx
-    from htrsa.workbench import create_server
+    from probe.workbench import create_server
     configure(app);rid=create(app);server=create_server(app)
     thread=Thread(target=server.serve_forever,daemon=True);thread.start()
     try:

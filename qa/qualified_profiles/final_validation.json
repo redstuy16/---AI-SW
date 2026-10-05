@@ -262,7 +262,7 @@
       "cli_present": false,
       "daemon_reachable": false,
       "image_present": false,
-      "image": "htrsa-sandbox:3.13",
+      "image": "probe-sandbox:3.13",
       "image_id": null,
       "isolation_probe_passed": false,
       "available": false,
@@ -332,10 +332,10 @@
   ],
   "command_corrections": [
     {
-      "attempt": "htrsa.preflight validate-api",
+      "attempt": "probe.preflight validate-api",
       "exit_code": 2,
       "shell_observed_exit_code": 1,
-      "correct_command": "htrsa.preflight smoke-api",
+      "correct_command": "probe.preflight smoke-api",
       "observed": "SKIPPED/API_UNCONFIGURED"
     }
   ],

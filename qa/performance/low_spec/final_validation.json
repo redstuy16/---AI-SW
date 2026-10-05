@@ -27,7 +27,7 @@
     "status": "PASS",
     "passed": 847,
     "skipped": false,
-    "command": ".venv\\Scripts\\python.exe -X utf8 -m htrsa.preflight validate-core",
+    "command": ".venv\\Scripts\\python.exe -X utf8 -m probe.preflight validate-core",
     "marker": "not live_api and not live_search and not docker_integration and not os_secret_integration"
   },
   "intermediate_regression": {
@@ -199,7 +199,7 @@
       "cli_present": false,
       "daemon_reachable": false,
       "image_present": false,
-      "image": "htrsa-sandbox:3.13",
+      "image": "probe-sandbox:3.13",
       "image_id": null,
       "isolation_probe_passed": false,
       "available": false,

@@ -7,12 +7,12 @@ from decimal import Decimal
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlError
-from htrsa.control_runtime import RoutedGateway, execute
-from htrsa.report_pdf import render_pdf
-from htrsa.research_report import input_fingerprint, report_record, rewrite_report, validate_draft, ReportDraft, _save
-from htrsa.release import validate_report_snapshot, export_release, ReleaseExportError
-from htrsa.scholarly import CrossrefProvider, ScholarlyHTTPClient
+from probe.control_plane import ControlError
+from probe.control_runtime import RoutedGateway, execute
+from probe.report_pdf import render_pdf
+from probe.research_report import input_fingerprint, report_record, rewrite_report, validate_draft, ReportDraft, _save
+from probe.release import validate_report_snapshot, export_release, ReleaseExportError
+from probe.scholarly import CrossrefProvider, ScholarlyHTTPClient
 from test_workbench import app, configure
 
 QUESTION = "탄산음료의 온도에 따른 CO₂ 방출 속도"
@@ -26,7 +26,7 @@ def request(**updates):
 
 
 def rig(app, monkeypatch, *, search="ok", report="ok", source_count=1):
-    import htrsa.search_policy as policy
+    import probe.search_policy as policy
     if not app.store.configs("model"):
         configure(app)
     search_calls, model_calls = [], []
@@ -44,7 +44,7 @@ def rig(app, monkeypatch, *, search="ok", report="ok", source_count=1):
     async def offline(*args, **kwargs):
         return await real(*args, provider=provider, price=Decimal(0), price_source="offline-fixed", **kwargs)
     monkeypatch.setattr(policy, "run_search", offline)
-    def reply(req):
+    def reply(req, active_store=None, active_rid=None):
         payload = json.loads(req.content)
         writing = "ReportDraft" in json.dumps(payload)
         model_calls.append("report" if writing else "manager")
@@ -55,12 +55,21 @@ def rig(app, monkeypatch, *, search="ok", report="ok", source_count=1):
         else:
             if report == "fail":
                 return httpx.Response(403, json={"error": {"message": "mock refusal", "type": "permission_error"}})
-            evidence = app.store.db.execute("SELECT evidence_id,evidence_text FROM evidence WHERE research_id=? AND status='VERIFIED' LIMIT 1", (rid_holder[0],)).fetchone()
-            output = {"summary": "확보한 초록에서는 온도에 따라 기체 방출이 달라질 수 있다고 보고합니다. 직접 측정한 속도는 없습니다.",
+            evidence = (active_store or app.store).db.execute("SELECT evidence_id,evidence_text FROM evidence WHERE research_id=? AND status='VERIFIED' LIMIT 1", (active_rid or rid_holder[0],)).fetchone()
+            output = {"report_type": "design", "summary": "확보한 초록에서는 온도에 따라 기체 방출이 달라질 수 있다고 보고합니다. 직접 측정한 속도는 없습니다.",
                       "claims": [{"text": "온도가 올라갈 때 기체 방출이 증가했다는 초록 기록이 있습니다.", "evidence_id": evidence[0], "quote": evidence[1]}] if evidence else [],
                       "variables": [{"name": "음료 온도", "role": "독립변인"}, {"name": "시간별 질량 변화", "role": "종속변인"}, {"name": "음료·용기·개봉 방법", "role": "통제변인"}],
                       "materials": ["같은 음료와 용기", "온도계와 저울"], "procedure": ["온도 외 조건을 동일하게 유지합니다.", "개봉 후 시간별 질량을 반복 기록합니다."],
                       "measurement": "질량 변화에는 증발·유출도 포함될 수 있어 별도 대조 조건이 필요합니다.", "limitations": ["초록만 확인했습니다."], "figure_refs": []}
+            if report == "inquiry":
+                output = {"report_type": "literature" if evidence else "principle",
+                    "summary": "온도와 기체 방출의 관계를 설명한다.",
+                    "purpose": "온도 변화가 탄산 방출에 미치는 영향을 분석한다.",
+                    "explanation": "용해 평형과 방출 속도는 서로 다른 개념이다.",
+                    "method": "온도와 기체 방출의 원리를 비교하였다.",
+                    "results": "직접 측정 자료는 없다. 온도 외에 용기와 흔들림도 방출에 영향을 줄 수 있다.",
+                    "conclusion": "온도는 주요 조건이며 정확한 속도는 측정 자료가 필요하다.",
+                    "claims": output["claims"]}
             if report == "number":
                 output["summary"] = "방출 속도는 999 mL/s로 측정되었습니다."
         return httpx.Response(200, json={"id": "offline-" + str(len(model_calls)), "model": "manual-id",
@@ -68,7 +77,7 @@ def rig(app, monkeypatch, *, search="ok", report="ok", source_count=1):
             "usage": {"prompt_tokens": 30, "completion_tokens": 100}})
     def gateway(store, rid, snapshot):
         rid_holder[0] = rid
-        return RoutedGateway(store, app.credentials, rid, snapshot, client_factory=lambda *_: httpx.AsyncClient(transport=httpx.MockTransport(reply)))
+        return RoutedGateway(store, app.credentials, rid, snapshot, client_factory=lambda *_: httpx.AsyncClient(transport=httpx.MockTransport(lambda req: reply(req, store, rid))))
     rid_holder = [None]
     return gateway, model_calls, search_calls
 
@@ -150,7 +159,9 @@ def test_failure_keeps_partial_report_and_actions(app, monkeypatch, search, repo
     assert render_pdf(app.read._state, rid)["data"].startswith(b"%PDF-")
     saved = report_record(app.read._state, rid)
     if report != "ok":
-        assert saved["status"] == "PARTIAL" and saved["draft"]["procedure"]
+        assert saved["status"] == "PARTIAL" and saved["draft"]["claims"]
+        assert not saved["draft"]["procedure"] and not saved["draft"]["variables"]
+        assert "AI 본문 작성이 완료되지" in saved["draft"]["summary"]
         assert saved["author"] == "LOCAL_FALLBACK"
         assert not app.store.db.execute("SELECT 1 FROM runtime_steps WHERE research_id=? AND step_key LIKE 'report-draft:%' AND status='RUNNING'", (rid,)).fetchone()
     if search != "ok":
@@ -200,7 +211,7 @@ def test_report_security_and_currentness(app, monkeypatch, fault):
     state = app.read._state
     saved = report_record(state, rid)
     if fault == "tamper":
-        state.workspace.path(rid, "research_output/ai_report.json").write_bytes(b"{}")
+        (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'ai_report.json').write_bytes(b"{}")
         with pytest.raises(ReleaseExportError):
             render_pdf(state, rid)
     elif fault == "stale":
@@ -258,20 +269,20 @@ def test_fresh_process_crash_after_report_response_reuses_completed_requests(tmp
 
 
 def test_crossref_jats_is_plain_text_and_korean_co2_relevance():
-    from htrsa.scholarly import normalize_crossref_work
-    from htrsa.literature import screen_source
+    from probe.scholarly import normalize_crossref_work
+    from probe.literature import screen_source
     source = normalize_crossref_work({"DOI": "10.5555/test", "title": ["탄산음료 CO2 방출"], "abstract": "<jats:p>온도가 증가하면 CO<jats:sub>2</jats:sub> 방출이 증가할 수 있다.</jats:p>"})
     assert source.abstract == "온도가 증가하면 CO2 방출이 증가할 수 있다."
     assert screen_source("source", source, QUESTION).relevance == "DIRECT"
 
 
 def test_report_budget_is_reserved_before_start(app):
-    from htrsa.control_plane import ModelProfile, PriceRecord
-    from htrsa.product_policy import completion_budget
+    from probe.control_plane import ModelProfile, PriceRecord
+    from probe.product_policy import completion_budget
     configure(app)
     profile = ModelProfile.model_validate(app.store.config("model", "m"))
     profile.local_api_unmetered = False
-    profile.price = PriceRecord(input_per_million="1", output_per_million="1", source="offline-owner", revision="fixed-1", checked_at=__import__("htrsa.schemas", fromlist=["utc_now"]).utc_now().isoformat(), owner_verified=True)
+    profile.price = PriceRecord(input_per_million="1", output_per_million="1", source="offline-owner", revision="fixed-1", checked_at=__import__("probe.schemas", fromlist=["utc_now"]).utc_now().isoformat(), owner_verified=True)
     app.store.put("model", "m", profile, 1)
     snapshot = app.prepare(request(run_limit_usd=".000001"))
     view = completion_budget(app.store, "preflight", snapshot)
@@ -292,11 +303,11 @@ def test_supported_fixed_data_procedure_does_not_require_unused_literature_searc
 
 
 def test_report_budget_shortage_preserves_evidence_without_new_model_request(app, monkeypatch):
-    from htrsa.control_plane import PriceRecord
-    from htrsa.research_report import write_report
-    from htrsa.autonomous_loop import AutonomousResearchLoop
-    from htrsa.final_report import export_final_report
-    from htrsa.schemas import utc_now
+    from probe.control_plane import PriceRecord
+    from probe.research_report import write_report
+    from probe.autonomous_loop import AutonomousResearchLoop
+    from probe.final_report import export_final_report
+    from probe.schemas import utc_now
     gateway, calls, searches = rig(app, monkeypatch)
     rid = run(app, gateway)
     snapshot = app.store.run(rid)["snapshot"]
@@ -317,7 +328,7 @@ def test_report_budget_shortage_preserves_evidence_without_new_model_request(app
 def test_local_pdfjs_bundle_is_pinned_and_integrity_checked():
     from pathlib import Path
     from hashlib import sha256
-    vendor = Path(__file__).resolve().parents[1] / "src/htrsa/workbench_static/pdfjs"
+    vendor = Path(__file__).resolve().parents[1] / "src/probe/workbench_static/pdfjs"
     manifest = json.loads((vendor / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["version"] == "6.4.299"
     assert {"build/pdf.mjs", "build/pdf.worker.mjs"} <= set(manifest["files"])
@@ -329,8 +340,8 @@ def test_local_pdfjs_bundle_is_pinned_and_integrity_checked():
 
 def test_live_transport_path_preserves_dns_tls_and_model_endpoint_boundaries(monkeypatch):
     import socket
-    from htrsa.control_plane import Connection, PinnedTransport
-    from htrsa.scholarly import SearchRequest
+    from probe.control_plane import Connection, PinnedTransport
+    from probe.scholarly import SearchRequest
     recorded = []
     monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("93.184.216.34", 443))])
     def reply(req):
@@ -355,15 +366,15 @@ def test_live_transport_path_preserves_dns_tls_and_model_endpoint_boundaries(mon
 
 @pytest.mark.parametrize("kind", ["shared_limit", "price_missing"])
 def test_search_limit_and_price_are_checked_before_the_first_model_call(app, monkeypatch, kind):
-    from htrsa.control_plane import Defaults
+    from probe.control_plane import Defaults
     configure(app)
     if kind == "shared_limit":
         row = app.store.db.execute("SELECT revision FROM control_configs WHERE kind='defaults' AND id='global'").fetchone()
         app.store.put("defaults", "global", Defaults(search_attempt_limit=0), row[0] if row else 0)
         code = "SEARCH_ATTEMPT_LIMIT"
     else:
-        import htrsa.search_policy as policy
-        monkeypatch.setattr(policy, "CROSSREF_PRICE_CHECKED_AT", "2020-01-01T00:00:00+00:00")
+        import probe.search_policy as policy
+        monkeypatch.setattr(policy, "AI_SEARCH_PRICE_CHECKED_AT", "2020-01-01T00:00:00+00:00")
         code = "PRICE_UNKNOWN"
     value = app.request("POST", "/api/control/research/preflight", request())
     assert not value.body["ready"] and code in value.body["reasons"]
@@ -383,3 +394,19 @@ def test_distinct_sources_with_same_quote_are_not_a_research_loop(app, monkeypat
     before = len(calls), len(searches)
     asyncio.run(execute(app.database, app.workspace, rid, provider_factory=gateway))
     assert (len(calls), len(searches)) == before
+
+
+def test_report_writer_returns_inquiry_body_through_routed_gateway(app, monkeypatch):
+    """실제 실행·요청 경로에서 새 형식의 본문 저장과 PDF를 확인한다."""
+    gateway, calls, _ = rig(app, monkeypatch, report="inquiry")
+    rid = run(app, gateway)
+    assert calls == ["manager", "report"]
+    record = report_record(app.read._state, rid)
+    assert record["status"] == "READY"
+    draft = record["draft"]
+    assert all(draft[key] for key in ("purpose", "explanation", "method", "results", "conclusion"))
+    assert not draft["procedure"] and not draft["variables"] and not draft["materials"]
+    reader = __import__("pypdf").PdfReader(io.BytesIO(render_pdf(app.read._state, rid)["data"]))
+    text = "\n".join(page.extract_text() for page in reader.pages)
+    assert "실험 설계안" not in text
+    assert "결과 및 해석" in text and "참고문헌" in text

@@ -15,8 +15,8 @@
 
 ## 수정 파일·재사용
 
-- `src/htrsa/workbench_static/{workbench.js,product_ux.js,beginner_ux.js,workbench.css}`: 화면 생명주기·3장 구성·표시·튜토리얼·첨부 갱신.
-- `src/htrsa/{product_policy.py,control_plane.py,research_settings.py,search_policy.py}`: 기본 전송 범위·별도 검색 동의·자동 횟수 계산·원자적 비용 차단.
+- `src/probe/workbench_static/{workbench.js,product_ux.js,beginner_ux.js,workbench.css}`: 화면 생명주기·3장 구성·표시·튜토리얼·첨부 갱신.
+- `src/probe/{product_policy.py,control_plane.py,research_settings.py,search_policy.py}`: 기본 전송 범위·별도 검색 동의·자동 횟수 계산·원자적 비용 차단.
 - `tests/test_research_wizard_budget.py`: 신규 검색 비용·동의·상한·단가·실패 검사 24개.
 - `qa/research_wizard_browser.cjs`, `qa/beginner_v4_browser.cjs`, `qa/ui_unblock_browser.cjs`, `qa/ui_unblock_browser_fixture.py`: 실제 Chrome 회귀와 명시적 모의 자격 증명.
 - `docs/development/FEATURE_FREEZE.md`, `docs/history/연구일지.md`, `qa/README.md`, 이 보고서와 `results.json`: 범위와 실행 기록.
@@ -31,7 +31,7 @@ DB migration·새 dependency 없음. 기존 OwnerSession, 초안·첨부 저장�
 node qa/research_wizard_browser.cjs
 node qa/beginner_v4_browser.cjs
 node qa/ui_unblock_browser.cjs
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-core
 .\.venv\Scripts\python.exe -X utf8 qa/ui_unblock_offline_validation.py
 ```
 

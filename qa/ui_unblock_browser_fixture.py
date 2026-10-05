@@ -7,12 +7,12 @@ import sys
 import httpx
 ROOT=Path(__file__).resolve().parents[1]
 sys.path[:0]=[str(ROOT/"src"),str(ROOT/"tests")]
-from htrsa.workbench import WorkbenchAPI,OwnerSession,create_server
-from htrsa.control_plane import Connection,ModelProfile,Defaults
-from htrsa.control_runtime import RoutedGateway,execute
-from htrsa.provider_checks import check_model
+from probe.workbench import WorkbenchAPI,OwnerSession,create_server
+from probe.control_plane import Connection,ModelProfile,Defaults
+from probe.control_runtime import RoutedGateway,execute
+from probe.provider_checks import check_model
 from test_autonomous_loop import MANAGER
-from htrsa.database import to_json
+from probe.database import to_json
 
 REPORT_DRAFT = {"summary": "확인된 수치 결과는 없습니다. 측정 자료가 필요합니다.", "procedure": ["측정 조건을 정하고 원본 자료를 기록합니다."], "limitations": ["자료 부족으로 결론을 확정하지 않습니다."]}
 
@@ -32,7 +32,7 @@ def main():
         text=to_json(observed);text.encode("utf-8",errors="strict")
         (folder/"observed.json").write_text(text,encoding="utf-8")
         return httpx.Response(200,json={"id":"offline-browser","model":value["model"],
-            "choices":[{"message":{"role":"assistant","content":json.dumps(REPORT_DRAFT if "ReportDraft" in json.dumps(value) else MANAGER) if manager_request else "HTRSA_OK"},"finish_reason":"stop"}],
+            "choices":[{"message":{"role":"assistant","content":json.dumps(REPORT_DRAFT if "ReportDraft" in json.dumps(value) else MANAGER) if manager_request else "PROBE_OK"},"finish_reason":"stop"}],
             "usage":{"prompt_tokens":10,"completion_tokens":20}})
     factory=lambda *_:httpx.AsyncClient(transport=httpx.MockTransport(respond))
     class OfflineAPI(WorkbenchAPI):
@@ -53,9 +53,9 @@ def main():
         api.store.put("model",identity,ModelProfile(profile_id=identity,connection_id="local",display_name="검사 모델 "+identity,
             model_id="manual-"+identity,protocol="chat",capability_status="supported",local_api_unmetered=True))
     api.store.put("defaults","global",Defaults(request_limit_usd=".10"))
-    os.environ["HTRSA_OFFLINE_CATALOG_KEY"]="offline-catalog-canary-for-ui-fixture"
+    os.environ["PROBE_OFFLINE_CATALOG_KEY"]="offline-catalog-canary-for-ui-fixture"
     api.store.put("connection","catalog",Connection(connection_id="catalog",display_name="오프라인 목록 검사",
-        adapter_id="openai",base_url="https://api.openai.com/v1",endpoint_class="cloud",destination_approved=True,credential_env_name="HTRSA_OFFLINE_CATALOG_KEY"))
+        adapter_id="openai",base_url="https://api.openai.com/v1",endpoint_class="cloud",destination_approved=True,credential_env_name="PROBE_OFFLINE_CATALOG_KEY"))
     api.request("POST","/api/control/preferences",{"explanation_prompt_dismissed":True})
     session=OwnerSession();server=create_server(api,session=session)
     print("http://"+server.RequestHandlerClass.authority+"/#bootstrap="+session.issue_bootstrap(),flush=True)

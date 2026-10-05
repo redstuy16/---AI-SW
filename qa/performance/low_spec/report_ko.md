@@ -12,7 +12,7 @@
 
 실행 자원 대기열, 실행 모드, 목록 페이지 처리, 상세 지연 조회, 사용량 집계, 디스크 상태 표시, 분석 그림 정리를 구현했다. 시간 절감을 확인한 일괄 목록·verifier·실험 조회는 KEEP, 시작 import·유휴 CPU는 NO_MEANINGFUL_GAIN으로 판정했다. 고정 fixture에서 과학 결과·상태의 동등성을 검사했으며 새 캐시는 없다.
 
-- 신규 실행 모듈: `src/htrsa/resource_queue.py`, `src/htrsa/workbench_pages.py`. 흐름 모듈과 화면 변경은 연구 흐름 보고서에 함께 정리했다.
+- 신규 실행 모듈: `src/probe/resource_queue.py`, `src/probe/workbench_pages.py`. 흐름 모듈과 화면 변경은 연구 흐름 보고서에 함께 정리했다.
 - 기존 실행 경로: `resource_policy.py`, `control_runtime.py`, `real_tools.py`, `agent_runtime.py`, `providers/native.py`, `control_plane.py`, `dashboard.py`, `workbench.py`.
 - 화면: `workbench_static/workbench.js`, `product_ux.js`, `workbench.css`, `cycle5_ui.js`. 기존 API·연구 설정·성능 슬라이더는 유지했다.
 - 검증: `tests/test_execution_flow.py` 59개, `qa/performance/low_spec/{probe.py,browser_probe.cjs,bundle_probe.cjs,compare.py}`, `qa/flow_offline_validation.py`, `qa/flow_browser_regression.py`, `qa/flow_visual_fixture.py`, `qa/flow_visual_qa.cjs`, `qa/flow_large_probe.py`, `qa/flow_large_qa.cjs`.
@@ -88,7 +88,7 @@
 | 새 Chrome 흐름 | `node qa/flow_visual_qa.cjs` | 31개 검사 PASS |
 | 대형 Chrome 흐름 | `node qa/flow_large_qa.cjs build/flow-large-final-fixture` | 10개 검사 PASS |
 | 전역 로컬 한도 추가 전 전체 회귀 | `.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/flow-final-regression-v3 --junitxml build/flow-final-regression-v3.xml` | 845 passed, 5 skipped, 2 deselected / 807.97초 |
-| CORE gate | `.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-core` | 최종 전체 오프라인 CORE 847 passed, skipped=false |
+| CORE gate | `.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-core` | 최종 전체 오프라인 CORE 847 passed, skipped=false |
 
 중간 전체 검사에서는 provider replay의 마지막 감사 이벤트에 모델 ID가 없는 문제로 7 failed, 838 passed, 5 skipped, 2 deselected가 발생했다. 실행 자원 완료 기록에 실제 `resolved_model_id`를 기록하도록 수정했고 관련 209개 검사를 통과했다. 기존 테스트는 수정하지 않았다. 그림 저장의 OSError·MemoryError를 주입한 4개 검사에서는 생성한 Matplotlib 그림을 닫고 성공 결과를 확정하지 않는 것을 확인했다.
 

@@ -8,12 +8,12 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
-from htrsa.control_plane import Connection, ModelProfile, Defaults
-from htrsa.control_runtime import RoutedGateway, execute
-from htrsa.provider_checks import check_model
-from htrsa import qualified_workflow
-from htrsa.api import APIResponse
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.control_plane import Connection, ModelProfile, Defaults
+from probe.control_runtime import RoutedGateway, execute
+from probe.provider_checks import check_model
+from probe import qualified_workflow
+from probe.api import APIResponse
 from test_autonomous_loop import MANAGER
 
 
@@ -34,7 +34,7 @@ def main():
         body = json.loads(request.content)
         fixed = any(m.get("content") == "짧은 기능 검사" for m in body.get("messages", []))
         profile = "QualifiedProfileDecision" in json.dumps(body) or "ProfileDecision" in json.dumps(body)
-        output = "HTRSA_OK" if fixed else json.dumps({"decision":"PROCEED","reason":"공식 연간 자료의 두 기간 비교"} if profile else MANAGER)
+        output = "PROBE_OK" if fixed else json.dumps({"decision":"PROCEED","reason":"공식 연간 자료의 두 기간 비교"} if profile else MANAGER)
         observed.append({"model":body["model"],"profile":profile,"connection_check":fixed,"execution":"MOCK_HTTP"})
         text = json.dumps(observed, ensure_ascii=False)
         text.encode("utf-8", errors="strict")

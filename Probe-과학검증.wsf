@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job id="PROBEScienceValidation">
+<script language="VBScript"><![CDATA[
+Option Explicit
+Dim files, shell, root, python, script, command
+Set files = CreateObject("Scripting.FileSystemObject")
+Set shell = CreateObject("WScript.Shell")
+root = files.GetParentFolderName(WScript.ScriptFullName)
+python = files.BuildPath(root, ".venv\Scripts\pythonw.exe")
+script = files.BuildPath(root, "qa\science_live_validation.py")
+If Not files.FileExists(python) Then
+  MsgBox "프로젝트의 Python 가상환경을 찾지 못했습니다. README의 설치 상태를 확인하세요.", 16, "과학 검증"
+  WScript.Quit 1
+End If
+shell.CurrentDirectory = root
+command = Chr(34) & python & Chr(34) & " -B -X utf8 " & Chr(34) & script & Chr(34) & " --live --open-results"
+shell.Run command, 0, False
+]]></script>
+</job>

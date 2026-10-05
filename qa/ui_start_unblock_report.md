@@ -155,7 +155,7 @@ Windows의 로컬 맑은 고딕을 사용했으며 font를 다운로드하거나
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/unblock-baseline-tests --junitxml build/unblock-baseline.xml
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q tests/test_ui_start_unblock.py tests/test_ui_unblock_policy_files.py tests/test_ui_unblock_search_pdf.py -p no:cacheprovider --basetemp build/unblock-new-fixed --junitxml build/unblock-new-fixed.xml
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/unblock-final-regression --junitxml build/unblock-final-regression.xml
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-core
 .\.venv\Scripts\python.exe -X utf8 qa/ui_unblock_offline_validation.py
 .\.venv\Scripts\python.exe -X utf8 qa/ui_unblock_defaults.py
 .\.venv\Scripts\python.exe -X utf8 qa/ui_unblock_pdf_checks.py
@@ -169,8 +169,8 @@ node qa/multi_provider_visual_qa.cjs
 .\.venv\Scripts\python.exe -X utf8 qa/gui_visual_fixture.py
 .\.venv\Scripts\python.exe -X utf8 qa/product_visual_fixture.py
 node qa/product_visual_qa.cjs
-node --check src/htrsa/workbench_static/product_ux.js
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight status
+node --check src/probe/workbench_static/product_ux.js
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight status
 .\.venv\Scripts\python.exe -X utf8 qa/prepublish_check.py --output build/ui_start_unblock/prepublish.json
 ```
 
@@ -233,16 +233,16 @@ OwnerSession, bootstrap 소거, Origin/CSRF, SecretStore, 목적지 승인, 유�
 
 | 파일 | 구현 |
 |---|---|
-| src/htrsa/control_plane.py, resource_policy.py | 버전 2 기본값·원자적 검색 dispatch·UI 기본 정책 |
-| src/htrsa/product_policy.py | 단일 resolver·안정된 자동 프로필·역할/추론 상속·계획 예산 |
-| src/htrsa/workbench.py, service.py | 선택 입력·현재 초안·멱등 생성·업로드·PDF API |
-| src/htrsa/research_settings.py | 기존 실행 중 설정 경계의 새 필드 호환 |
-| src/htrsa/control_runtime.py, autonomous_loop.py | 계획 후 근거 검사·질문 전송 범위·실제 부족 상태 |
-| src/htrsa/provider_checks.py | 고정 연결 확인·기존 세션 범위·ID 처리 |
-| src/htrsa/scholarly.py, search_policy.py | 실제 HTTP 재시도까지 공유 상한·적격 문헌 재사용 |
-| src/htrsa/input_upload.py | 제한 저장·읽기·실제 삭제·취소·provenance |
-| src/htrsa/release.py, report_pdf.py | 기존 export 검사 재사용·로컬 PDF·현재 snapshot 검사 |
-| src/htrsa/workbench_static/product_ux.js, workbench.css | 모델·고급·슬라이더·파일·도움말·PDF UI |
+| src/probe/control_plane.py, resource_policy.py | 버전 2 기본값·원자적 검색 dispatch·UI 기본 정책 |
+| src/probe/product_policy.py | 단일 resolver·안정된 자동 프로필·역할/추론 상속·계획 예산 |
+| src/probe/workbench.py, service.py | 선택 입력·현재 초안·멱등 생성·업로드·PDF API |
+| src/probe/research_settings.py | 기존 실행 중 설정 경계의 새 필드 호환 |
+| src/probe/control_runtime.py, autonomous_loop.py | 계획 후 근거 검사·질문 전송 범위·실제 부족 상태 |
+| src/probe/provider_checks.py | 고정 연결 확인·기존 세션 범위·ID 처리 |
+| src/probe/scholarly.py, search_policy.py | 실제 HTTP 재시도까지 공유 상한·적격 문헌 재사용 |
+| src/probe/input_upload.py | 제한 저장·읽기·실제 삭제·취소·provenance |
+| src/probe/release.py, report_pdf.py | 기존 export 검사 재사용·로컬 PDF·현재 snapshot 검사 |
+| src/probe/workbench_static/product_ux.js, workbench.css | 모델·고급·슬라이더·파일·도움말·PDF UI |
 | tests/test_ui_start_unblock.py, test_ui_unblock_policy_files.py, test_ui_unblock_search_pdf.py | 신규 44개 통합·부정·복구·export 검사 |
 | qa/ui_unblock_browser.cjs, ui_unblock_browser_fixture.py | 실제 Chrome·실제 서버·명시적 모의 HTTP |
 | qa/ui_unblock_defaults.py, ui_unblock_pdf_checks.py, ui_unblock_offline_validation.py | 기본값·실제 PDF·기존 파괴적/반복/복구 검증 실행 |

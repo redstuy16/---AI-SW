@@ -7,9 +7,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'tests'))
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
-from htrsa.control_plane import Connection, ModelProfile, Credentials, ControlError
-from htrsa.resource_policy import save_preferences
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.control_plane import Connection, ModelProfile, Credentials, ControlError
+from probe.resource_policy import save_preferences
 
 
 class MemoryStore:
@@ -29,8 +29,8 @@ class OfflineAPI(WorkbenchAPI):
     def command(self, rid, action, body):
         result = super().command(rid, action, body)
         if action in {'start', 'resume'}:
-            from htrsa.control_runtime import execute
-            from htrsa.providers.fake import FakeProvider
+            from probe.control_runtime import execute
+            from probe.providers.fake import FakeProvider
             from test_autonomous_loop import fake_replies, initial_coordinator
             replies = fake_replies()
             def bounded_coordinator(call):

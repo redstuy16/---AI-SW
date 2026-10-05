@@ -8,12 +8,12 @@ import subprocess
 import sys
 from uuid import uuid4
 
-from htrsa.control_plane import Credentials, ControlError
-from htrsa.preflight import VALIDATION_DIR, _source_fingerprint, native_environment_id
-from htrsa.sandbox import clean_environment
-from htrsa.schemas import utc_now
-from htrsa.secret_store import WindowsCredentialStore, SecretStoreUnavailable
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import Credentials, ControlError
+from probe.preflight import VALIDATION_DIR, _source_fingerprint, native_environment_id
+from probe.sandbox import clean_environment
+from probe.schemas import utc_now
+from probe.secret_store import WindowsCredentialStore, SecretStoreUnavailable
+from probe.workbench import WorkbenchAPI
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,8 +26,8 @@ def save(path, value):
 
 
 def windows_key():
-    namespace = "H-TRSA-Product-QA-" + uuid4().hex
-    name = "HTRSA_QA_CANARY"
+    namespace = "Probe-Product-QA-" + uuid4().hex
+    name = "PROBE_QA_CANARY"
     store = WindowsCredentialStore(namespace)
     first, second = secrets.token_urlsafe(36), secrets.token_urlsafe(36)
     record = {"passed": False, "status": "NOT_VALIDATED", "execution": "NATIVE_WINDOWS",
@@ -36,11 +36,11 @@ def windows_key():
               "namespace": "별도 일회성 QA namespace", "user_credentials_changed": False}
     checks = record["checks"]
     code = '''import hashlib,json,os,sys
-from htrsa.secret_store import WindowsCredentialStore
+from probe.secret_store import WindowsCredentialStore
 expected=json.loads(sys.stdin.read())
 store=WindowsCredentialStore(sys.argv[1])
-value,_=store.read('HTRSA_QA_CANARY')
-print(json.dumps({'read':bool(value and hashlib.sha256(value.encode('utf-8',errors='strict')).hexdigest()==expected['digest']),'credential_environment_empty':not any(k.endswith('API_KEY') or k=='HTRSA_QA_CANARY' for k in os.environ)}))
+value,_=store.read('PROBE_QA_CANARY')
+print(json.dumps({'read':bool(value and hashlib.sha256(value.encode('utf-8',errors='strict')).hexdigest()==expected['digest']),'credential_environment_empty':not any(k.endswith('API_KEY') or k=='PROBE_QA_CANARY' for k in os.environ)}))
 '''
     code.encode("utf-8", errors="strict")
     try:
@@ -92,7 +92,7 @@ def gpt_live():
             "model_id": "gpt-6.1-sol", "approve_price": True, "approve_destination": True})
         if response.status != 201:
             raise ControlError(response.body["error"])
-        from htrsa.productization import qualify
+        from probe.productization import qualify
         result = asyncio.run(qualify(app, response.body["profile_id"], {"consent": True, "approve_discovery": True,
             "idempotency_key": uuid4().hex, "max_total_usd": "0.10"}))
         record.update(status=result["status"], error_code=result.get("error_code"), checks=result["checks"], ledger=result["ledger"])

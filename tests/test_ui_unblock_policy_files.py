@@ -4,10 +4,10 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import pytest
 from pydantic import ValidationError
-from htrsa.control_plane import ControlError, ControlStore, Defaults, ROLES
-from htrsa.input_upload import Attachments
-from htrsa.product_policy import resolve_effective_settings
-from htrsa.database import initialize
+from probe.control_plane import ControlError, ControlStore, Defaults, ROLES
+from probe.input_upload import Attachments
+from probe.product_policy import resolve_effective_settings
+from probe.database import initialize
 from test_workbench import app, configure
 
 

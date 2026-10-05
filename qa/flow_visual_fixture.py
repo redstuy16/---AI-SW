@@ -7,7 +7,7 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'src'))
-from htrsa.workbench import WorkbenchAPI,OwnerSession,create_server
+from probe.workbench import WorkbenchAPI,OwnerSession,create_server
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     folder=args.folder;folder.mkdir(parents=True,exist_ok=True)
     if args.prepare:
         from f3p_eval import prepare
-        from htrsa.demo import run_demo_a,run_demo_b
+        from probe.demo import run_demo_a,run_demo_b
         db,state,agent,prepared,_=prepare(folder)
         original=state.stage;count=[0]
         def changed(payload):

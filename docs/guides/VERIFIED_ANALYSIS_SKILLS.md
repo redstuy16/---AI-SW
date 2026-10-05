@@ -23,10 +23,10 @@ SkillRequest는 연구·작업·계약 ID, plan_ref/version/hash, Skill ID/버�
 실제 Agent 실행은 명시적으로 활성화한다.
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build\skill-run.sqlite build\skill-workspace path\to\data.csv --goal "A fixed, documented analysis question" --verified-analysis-skills --target-usd 0.25 --soft-limit-usd 0.75 --hard-limit-usd 1.0
+.\.venv\Scripts\python.exe -m probe.agent_cli build\skill-run.sqlite build\skill-workspace path\to\data.csv --goal "A fixed, documented analysis question" --verified-analysis-skills --target-usd 0.25 --soft-limit-usd 0.75 --hard-limit-usd 1.0
 ```
 
-내장 호출은 `HTRSA_VERIFIED_ANALYSIS_SKILLS_ENABLED=1`도 사용할 수 있다. 기본값은 false다. 재개 시 동일 설정·Skill 버전이 필요하다. 적용한 설정·버전과 정확한 계획은 기존 실행 단계에 기록한다. 설정 누락/변경·호환되지 않는 계획 버전은 복구 오류로 차단한다. 완료한 도구·반영은 반복하지 않는다. 새로운 과학 반복 실험은 새 작업·실험 ID를 사용한다. 불확실한 실행의 별도 시도는 기존 복구 정책의 제한을 따른다.
+내장 호출은 `PROBE_VERIFIED_ANALYSIS_SKILLS_ENABLED=1`도 사용할 수 있다. 기본값은 false다. 재개 시 동일 설정·Skill 버전이 필요하다. 적용한 설정·버전과 정확한 계획은 기존 실행 단계에 기록한다. 설정 누락/변경·호환되지 않는 계획 버전은 복구 오류로 차단한다. 완료한 도구·반영은 반복하지 않는다. 새로운 과학 반복 실험은 새 작업·실험 ID를 사용한다. 불확실한 실행의 별도 시도는 기존 복구 정책의 제한을 따른다.
 
 Skill 계획·결과·그림은 기존 산출물 저장소에 등록한다. 보고서 수치는 검증된 결과·필드별 출처에서 해석한다. 활성화한 출시 내보내기는 검증된 호출마다 해시가 있는 analysis_artifacts 파일 3개를 포함한다. 재현에는 같은 데이터 스냅샷·해시·계획·지문·Skill/의존 버전·시드·분할 요약이 필요하다. 데이터 원본은 기존 공유 규칙대로 출시 파일에 포함하지 않는다. 내보내기는 데이터/산출물 해시·보고서 버전·비밀 패턴을 다시 검사한다.
 
@@ -45,10 +45,10 @@ Skill 계획·결과·그림은 기존 산출물 저장소에 등록한다. 보�
 실제 비교 명령은 승인과 자격 증명이 있는 환경에서 별도 새 DB 두 개에 동일 CSV·질문을 사용한다. 모델·제공사·예산을 고정하고 플래그만 변경한다. 기존 Agents SDK 경로는 모델 샘플링 시드를 노출하지 않아 엄격한 확률적 쌍 비교가 제한된다. 다중 제공사 작업대의 시드 설정 지원 여부는 해당 모델의 별도 확인이 필요하다.
 
 ```powershell
-$env:HTRSA_VERIFIED_ANALYSIS_SKILLS_ENABLED='0'
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build\ablation-off.sqlite build\ablation-off-workspace path\to\fixed.csv --goal "Same fixed question" --target-usd 0.25 --soft-limit-usd 0.75 --hard-limit-usd 1.0
-$env:HTRSA_VERIFIED_ANALYSIS_SKILLS_ENABLED='1'
-.\.venv\Scripts\python.exe -m htrsa.agent_cli build\ablation-on.sqlite build\ablation-on-workspace path\to\fixed.csv --goal "Same fixed question" --verified-analysis-skills --target-usd 0.25 --soft-limit-usd 0.75 --hard-limit-usd 1.0
+$env:PROBE_VERIFIED_ANALYSIS_SKILLS_ENABLED='0'
+.\.venv\Scripts\python.exe -m probe.agent_cli build\ablation-off.sqlite build\ablation-off-workspace path\to\fixed.csv --goal "Same fixed question" --target-usd 0.25 --soft-limit-usd 0.75 --hard-limit-usd 1.0
+$env:PROBE_VERIFIED_ANALYSIS_SKILLS_ENABLED='1'
+.\.venv\Scripts\python.exe -m probe.agent_cli build\ablation-on.sqlite build\ablation-on-workspace path\to\fixed.csv --goal "Same fixed question" --verified-analysis-skills --target-usd 0.25 --soft-limit-usd 0.75 --hard-limit-usd 1.0
 ```
 
 아래 명령은 실제 비교 준비용이며 오프라인 평가에서 실행하지 않았다. 요청 감소·비용 감소·지연 감소·Agent 성공률 향상을 측정했다고 주장하지 않는다.

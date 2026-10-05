@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
 const {chromium}=require('./browser_runtime.cjs');
 const root=path.resolve(__dirname,'..'),fixture=JSON.parse(fs.readFileSync(path.join(root,'build/cycle5_visual_fixture.json'),'utf8'));
 const output=path.join(root,'output/playwright/cycle5');fs.mkdirSync(output,{recursive:true});
-const server=spawn(path.join(root,'.venv/Scripts/python.exe'),['-m','htrsa.workbench',fixture.database,fixture.workspace,'--mode','DEMO','--no-browser','--port','0'],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe']});
+const server=spawn(path.join(root,'.venv/Scripts/python.exe'),['-m','probe.workbench',fixture.database,fixture.workspace,'--mode','DEMO','--no-browser','--port','0'],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe']});
 let browser;const checks=[],shots=[],errors=[],egress=[];
 function check(name,passed){if(!passed)throw Error('검사 실패: '+name);checks.push({name,passed:true});}
 async function main(){

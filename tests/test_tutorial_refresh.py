@@ -4,8 +4,8 @@ from pathlib import Path
 import socket
 import threading
 
-from htrsa.tutorial_guide import tutorial_catalog, render_tutorial_guide
-from htrsa.workbench import create_server
+from probe.tutorial_guide import tutorial_catalog, render_tutorial_guide
+from probe.workbench import create_server
 
 
 def test_api_issuance_has_emphasis_links_and_next_action():
@@ -54,7 +54,7 @@ def test_reload_asset_burst_is_queued_without_missing_scripts():
             connections.append(connection)
         thread = threading.Thread(target=server.serve_forever)
         thread.start()
-        static = Path(__file__).resolve().parents[1] / 'src/htrsa/workbench_static'
+        static = Path(__file__).resolve().parents[1] / 'src/probe/workbench_static'
         for name, connection in zip(names, connections):
             response = b''
             while chunk := connection.recv(65536):

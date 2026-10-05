@@ -8,17 +8,17 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from htrsa.research_design import (DetailedDesign, normalize_design, semantic_design, meaningful_count,
+from probe.research_design import (DetailedDesign, normalize_design, semantic_design, meaningful_count,
     resolve_design, organize, current_design, amend_design, summary, verify_design, check_tool, catalog)
-from htrsa.control_plane import ControlError, ROLES
-from htrsa.qualified_workflow import execute_profile
-from htrsa.qualified_profiles import conclusion_card
-from htrsa.final_report import export_final_report
-from htrsa.release import validate_report_snapshot
-from htrsa.report_ux import friendly_report
-from htrsa.autonomous_loop import AutonomousResearchLoop
-from htrsa.providers.fake import FakeProvider
-from htrsa.schemas import StagedResult
+from probe.control_plane import ControlError, ROLES
+from probe.qualified_workflow import execute_profile
+from probe.qualified_profiles import conclusion_card
+from probe.final_report import export_final_report
+from probe.release import validate_report_snapshot
+from probe.report_ux import friendly_report
+from probe.autonomous_loop import AutonomousResearchLoop
+from probe.providers.fake import FakeProvider
+from probe.schemas import StagedResult
 from test_workbench import app, configure
 from test_beginner_v4 import QUESTION, SOURCE
 
@@ -155,7 +155,7 @@ def test_di11_19_32_39_real_profile_plan_tool_and_intent_summary(app):
     assert "0.405" in result["calculation"] and "차" in result["calculation"]
     assert "차이가 없을" not in result["calculation"]
     assert len(provider.calls) == 1 and state.runtime_step(rid, "research_design:1")["output"]["design"]["hypotheses"]
-    from htrsa.agent_context import compile_context
+    from probe.agent_context import compile_context
     contract, _ = state.contract(s["trace"][0]["contract_id"])
     assert compile_context(state, contract).active_state["research_design"]["hash"] == s["hash"]
 
@@ -213,14 +213,14 @@ def test_di42_pdf_export_and_tamper_are_artifact_bound(app):
     text = "\n".join(p.extract_text() for p in PdfReader(io.BytesIO(pdf.body)).pages)
     assert "이번 연구의 조건" in text and "원래 목적" in text and "실제로 사용한 자료" in text
     validate_report_snapshot(state, rid)
-    file = state.workspace.path(rid, "research_output/research_design.json")
+    file = (__import__("probe.report_publication", fromlist=["report_root"]).report_root(state, rid) / 'research_design.json')
     file.write_bytes(b"{}")
     with pytest.raises(Exception):
         validate_report_snapshot(state, rid)
 
 
 def test_di44_cross_draft_source_and_secret_rejected(app, monkeypatch):
-    from htrsa.input_upload import Attachments
+    from probe.input_upload import Attachments
     manager = Attachments(app.store, app.workspace)
     data = b"x,y\n1,2\n2,3\n"
     item = manager.begin({"filename": "data.csv", "draft_id": "draft-owner-1", "size_bytes": len(data)})
@@ -230,7 +230,7 @@ def test_di44_cross_draft_source_and_secret_rejected(app, monkeypatch):
     assert response.status == 409
     response = app.request("POST", "/api/control/research/design-columns", {"draft_id": "draft-other-1", "attachment_id": item["attachment_id"]})
     assert response.status == 409
-    monkeypatch.setenv("HTRSA_API_KEY", "sk-" + "secretcanary"*5)
+    monkeypatch.setenv("PROBE_API_KEY", "sk-" + "secretcanary"*5)
     response = app.request("POST", "/api/control/research/design-review", {"question": "sk-" + "secretcanary"*5})
     assert response.status == 409 and "secretcanary" not in str(response.body)
 
@@ -242,10 +242,10 @@ def test_di46_long_design_bounded_no_eager_data_or_calls(app):
     assert result.body["paid_calls"] == 0
 
 def generic_tools(app, design):
-    from htrsa.research_design import initialize_design
-    from htrsa.mock import MockManager, MockExperimentCoordinator
-    from htrsa.schemas import Constraints, ToolRequest, new_id
-    from htrsa.real_tools import ToolRegistry, DataImportTool, DataProfileTool, StatsTool
+    from probe.research_design import initialize_design
+    from probe.mock import MockManager, MockExperimentCoordinator
+    from probe.schemas import Constraints, ToolRequest, new_id
+    from probe.real_tools import ToolRegistry, DataImportTool, DataProfileTool, StatsTool
     state = app.read._state
     rid = state.create_research("두 기록의 관련성을 살펴본다")
     state.workspace.prepare(rid)
@@ -285,9 +285,9 @@ def test_di18_35_bound_control_deviation_and_source_staleness(app):
     design = {"variables": [variable("같게 유지할 값", "fixed", binding={"dataset_id": did, "sha256": record["sha256"], "column": "temperature"},
         details={"fixed_value": intent("25"), "maintain": intent("같은 조건"), "check": intent("기록값 확인")})]}
     amend_design(state, rid, design, expected_version=state.state_version(rid))
-    from htrsa.mock import MockManager
-    from htrsa.schemas import Constraints, ToolRequest, new_id
-    from htrsa.real_tools import ToolRegistry, StatsTool
+    from probe.mock import MockManager
+    from probe.schemas import Constraints, ToolRequest, new_id
+    from probe.real_tools import ToolRegistry, StatsTool
     current = MockManager().create_contract(rid, "수정된 조건의 비교").model_copy(update={
         "assigned_role": "analysis_planner_worker", "allowed_tools": ["stats.run"], "constraints": Constraints(max_tool_calls=3)})
     task = state.issue_contract(current)
@@ -311,7 +311,7 @@ def test_di38_f3p_cannot_fix_wrong_columns_by_changing_intent(app):
 
 
 def test_di36_change_after_verify_cannot_commit_and_recalculation_recovers(app):
-    from htrsa.recovery import FaultInjector, InjectedCrash
+    from probe.recovery import FaultInjector, InjectedCrash
     rid, snap, runtime, provider = detailed(app, {"fields": {"purpose": intent("첫 조건")}})
     state = app.read._state
     runtime.faults = FaultInjector(lambda p: (_ for _ in ()).throw(InjectedCrash()) if p == "profile_after_verify" else None)
@@ -352,7 +352,7 @@ def test_omitted_detail_does_not_clear_same_draft(app):
 
 
 def test_planning_context_preserves_hypothesis_and_procedure_as_intent(app):
-    from htrsa.research_design import design_context
+    from probe.research_design import design_context
     raw = {"hypotheses": [{"id": "hypothesis-1", "text": "차이가 없을 것으로 예상"}],
            "procedure": [{"id": "procedure-1", "text": "같은 원본의 기간을 비교"}]}
     rid, snap, runtime, provider = detailed(app, raw)
@@ -393,15 +393,15 @@ def test_refined_period_amend_uses_original_prose(app):
 
 
 def test_design_release_replay_hash_secret_and_stale_gate(app, tmp_path, monkeypatch):
-    from htrsa.release import export_release, ReleaseExportError
-    from htrsa.qualified_replay import replay
-    from htrsa.storage import sha256_file
+    from probe.release import export_release, ReleaseExportError
+    from probe.qualified_replay import replay
+    from probe.storage import sha256_file
     rid, snap, runtime, provider, result = execute(app, {"fields": {"purpose": intent("평균 비교")}})
     state = app.read._state
     state.stop_research(rid, "QUALIFIED_PROCEDURE_COMPLETED")
     export_final_report(state, rid)
     canary = "sk-" + "designexportcanary" * 4
-    monkeypatch.setenv("HTRSA_DESIGN_EXPORT_API_KEY", canary)
+    monkeypatch.setenv("PROBE_DESIGN_EXPORT_API_KEY", canary)
     output = tmp_path / "release"
     export_release(state, rid, output)
     document = json.loads((output / "manifests/release_manifest.json").read_text(encoding="utf-8"))

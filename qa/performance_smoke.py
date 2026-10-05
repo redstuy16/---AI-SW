@@ -13,12 +13,12 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from htrsa.dashboard import (project_evidence, project_experiments, project_overview,
+from probe.dashboard import (project_evidence, project_experiments, project_overview,
                              project_tree, project_usage)
-from htrsa.database import initialize
-from htrsa.scholarly import ScholarlyError, ScholarlyHTTPClient
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.database import initialize
+from probe.scholarly import ScholarlyError, ScholarlyHTTPClient
+from probe.service import StateService
+from probe.storage import Workspace
 
 
 def main() -> None:

@@ -6,7 +6,7 @@
   "dependencies_checked": 84,
   "known_vulnerabilities": 0,
   "limits": [
-    "편집 가능한 htrsa 자체는 취약점 DB 조회 대상에서 제외",
+    "편집 가능한 probe 자체는 취약점 DB 조회 대상에서 제외",
     "알려지지 않은 취약점이 없음을 보장하지 않음"
   ]
 }

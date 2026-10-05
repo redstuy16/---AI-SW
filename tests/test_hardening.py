@@ -13,11 +13,11 @@ import httpx
 import pathspec
 import pytest
 
-from htrsa.control_plane import ControlError
-from htrsa.input_upload import upload_csv
-from htrsa.resource_policy import activity_page, preferences, save_preferences, low_spec
-from htrsa.scholarly import SearchRequest, SearchResult, NormalizedSource, ScholarlyHTTPClient, ScholarlyError
-from htrsa.search_policy import decision, PolicyProvider, run_search
+from probe.control_plane import ControlError
+from probe.input_upload import upload_csv
+from probe.resource_policy import activity_page, preferences, save_preferences, low_spec
+from probe.scholarly import SearchRequest, SearchResult, NormalizedSource, ScholarlyHTTPClient, ScholarlyError
+from probe.search_policy import decision, PolicyProvider, run_search
 from test_workbench import app, configure
 from test_product_ux import product
 
@@ -162,10 +162,10 @@ def test_activity_bounded_and_all_records_preserved(app):
 
 
 def test_lazy_views_do_not_import_heavy_modules_or_project_hidden_pages(app, monkeypatch):
-    result=subprocess.run([sys.executable,'-c',"import sys;from pathlib import Path;from htrsa.workbench import WorkbenchAPI;a=WorkbenchAPI(Path(sys.argv[1])/'state.sqlite',Path(sys.argv[1])/'workspace',launch=False);a.request('GET','/api/control/research');assert not any(k in sys.modules for k in ('numpy','scipy','matplotlib','sklearn','pandas'));a.close()",str(app.database.parent/'lazy-probe')],capture_output=True,check=False)
+    result=subprocess.run([sys.executable,'-c',"import sys;from pathlib import Path;from probe.workbench import WorkbenchAPI;a=WorkbenchAPI(Path(sys.argv[1])/'state.sqlite',Path(sys.argv[1])/'workspace',launch=False);a.request('GET','/api/control/research');assert not any(k in sys.modules for k in ('numpy','scipy','matplotlib','sklearn','pandas'));a.close()",str(app.database.parent/'lazy-probe')],capture_output=True,check=False)
     assert result.returncode==0,result.stderr
     rid=product(app)['research_id']
-    import htrsa.dashboard as dashboard
+    import probe.dashboard as dashboard
     monkeypatch.setattr(dashboard,'project_timeline',lambda *_:pytest.fail('숨겨진 기록 조회'))
     assert app.request('GET',f'/api/research/{rid}').status==200
 
@@ -182,7 +182,7 @@ def test_safe_preferences_and_low_spec_do_not_enable_experiments(app):
     assert not result['snapshot']['verification_repair'] and not result['snapshot']['verified_analysis_skills']
 
 
-@pytest.mark.parametrize('relative,ignored',[('.env',True),('secrets.env',True),('state.sqlite',True),('workspace/input.csv',True),('models/model.gguf',True),('build/x.txt',True),('src/htrsa/workbench.py',False),('docs/README.md',False),('tests/test_workbench.py',False),('.env.example',False),('qa/fixtures/f3p_eval_config.json',False),('.github/workflows/offline.yml',False),('qa/live_api_test/session/manifest.json',True)])
+@pytest.mark.parametrize('relative,ignored',[('.env',True),('secrets.env',True),('state.sqlite',True),('workspace/input.csv',True),('models/model.gguf',True),('build/x.txt',True),('src/probe/workbench.py',False),('docs/README.md',False),('tests/test_workbench.py',False),('.env.example',False),('qa/fixtures/f3p_eval_config.json',False),('.github/workflows/offline.yml',False),('qa/live_api_test/session/manifest.json',True)])
 def test_gitignore_coverage(relative,ignored):
     rules=pathspec.GitIgnoreSpec.from_lines((ROOT/'.gitignore').read_text(encoding='utf-8').splitlines())
     assert rules.match_file(relative)==ignored
@@ -228,8 +228,8 @@ def test_required_evidence_cannot_be_removed_by_task(app):
 
 @pytest.mark.parametrize('command',['PAUSE_REQUESTED','STOP_REQUESTED'])
 def test_search_safe_boundary_prevents_network_and_reservation(app, command):
-    from htrsa.control_plane import ControlBoundary
-    from htrsa.control_runtime import boundary
+    from probe.control_plane import ControlBoundary
+    from probe.control_runtime import boundary
     rid,s=search_case(app)
     app.store.db.execute('UPDATE control_runs SET status=? WHERE research_id=?',(command,rid))
     p=Provider()
@@ -300,12 +300,12 @@ def test_search_secret_response_never_enters_sources_or_audit(app):
 
 def test_search_provenance_export_hash_and_secret_gate(tmp_path):
     from hashlib import sha256
-    from htrsa.control_plane import ControlStore
-    from htrsa.database import initialize
-    from htrsa.demo import run_demo_a
-    from htrsa.release import export_release, ReleaseExportError
-    from htrsa.service import StateService
-    from htrsa.storage import Workspace
+    from probe.control_plane import ControlStore
+    from probe.database import initialize
+    from probe.demo import run_demo_a
+    from probe.release import export_release, ReleaseExportError
+    from probe.service import StateService
+    from probe.storage import Workspace
     database=tmp_path/'state.sqlite';workspace=tmp_path/'workspace'
     demo=run_demo_a(database,workspace)
     db=initialize(database)

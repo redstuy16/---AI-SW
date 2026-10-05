@@ -8,11 +8,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-from htrsa import product_policy
-from htrsa.control_plane import Connection, ControlError, ModelProfile, PriceRecord
-from htrsa.provider_checks import check_model
-from htrsa.schemas import utc_now
-from htrsa.tutorial_guide import TutorialProgress, tutorial_catalog, render_tutorial_guide
+from probe import product_policy
+from probe.control_plane import Connection, ControlError, ModelProfile, PriceRecord
+from probe.provider_checks import check_model
+from probe.schemas import utc_now
+from probe.tutorial_guide import TutorialProgress, tutorial_catalog, render_tutorial_guide
 from test_multi_provider import document
 from test_workbench import app
 
@@ -138,7 +138,7 @@ def test_help_has_no_free_example_and_legacy_learning_state_migrates():
     guide = render_tutorial_guide()
     assert "examples" not in catalog and "무료 예시" not in guide and "학습용 예시" not in guide
     assert TutorialProgress(mode="EXAMPLE").mode == "GUIDED"
-    root = Path(__file__).resolve().parents[1] / "src/htrsa/workbench_static"
+    root = Path(__file__).resolve().parents[1] / "src/probe/workbench_static"
     source = (root / "tutorial.js").read_text(encoding="utf-8")
     assert "guide-example" not in source and "showExample" not in source and "learning-example" not in source
     assert "9개 과정" not in source and "사용 안내 검색" not in source

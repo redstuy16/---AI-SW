@@ -7,7 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
-from htrsa.workbench import WorkbenchAPI
+from probe.workbench import WorkbenchAPI
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
     try:
         state, rid = api.read._state, fixture['repair']
         if args.prepare:
-            from htrsa.database import connect
+            from probe.database import connect
             source = connect(ROOT / 'build/flow-opt-fixture/state.sqlite')
             with api.store.transaction():
                 for table in ('experiments', 'evidence', 'staged_mutations'):
@@ -39,10 +39,10 @@ def main():
             
         if args.update:
             state.set_hypothesis_status(rid, fixture['hypothesis'], 'SHORTLISTED', decided_by='manager', rationale='합성 화면의 단일 상태 갱신 측정')
-        from htrsa.research_flow import project_flow
+        from probe.research_flow import project_flow
         result = project_flow(api, rid, view='all', limit=150)
         if args.prepare:
-            from htrsa.preflight import _source_fingerprint
+            from probe.preflight import _source_fingerprint
             seen, boundary = set(), 0
             for offset in range(0,result['visible_total'],150):
                 page = project_flow(api,rid,view='all',limit=150,offset=offset)

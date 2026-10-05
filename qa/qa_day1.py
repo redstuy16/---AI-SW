@@ -21,14 +21,14 @@ sys.path.insert(0, str(ROOT / "src"))
 QA = ROOT / "qa/results"
 BUILD = ROOT / "build" / "qa-day1" / f"run-{uuid4().hex[:12]}"
 
-from htrsa.database import initialize
-from htrsa.demo import run_demo_a, run_demo_b
-from htrsa.final_report import build_final_conclusion, validate_final_conclusion
-from htrsa.preflight import (api_preflight, docker_preflight, environment_status,
+from probe.database import initialize
+from probe.demo import run_demo_a, run_demo_b
+from probe.final_report import build_final_conclusion, validate_final_conclusion
+from probe.preflight import (api_preflight, docker_preflight, environment_status,
                              record_qa_validation, _source_fingerprint)
-from htrsa.release import export_release
-from htrsa.service import StateService
-from htrsa.storage import Workspace, sha256_file
+from probe.release import export_release
+from probe.service import StateService
+from probe.storage import Workspace, sha256_file
 
 
 SCENARIOS = {
@@ -216,9 +216,9 @@ def validate_release(exemplar: tuple[Path, dict]) -> dict:
 def probe(phase: str, folder: Path) -> None:
     sys.path.insert(0, str(ROOT / "tests"))
     from test_autonomous_loop import CSV, MODELS, fake_replies
-    from htrsa.autonomous_loop import AutonomousResearchLoop
-    from htrsa.providers.fake import FakeProvider
-    from htrsa.recovery import FaultInjector, InjectedCrash
+    from probe.autonomous_loop import AutonomousResearchLoop
+    from probe.providers.fake import FakeProvider
+    from probe.recovery import FaultInjector, InjectedCrash
     if phase == "crash":
         folder.mkdir(parents=True, exist_ok=True)
         db = initialize(folder / "state.sqlite")
@@ -292,7 +292,7 @@ def main() -> None:
                          {"scenarios": len(stress["scenarios"]), "fresh_process_resume": resume["passed"]})
     record_qa_validation("artifact", release["passed"], {"file_count": release["file_count"]})
     full = pytest_run("full-regression", [])
-    core = run([sys.executable, "-m", "htrsa.preflight", "validate-core"])
+    core = run([sys.executable, "-m", "probe.preflight", "validate-core"])
     try:
         core_marker = json.loads(core.stdout)
     except ValueError:

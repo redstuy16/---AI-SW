@@ -3,7 +3,7 @@ const fs=require('fs'),path=require('path'),crypto=require('crypto'),{spawn}=req
 const {chromium}=require('./browser_runtime.cjs');
 const root=path.resolve(__dirname,'..'),folder=path.join(root,'build/research-report/browser',crypto.randomUUID()),out=path.join(root,'output/playwright/research-report'),weak=process.argv.includes('--weak');
 fs.mkdirSync(folder,{recursive:true});fs.mkdirSync(out,{recursive:true});
-let child,browser;const checks=[],errors=[],violations=[],external=[];let stderr='';
+let child,browser;const checks=[],errors=[],violations=[],external=[],apiFailures=[];let stderr='';
 function save(file,value){const text=JSON.stringify(value,null,2)+'\n';if(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/u.test(text))throw Error('UTF-8');fs.writeFileSync(file,Buffer.from(text,'utf8'));}
 function check(name,value){checks.push({name,passed:!!value});save(path.join(folder,'progress.json'),{checks,errors});if(!value)throw Error(name);}
 (async()=>{
@@ -15,6 +15,7 @@ function check(name,value){checks.push({name,passed:!!value});save(path.join(fol
  const origin=new URL(url).origin,ids=JSON.parse(fs.readFileSync(path.join(folder,'fixture.json'),'utf8'));
  browser=await chromium.launch({channel:'chrome',headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(20000);
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(origin+'/')&&!r.url().startsWith('blob:'))external.push(r.url());});
+ page.on('response',async r=>{if(r.status()>=400&&r.url().startsWith(origin+'/api/')){let error;try{error=(await r.json()).error;}catch{}apiFailures.push({path:new URL(r.url()).pathname,status:r.status(),error});save(path.join(folder,'api-failures.json'),apiFailures);}});
  await page.addInitScript(()=>document.addEventListener('securitypolicyviolation',e=>{(window.pdfViolations??=[]).push(e.effectiveDirective);}));
  await page.goto(url);await page.locator('#research-table').waitFor();
  const observed=()=>page.evaluate(()=>api('/qa/observed'));
@@ -26,7 +27,7 @@ function check(name,value){checks.push({name,passed:!!value});save(path.join(fol
  await page.goto(origin+'/#research/'+ids.research_id+'/timeline');await page.locator('[data-tab=timeline][aria-current=page]').waitFor();check('기존 진행 기록 주소 유지',await page.locator('[data-tab=timeline][aria-current=page]').isVisible());await page.locator('[data-primary-tab=overview]').click();await page.locator('#core-result').waitFor();check('기본 화면 복귀 주소 보존',page.url().endsWith('/overview'));await page.locator('[data-primary-tab=flow]').click();await page.locator('#stage-map').waitFor();
  check('단일 연구 메뉴 일곱 개',await page.locator('[data-primary-tab]').count()===7);
  check('일곱 연구 단계',await page.locator('.research-stage-map li').count()===7);
- await page.locator('[data-flow-category=experiment]').click();check('설계안 표시',await page.locator('.design-preview .tag').innerText()==='설계안');
+ await page.locator('[data-flow-category=experiment]').click();await page.locator('.design-preview .tag').first().waitFor();const designTags=await page.locator('.design-preview .tag').allTextContents();check('설계안 표시',designTags.length>0&&designTags.every(text=>text.trim()==='설계안'));
  check('실제 완료 상태',(await page.locator('#run-state').innerText())==='완료');
  check('지출과 잔여 예산 표시',await page.locator('[data-cost-field=spent]').count()===1&&await page.locator('[data-cost-field=available]').count()===1);
  await page.evaluate(({rid,title})=>api('/api/control/research/'+rid+'/rename',{title}),{rid:ids.research_id,title:'탄산음료 온도와 기체 방출 연구의 조건과 측정 방법을 확인하는 긴 제목 '.repeat(6).slice(0,200)});
@@ -58,17 +59,19 @@ function check(name,value){checks.push({name,passed:!!value});save(path.join(fol
   await page.screenshot({path:path.join(out,name+'.png'),fullPage:true});
  }
  await page.evaluate(()=>document.documentElement.style.zoom='1');await page.setViewportSize({width:1280,height:900});
+ // 기존 단건 보고서 API의 호환 경로를 고정한다. 기본 과학 루프는 science_browser에서 검사한다.
+ await page.route('**/api/control/research**',async route=>{const request=route.request();if(request.method()==='POST'&&['/api/control/research','/api/control/research/preflight'].includes(new URL(request.url()).pathname)){const body=request.postDataJSON();body.execution_mode='LEGACY';await route.continue({postData:JSON.stringify(body)});}else await route.continue();});
  await page.locator('#run-back').click();await page.locator('#list-new').click();await page.locator('#research-input-mode').waitFor();await page.locator('[name=question]').fill('탄산음료의 온도에 따른 CO₂ 방출 속도');await page.locator('#research-next').click();
  check('둘째 장에 검색어·동의 입력 표시 없음',!await page.locator('[name=public_search_query]').isVisible()&&!await page.locator('[name=public_search_consent]').isVisible());
  check('자동 검색 허용 기본 적용',await page.locator('[name=public_search_consent]').inputValue()==='true');
  await page.locator('#more-models').click();await page.locator('input[name=catalog-model][value=m]').check();await page.locator('#research-next').click();
  check('선택 검색어를 비워 둔 자동 연구',await page.locator('[name=public_search_query]').inputValue()===''&&await page.locator('[name=public_search_query]').evaluate(e=>!e.required&&e.closest('#research-advanced')!==null));
  check('근거 부족 중단 기본 꺼짐',!await page.locator('[name=search_required]').isChecked());
- await page.locator('[name=search_attempt_limit]').fill('0');await page.locator('#research-start').click();await page.waitForFunction(()=>document.querySelector('#research-preflight')?.textContent.includes('검색 횟수'));
+ await page.locator('[name=search_attempt_limit]').fill('0');const preflightResponse=page.waitForResponse(r=>r.url().endsWith('/api/control/research/preflight')&&r.request().postDataJSON()?.search_attempt_limit===0);await page.locator('#research-start').click();const preflight=await (await preflightResponse).json();save(path.join(folder,'preflight-search-limit.json'),preflight);check('검색 상한이 없으면 서버 사전 검사 차단',!preflight.ready&&preflight.reasons.includes('SEARCH_ATTEMPT_LIMIT'));await page.locator('#research-preflight [data-fix=search]').waitFor();
  await page.locator('#research-preflight [data-fix=search]').click();
- check('검색 한도 누락은 고급 설정으로 안내',await page.locator('[name=search_attempt_limit]').isVisible()&&(await page.locator('#research-preflight').innerText()).includes('검색 횟수'));
+ check('검색 한도 누락은 고급 설정으로 안내',await page.locator('[name=search_attempt_limit]').isVisible()&&(await page.locator('#research-preflight').innerText()).includes('검색'));
  const blocked=await observed();check('시작 차단 전에 과금 요청 없음',blocked.model_calls.length===viewing.model_calls.length&&blocked.searches===viewing.searches);
- await page.locator('[name=search_attempt_limit]').fill('10');await page.locator('#research-start').click();await page.locator('#research-workspace').waitFor();
+ await page.locator('[name=search_attempt_limit]').fill('10');const readyResponse=page.waitForResponse(r=>r.url().endsWith('/api/control/research/preflight')&&r.request().postDataJSON()?.search_attempt_limit===10);await page.locator('#research-start').click();const prepared=await (await readyResponse).json();save(path.join(folder,'preflight-search-ready.json'),prepared);check('검색 한도 보완 후 서버 사전 검사 통과',prepared.ready);await page.locator('#research-workspace').waitFor();
  check('CSV 없이 실제 실행 경로 완료',await page.locator('#run-state').innerText()===(weak?'설계안 완료':'완료'));
  if(weak){check('근거 부족 이유와 설계안 보기 제공',(await page.locator('#run-blocker').innerText()).includes('초록·원문')&&await page.locator('#repair-search').innerText()==='설계안 보기');await page.locator('#repair-search').click();await page.waitForFunction(()=>document.querySelector('#pdf-viewer')?.dataset.ready==='true');check('설계안 보기 버튼은 새 연구 양식을 만들지 않음',await page.locator('#research-form').count()===0);}
  await page.locator('[data-primary-tab=report]').click();await page.waitForFunction(()=>document.querySelector('#pdf-viewer')?.dataset.ready==='true');
@@ -76,5 +79,5 @@ function check(name,value){checks.push({name,passed:!!value});save(path.join(fol
  if(weak){await page.locator('#pdf-page').fill('1');await page.locator('#pdf-page').dispatchEvent('change');await page.waitForFunction(()=>document.querySelector('#pdf-text')?.textContent.includes('정량'));await page.locator('#pdf-viewer details>summary').filter({hasText:'페이지 텍스트'}).click();const pdfText=(await page.locator('#pdf-text').innerText()).replace(/\s/g,'');save(path.join(folder,'design-pdf-text.json'),{page:Number(await page.locator('#pdf-page').inputValue()),text:pdfText});check('설계안 PDF는 정량 결과 미확인 표시',pdfText.includes('부분보고서')&&pdfText.includes('정량결론'));}
  violations.push(...await page.evaluate(()=>window.pdfViolations||[]));check('콘솔 실행 오류 없음',errors.length===0);check('CSP 위반 없음',violations.length===0);check('외부 요청 없음',external.length===0);
  }catch(e){errors.push(e.stack||e.message);process.exitCode=1;}
- finally{if(browser)await browser.close();if(child)child.kill();save(path.join(folder,'browser.json'),{checks,errors,violations,external,paid_calls:0,execution:'CHROME_OFFLINE_MOCK_PROVIDER'});console.log(JSON.stringify({folder,checks:checks.length,passed:checks.every(c=>c.passed)&&!errors.length,errors},null,2));}
+ finally{if(browser)await browser.close();if(child)child.kill();save(path.join(folder,'browser.json'),{checks,errors,violations,external,apiFailures,paid_calls:0,execution:'CHROME_OFFLINE_MOCK_PROVIDER',creation_mode:'LEGACY'});console.log(JSON.stringify({folder,checks:checks.length,passed:checks.every(c=>c.passed)&&!errors.length,errors,apiFailures},null,2));}
 })();

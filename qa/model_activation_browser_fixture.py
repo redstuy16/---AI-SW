@@ -5,9 +5,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from htrsa.control_plane import Connection, Credentials, ControlError
-from htrsa.resource_policy import UIPreferences
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.control_plane import Connection, Credentials, ControlError
+from probe.resource_policy import UIPreferences
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
 
 
 class MemoryStore:

@@ -9,13 +9,13 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from htrsa.workbench import WorkbenchAPI
-from htrsa.qualified_profiles import conclusion_card
-from htrsa.qualified_workflow import amend_question
-from htrsa.qualified_replay import replay
-from htrsa.release import export_release, ReleaseExportError
-from htrsa.storage import sha256_file
-from htrsa.preflight import _source_fingerprint
+from probe.workbench import WorkbenchAPI
+from probe.qualified_profiles import conclusion_card
+from probe.qualified_workflow import amend_question
+from probe.qualified_replay import replay
+from probe.release import export_release, ReleaseExportError
+from probe.storage import sha256_file
+from probe.preflight import _source_fingerprint
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
     state = app.read._state
     assert conclusion_card(state, rid)["current"]
     canary = "sk-" + uuid4().hex + uuid4().hex
-    variable = "HTRSA_CYCLE12_EXPORT_CANARY_KEY"
+    variable = "PROBE_CYCLE12_EXPORT_CANARY_KEY"
     previous = os.environ.get(variable)
     os.environ[variable] = canary
     try:

@@ -34,10 +34,11 @@ function check(name,value){checks.push({name,passed:!!value});save('progress.jso
   check('주 탭 순서·일곱 개',JSON.stringify(await page.locator('[data-primary-tab]').allTextContents())===JSON.stringify(['개요','연구 흐름','진행 기록','근거·자료','실험/분석','검증','보고서']));
   check('상단 긴 제목 두 줄',await page.locator('#research-title').evaluate(e=>getComputedStyle(e).webkitLineClamp==='2'));
   await page.locator('#title-expand').click();check('전체 제목 펼치기',await page.locator('#title-expand').getAttribute('aria-expanded')==='true'&&await page.locator('#research-title').evaluate(e=>getComputedStyle(e).display==='block'));await page.locator('#title-expand').click();
-  await open(ids.research_id,'progress');await page.locator('#stage-map').waitFor();
+  await open(ids.research_id,'progress');await page.locator('.flow-node').first().waitFor();
   check('이전 진행 주소도 같은 화면',await page.locator('.research-header').count()===1&&await page.locator('#phase-rail,.current-work,#technical-research').count()===0);
   check('흐름 범주 첫 항목은 전체 연구',await page.locator('[data-flow-category]').first().innerText()==='전체 연구'&&await page.locator('[data-flow-category]').count()===5);
-  check('7단계 텍스트·상태·연결 표시',await page.locator('.stage-card').count()===7&&await page.locator('.stage-status').count()===7&&await page.locator('.stage-card').first().evaluate(e=>getComputedStyle(e,':after').content.includes('→')));
+  check('고정 단계 대신 실제 작업 노드·의존 관계 표시',await page.locator('.stage-card').count()===0&&await page.locator('.flow-node').count()>7&&await page.locator('.flow-edge').count()>0);
+  check('완료된 Agent 호출도 처음부터 표시',await page.locator('.flow-node[data-kind=agent_run][data-status=COMPLETED]').count()>0&&await page.locator('.flow-node[data-kind=contract]').count()>0);
   check('최근 상태 변화는 다섯 개',await page.locator('#flow-timeline li').count()===5);
   check('현재·마지막·다음 작업 요약',await page.locator('.work-summary section').count()===3&&!((await page.locator('.work-summary').innerText()).includes('evidence_text')));
   await page.locator('[data-flow-category=knowledge]').click();await page.locator('.claim-card').first().waitFor();
@@ -51,7 +52,7 @@ function check(name,value){checks.push({name,passed:!!value});save('progress.jso
   await page.locator('[data-flow-category=tools]').click();await page.locator('#flow-board-content').getByText(/산출물/).waitFor();
   check('실행 도구·산출물 집계',await page.locator('#flow-board-content').innerText().then(t=>t.includes('도구 종류')&&t.includes('산출물')));
   await page.locator('[data-flow-category=all]').click();
-  check('세부 관계는 기본으로 접어서 보기',!await page.locator('.flow-viewport').isVisible());await page.locator('.relationship-details summary').click();await page.locator('.flow-node').first().waitFor();
+  await page.locator('.flow-node').first().waitFor();check('관계 그래프는 주 화면에서 바로 보기',await page.locator('.flow-viewport').isVisible()&&await page.locator('.relationship-details').count()===0);
   await page.locator('.flow-node').first().click();await page.locator('#research-detail').waitFor();
   const nodeState=await page.evaluate(()=>{const host=document.querySelector('#research-flow'),v=document.querySelector('.flow-viewport');window.v8Node=document.querySelector('.flow-node');v.scrollLeft=250;return {layout:host.dataset.layoutRuns,scroll:v.scrollLeft};});
   await page.evaluate(()=>window.ResearchWorkspace.refresh());
@@ -60,7 +61,7 @@ function check(name,value){checks.push({name,passed:!!value});save('progress.jso
   await page.locator('[data-flow-category=all]').focus();await page.keyboard.press('ArrowDown');check('범주 키보드 이동',await page.locator('[data-flow-category=knowledge]').evaluate(e=>document.activeElement===e));
   const viewed=await observed();check('목록·탭·관계 조회는 연구·비용 기록 불변',JSON.stringify(viewed.counts)===JSON.stringify(before.counts)&&viewed.model_calls.length===before.model_calls.length&&viewed.searches===before.searches);
   await page.evaluate(()=>api('/qa/state',{status:'RUNNING'}));await page.evaluate(()=>window.ResearchWorkspace.refresh());
-  check('실행 중 자동 갱신·파란 상태',await page.locator('#run-state').getAttribute('data-tone')==='running'&&await page.locator('[data-phase=report]').getAttribute('data-status')==='RUNNING');
+  check('실행 중 자동 갱신·파란 상태',await page.locator('#run-state').getAttribute('data-tone')==='running'&&await page.locator('.flow-node[data-kind=contract][data-status=RUNNING]').count()>0);
   await page.evaluate(()=>api('/qa/state',{status:'COMPLETED'}));await page.waitForFunction(()=>document.querySelector('#run-state')?.textContent==='완료',{},{timeout:15000});check('자동 종료 갱신·초록 상태',await page.locator('#run-state').innerText()==='완료'&&await page.locator('#run-state').getAttribute('data-tone')==='complete');
   await page.screenshot({path:path.join(folder,'flow-desktop.png'),fullPage:true});
   for(const width of [390,1440]){await page.setViewportSize({width,height:1000});check('흐름 '+width+'px 가로 넘침 없음',await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2));if(width===390)await page.screenshot({path:path.join(folder,'flow-390.png'),fullPage:true});}

@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 import qa_day1 as qa
-from htrsa.preflight import _source_fingerprint, record_qa_validation
+from probe.preflight import _source_fingerprint, record_qa_validation
 
 
 root = Path(__file__).resolve().parents[1]

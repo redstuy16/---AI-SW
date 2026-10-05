@@ -1,17 +1,17 @@
 # 저장소 구성
 
 ```text
-H-TRSA/
+Probe/
 ├─ README.md                설치·실행·API 설정
 ├─ AGENTS.md                저장소 작업 지침
-├─ H-TRSA.wsf               Windows 실행 파일
+├─ Probe.wsf               Windows 실행 파일
 ├─ pyproject.toml           Python 의존성과 테스트 설정
 ├─ docs/
 │  ├─ README.md             문서 목록
 │  ├─ guides/               기능별 사용 안내
 │  ├─ development/          구조·CLI·기능 동결
 │  └─ history/              연구일지·경로 변경 기록
-├─ src/htrsa/               앱·연구 실행 코드
+├─ src/probe/               앱·연구 실행 코드
 ├─ tests/                   회귀 검사와 CSV 입력
 ├─ qa/
 │  ├─ *.py, *.cjs           검증 실행 코드

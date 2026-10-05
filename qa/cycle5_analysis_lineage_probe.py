@@ -6,10 +6,10 @@ import json
 from pathlib import Path
 from uuid import uuid4
 from cycle5_fixtures import csv_content, dataset, semantic, science_fixture
-from htrsa.cycle5 import TransformationLineage
-from htrsa.preflight import _source_fingerprint
-from htrsa.schemas import ResearchContract
-from htrsa.service import StateConflictError
+from probe.cycle5 import TransformationLineage
+from probe.preflight import _source_fingerprint
+from probe.schemas import ResearchContract
+from probe.service import StateConflictError
 
 ROOT = Path(__file__).resolve().parents[1]
 

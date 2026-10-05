@@ -1,4 +1,4 @@
-# H-TRSA 연구 작업대
+# Probe 연구 작업대
 
 ## 실행
 
@@ -8,7 +8,7 @@
 ```powershell
 New-Item -ItemType Directory -Force build/workbench/workspace/inputs
 Copy-Item -LiteralPath tests/fixtures/temperature_growth.csv -Destination build/workbench/workspace/inputs/data.csv
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 기본 브라우저가 자동으로 열리고 코드 입력 없이 연구 목록으로 연결됩니다.
@@ -25,7 +25,7 @@ LAN/HTTPS 원격 배포는 제공하지 않습니다. 자세한 경계는 [로�
 ```powershell
 .\.venv\Scripts\python.exe qa/gui_visual_fixture.py
 $guiFixture = Get-Content -LiteralPath build/gui_visual_fixture.json -Raw -Encoding utf8 | ConvertFrom-Json
-.\.venv\Scripts\python.exe -m htrsa.workbench $guiFixture.database $guiFixture.workspace --mode DEMO
+.\.venv\Scripts\python.exe -m probe.workbench $guiFixture.database $guiFixture.workspace --mode DEMO
 ```
 
 DEMO 표시가 유지되며 이 모드의 GUI 유료 연구 실행은 차단됩니다.

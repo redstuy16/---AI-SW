@@ -11,10 +11,10 @@ import xml.etree.ElementTree as ET
 import httpx
 import pytest
 
-from htrsa.control_plane import ControlError, Credentials
-from htrsa.desktop import ROOT, fallback_link, main
-from htrsa.productization import onboarding, qualification_view, qualify, revision
-from htrsa.workbench import OwnerSession, WorkbenchAPI, open_browser
+from probe.control_plane import ControlError, Credentials
+from probe.desktop import ROOT, fallback_link, main
+from probe.productization import onboarding, qualification_view, qualify, revision
+from probe.workbench import OwnerSession, WorkbenchAPI, open_browser
 from test_multi_provider import app, document
 from test_local_browser_auth import local, exchange
 
@@ -175,7 +175,7 @@ def test_interrupted_probe_recovers_without_external_reexecution(app, monkeypatc
         purpose="settings_smoke", bound=".01", run_limit=".10", monthly_limit=20, request_limit=".25", attempts=6, revision="qa")
     app.store.transition(reservation, "DISPATCHED")
     key = sha256((identity + ":" + body()["idempotency_key"]).encode("utf-8", errors="strict")).hexdigest()
-    from htrsa.productization import QualificationRequest
+    from probe.productization import QualificationRequest
     record = {"request_key": key, "profile_id": identity, "run_id": rid, "owner_pid": -1,
               "status": "RUNNING", "request_fingerprint": sha256(QualificationRequest.model_validate(body()).model_dump_json().encode("utf-8", errors="strict")).hexdigest()}
     app.store.put("qualification_run", key, record)
@@ -213,11 +213,11 @@ def test_os_write_readback_failure_is_not_save_success(tmp_path):
 
 
 def test_utf8_key_readback_uses_bytes_without_type_error(tmp_path, monkeypatch):
-    monkeypatch.delenv("HTRSA_QA_KEY", raising=False)
+    monkeypatch.delenv("PROBE_QA_KEY", raising=False)
     credentials = Credentials(tmp_path / "repo", tmp_path / "workspace", tmp_path / "private/key.env")
     credentials.os_store = MemoryStore()
-    assert credentials.save("HTRSA_QA_KEY", "유효한UTF8테스트값")["saved"]
-    assert credentials.save("HTRSA_QA_KEY", None)["configured"] is False
+    assert credentials.save("PROBE_QA_KEY", "유효한UTF8테스트값")["saved"]
+    assert credentials.save("PROBE_QA_KEY", None)["configured"] is False
 
 
 def test_existing_unsafe_fallback_blocks_before_os_mutation(tmp_path, monkeypatch):
@@ -234,7 +234,7 @@ def test_existing_unsafe_fallback_blocks_before_os_mutation(tmp_path, monkeypatc
 
 
 def test_native_launcher_uses_existing_server_quietly(tmp_path, monkeypatch):
-    import htrsa.desktop as desktop
+    import probe.desktop as desktop
     monkeypatch.setattr(desktop, "ROOT", tmp_path)
     calls = []
     assert main(["--data-dir", str(tmp_path / "app")], runner=lambda *a, **k: calls.append((a, k))) == 0
@@ -246,9 +246,9 @@ def test_native_launcher_uses_existing_server_quietly(tmp_path, monkeypatch):
 
 
 def test_hidden_wsf_contains_no_key_ticket_or_shell_command():
-    tree = ET.parse(ROOT / "H-TRSA.wsf")
+    tree = ET.parse(ROOT / "Probe.wsf")
     script = tree.find("./script").text
-    assert "pythonw.exe" in script and "htrsa.desktop" in script
+    assert "pythonw.exe" in script and "probe.desktop" in script
     assert ", 0, False" in script
     assert "cmd.exe" not in script and "OPENAI_API_KEY" not in script and "bootstrap=" not in script
 
@@ -285,13 +285,13 @@ def test_new_endpoints_retain_owner_auth_and_csrf(local):
 
 
 def test_probe_crash_in_fresh_process_keeps_uncertain_charge_and_no_retry(app, monkeypatch):
-    from htrsa.productization import QualificationRequest
-    from htrsa.sandbox import clean_environment
+    from probe.productization import QualificationRequest
+    from probe.sandbox import clean_environment
     identity = prepare(app, monkeypatch)
     key = sha256((identity + ":" + body()["idempotency_key"]).encode("utf-8", errors="strict")).hexdigest()
     fingerprint = sha256(QualificationRequest.model_validate(body()).model_dump_json().encode("utf-8", errors="strict")).hexdigest()
     code = '''import os,sys
-from htrsa.workbench import WorkbenchAPI
+from probe.workbench import WorkbenchAPI
 a=WorkbenchAPI(sys.argv[1],sys.argv[2],launch=False,credential_file=sys.argv[3])
 r=a.store.reserve(rid='QUALIFICATION-process-crash',connection='gpt-default',model='gpt-6.1-sol',role='settings',purpose='settings_smoke',bound='.01',run_limit='.10',monthly_limit=20,request_limit='.25',attempts=6,revision='qa')
 a.store.put('qualification_run',sys.argv[4],{'request_key':sys.argv[4],'profile_id':sys.argv[5],'run_id':'QUALIFICATION-process-crash','request_fingerprint':sys.argv[6],'owner_pid':os.getpid(),'status':'RUNNING'})
@@ -314,7 +314,7 @@ os._exit(86)
 
 @pytest.mark.parametrize("failure", ["mock", "stale", "partial"])
 def test_product_native_gate_rejects_mock_stale_or_partial_observation(monkeypatch, failure):
-    from htrsa import preflight
+    from probe import preflight
     record = {"passed": True, "execution": "NATIVE_WINDOWS", "source_fingerprint": "current",
               "environment_id": preflight.native_environment_id(),
               "checks": {k: True for k in ("save", "read", "rotate", "restart", "delete", "child_environment_clean")}}

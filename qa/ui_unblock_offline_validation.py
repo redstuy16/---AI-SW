@@ -10,7 +10,7 @@ sys.path[:0]=[str(ROOT/"src"),str(ROOT/"qa")]
 import qa_day1 as qa
 import f3p_eval
 from f3p_recovery_probe import BOUNDARIES
-from htrsa.preflight import record_qa_validation,environment_status,_source_fingerprint
+from probe.preflight import record_qa_validation,environment_status,_source_fingerprint
 
 
 def save(path,value):

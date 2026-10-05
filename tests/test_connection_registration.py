@@ -3,9 +3,9 @@ import json
 
 import pytest
 
-from htrsa.control_plane import ControlError, Credentials
-from htrsa.product_policy import catalog
-from htrsa.providers.native import DEFINITIONS
+from probe.control_plane import ControlError, Credentials
+from probe.product_policy import catalog
+from probe.providers.native import DEFINITIONS
 from test_multi_provider import app as base_app
 
 
@@ -38,7 +38,7 @@ class KeyStore:
 
 def register(app, provider="openai", **changes):
     value = {"connection_id": "connection-test", "display_name": "검사 연결", "adapter_id": provider,
-             "credential_env_name": "HTRSA_QA_REGISTRATION", "destination_approved": True}
+             "credential_env_name": "PROBE_QA_REGISTRATION", "destination_approved": True}
     value.update(changes.pop("value", {}))
     return app.request("POST", "/api/control/connections/register", {
         "value": value, "api_key": "registration-canary-not-a-real-key-987654321", **changes})
@@ -46,15 +46,15 @@ def register(app, provider="openai", **changes):
 
 @pytest.mark.parametrize("provider", [p for p in DEFINITIONS if p != "openai_compatible"])
 def test_registration_saves_key_without_network_or_db_secret(app, monkeypatch, provider):
-    monkeypatch.delenv("HTRSA_QA_REGISTRATION", raising=False)
+    monkeypatch.delenv("PROBE_QA_REGISTRATION", raising=False)
     store = app.credentials.os_store = KeyStore()
     response = register(app, provider)
     assert response.status == 200 and response.body["credential"]["saved"]
     conn = app.store.config("connection", "connection-test")
     assert conn["base_url"] == DEFINITIONS[provider]["base_url"]
-    assert app.credentials.get("HTRSA_QA_REGISTRATION") == store.values["HTRSA_QA_REGISTRATION"]
-    assert store.values["HTRSA_QA_REGISTRATION"] not in json.dumps(response.body)
-    assert store.values["HTRSA_QA_REGISTRATION"].encode() not in app.database.read_bytes()
+    assert app.credentials.get("PROBE_QA_REGISTRATION") == store.values["PROBE_QA_REGISTRATION"]
+    assert store.values["PROBE_QA_REGISTRATION"] not in json.dumps(response.body)
+    assert store.values["PROBE_QA_REGISTRATION"].encode() not in app.database.read_bytes()
     assert app.store.db.execute("SELECT count(*) FROM spend_ledger").fetchone()[0] == 0
 
 
@@ -89,7 +89,7 @@ def test_registration_rejects_invalid_or_leaking_values(app, case):
 
 
 def test_local_key_delete_removes_saved_key_metadata(app, monkeypatch):
-    monkeypatch.delenv("HTRSA_QA_REGISTRATION", raising=False)
+    monkeypatch.delenv("PROBE_QA_REGISTRATION", raising=False)
     app.credentials.os_store = KeyStore()
     assert register(app).status == 200
     assert app.connections()[0]["credential"]["saved"] is True
@@ -131,9 +131,9 @@ def test_curated_catalog_has_five_featured_and_six_providers(app):
 
 
 def test_file_readback_failure_is_not_reported_as_success(tmp_path, monkeypatch):
-    from htrsa.control_plane import Credentials
+    from probe.control_plane import Credentials
     credentials = Credentials(tmp_path / "repo", tmp_path / "workspace", tmp_path / "private/key.env")
-    monkeypatch.setattr("htrsa.control_plane.os.replace", lambda *_a: None)
+    monkeypatch.setattr("probe.control_plane.os.replace", lambda *_a: None)
     with pytest.raises(ControlError, match="SECRET_READBACK_FAILED"):
         credentials.save("QA_KEY", "file-canary-not-a-real-key-987654321")
 

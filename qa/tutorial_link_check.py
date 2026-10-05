@@ -10,7 +10,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
-from htrsa.tutorial_guide import tutorial_catalog, render_tutorial_guide
+from probe.tutorial_guide import tutorial_catalog, render_tutorial_guide
 
 
 def probe(url):
@@ -18,7 +18,7 @@ def probe(url):
     if parsed.scheme != "https" or parsed.username or parsed.password:
         return {"url": url, "status": "INVALID_URL"}
     try:
-        request = Request(url, headers={"User-Agent": "H-TRSA-documentation-check/2"})
+        request = Request(url, headers={"User-Agent": "Probe-documentation-check/2"})
         with urlopen(request, timeout=12) as response:
             response.read(1)
             final = urlsplit(response.url)

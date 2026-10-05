@@ -11,15 +11,15 @@ from unittest.mock import patch
 
 import numpy as np
 
-from htrsa.agent_runtime import AgentRuntime, RuntimeFailure
-from htrsa.analysis_skills import SkillPlan
-from htrsa.database import initialize
-from htrsa.final_report import export_final_report
-from htrsa.providers.fake import FakeProvider
-from htrsa.release import export_release
-from htrsa.schemas import VerificationCheck, Verdict
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.agent_runtime import AgentRuntime, RuntimeFailure
+from probe.analysis_skills import SkillPlan
+from probe.database import initialize
+from probe.final_report import export_final_report
+from probe.providers.fake import FakeProvider
+from probe.release import export_release
+from probe.schemas import VerificationCheck, Verdict
+from probe.service import StateService
+from probe.storage import Workspace
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,7 +114,7 @@ def run_case(case: dict, folder: Path, seed: int, *, slice_config=None) -> dict:
     if case_id == "insufficient_budget":
         with db:
             db.execute("UPDATE research_budgets SET target_usd=0.001,soft_limit_usd=0.003,hard_limit_usd=0.005")
-    import htrsa.real_tools as real_tools
+    import probe.real_tools as real_tools
     execute = real_tools.execute_skill
     def shared_wrong(*args):
         result = execute(*args)

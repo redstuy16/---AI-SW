@@ -9,10 +9,10 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / 'src'), str(ROOT / 'tests'), str(ROOT / 'qa')]
-from htrsa.control_runtime import execute
-from htrsa.research_report import report_record
-from htrsa.service import StateService
-from htrsa.workbench import WorkbenchAPI
+from probe.control_runtime import execute
+from probe.research_report import report_record
+from probe.service import StateService
+from probe.workbench import WorkbenchAPI
 from test_free_search_recovery import free_rig
 from test_research_report_flow import run
 from research_report_browser_fixture import Patch
@@ -47,7 +47,7 @@ def worker(folder, boundary, mode):
                 return value
             patch.setattr(StateService, 'search_cache_put', after_search)
         elif boundary == 'download':
-            patch.setattr('htrsa.source_documents.extract_pdf', lambda *args, **kwargs: crash())
+            patch.setattr('probe.source_documents.extract_pdf', lambda *args, **kwargs: crash())
         elif boundary == 'report-response':
             original = StateService.finish_runtime_step
             def after_report(state, rid, key, *args, **kwargs):

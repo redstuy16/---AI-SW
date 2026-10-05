@@ -12,7 +12,7 @@ async function main(){
  let stderr='';child.stderr.on('data',v=>stderr+=v);
  const url=await new Promise((resolve,reject)=>{let text='';child.stdout.on('data',v=>{text+=v;const m=text.match(/http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]{43}/);if(m)resolve(m[0]);});child.on('exit',()=>reject(Error(stderr.slice(-1200))));setTimeout(()=>reject(Error('서버 시간 초과')),15000).unref();});
  const origin=new URL(url).origin;
- browser=await chromium.launch({channel:'chrome',headless:process.env.HTRSA_UI_TEST_HEADED!=='1'});
+ browser=await chromium.launch({channel:'chrome',headless:process.env.PROBE_UI_TEST_HEADED!=='1'});
  const page=await browser.newPage({viewport:{width:1280,height:800}});page.setDefaultTimeout(15000);page.on('pageerror',x=>errors.push(x.message));
  page.on('request',r=>{if(!r.url().startsWith(origin+'/')&&!r.url().startsWith('blob:'))errors.push('외부 요청 '+new URL(r.url()).origin);});
  await page.goto(url);await page.locator('#research-table').waitFor();check('자동 인증 및 티켓 제거',!page.url().includes('bootstrap'));

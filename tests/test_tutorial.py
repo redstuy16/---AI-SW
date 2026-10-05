@@ -10,9 +10,9 @@ import statistics
 import pytest
 from pydantic import ValidationError
 
-from htrsa.providers.native import DEFINITIONS
-from htrsa.resource_policy import UIPreferences, preferences
-from htrsa.tutorial_guide import TutorialProgress, tutorial_catalog, tutorial_lesson, render_tutorial_guide
+from probe.providers.native import DEFINITIONS
+from probe.resource_policy import UIPreferences, preferences
+from probe.tutorial_guide import TutorialProgress, tutorial_catalog, tutorial_lesson, render_tutorial_guide
 from test_workbench import app, configure, create
 
 
@@ -50,7 +50,7 @@ def test_visual_course_titles_match_the_single_guide_source():
 
 
 def test_core_demo_fixture_hash_rows_and_calculations_are_real():
-    from htrsa.demo import FIXTURE
+    from probe.demo import FIXTURE
     fixture = {"source": str(FIXTURE.relative_to(ROOT)),
                "sha256": "390564522d80e826f147a23ad93bc41c3b7f0104931454a4e8b8bd05f1e60576",
                "rows": [{"temperature": str(x), "growth": str(y)} for x, y in [(10, 2), (12, 3), (14, 5), (16, 7), (18, 9), (20, 12)]],
@@ -175,7 +175,7 @@ def test_invalid_api_progress_does_not_overwrite_a_checkpoint(app):
 def test_new_guide_assets_are_packaged():
     from importlib.resources import files
     for name in ("tutorial_content.js", "tutorial.js"):
-        assert files("htrsa").joinpath("workbench_static", name).is_file()
+        assert files("probe").joinpath("workbench_static", name).is_file()
 
 
 def test_progress_and_display_changes_preserve_each_other(app):

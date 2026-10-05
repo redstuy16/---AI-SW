@@ -14,7 +14,7 @@ async function stop(child){if(child.exitCode!==null||child.signalCode!==null)ret
 async function start({port=0,expired=false,headless=false,failed=false}={}){
  const id=crypto.randomUUID(),dir=path.join(base,id);fs.mkdirSync(dir);
  const handoff=new Promise((resolve,reject)=>{waiters.set(id,resolve);const timer=setTimeout(()=>reject(Error('시작 제한 시간')),15000);timer.unref();});
- const py=`import os,sys,webbrowser,httpx\nfrom htrsa.workbench import main,OwnerSession\nclass QABrowser(webbrowser.BaseBrowser):\n def open(self,url,new=0,autoraise=True):\n  if os.environ.get('QA_OPEN_FAILED')=='1': return False\n  with httpx.Client(trust_env=False) as client:\n   return client.post(os.environ['QA_RELAY'],json={'id':os.environ['QA_INSTANCE'],'url':url},headers={'Authorization':'Bearer '+os.environ['QA_RELAY_TOKEN']}).status_code==200\nwebbrowser.register('htrsa-qa-browser',None,QABrowser(),preferred=True)\nif os.environ.get('QA_OPEN_FAILED')=='1': webbrowser.open=lambda *_a,**_k: False\nif os.environ.get('QA_EXPIRED')=='1': OwnerSession.ticket_lifetime=0\nsys.argv=['htrsa.workbench',*sys.argv[1:]]\nmain()\n`;
+ const py=`import os,sys,webbrowser,httpx\nfrom probe.workbench import main,OwnerSession\nclass QABrowser(webbrowser.BaseBrowser):\n def open(self,url,new=0,autoraise=True):\n  if os.environ.get('QA_OPEN_FAILED')=='1': return False\n  with httpx.Client(trust_env=False) as client:\n   return client.post(os.environ['QA_RELAY'],json={'id':os.environ['QA_INSTANCE'],'url':url},headers={'Authorization':'Bearer '+os.environ['QA_RELAY_TOKEN']}).status_code==200\nwebbrowser.register('probe-qa-browser',None,QABrowser(),preferred=True)\nif os.environ.get('QA_OPEN_FAILED')=='1': webbrowser.open=lambda *_a,**_k: False\nif os.environ.get('QA_EXPIRED')=='1': OwnerSession.ticket_lifetime=0\nsys.argv=['probe.workbench',*sys.argv[1:]]\nmain()\n`;
  const args=['-c',py,path.join(dir,'state.sqlite'),path.join(dir,'workspace'),'--port',String(port),'--mode','DEMO'];if(headless)args.push('--no-browser');
  const child=spawn(path.join(root,'.venv/Scripts/python.exe'),args,{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],env:{...process.env,QA_RELAY:relay.origin+'/handoff',QA_RELAY_TOKEN:relayToken,QA_INSTANCE:id,QA_EXPIRED:expired?'1':'0',QA_OPEN_FAILED:failed?'1':'0'}});
  children.push(child);child.output='';child.errors='';
@@ -41,7 +41,7 @@ async function main(){
  check('정상 stdout 비밀 없음',!privateValues.some(v=>first.child.output.includes(v)));
  check('주소 조각 제거',!page.url().includes('bootstrap')&&!page.url().includes(first.ticket));
  check('no-store·referrer·frame CSP',bootstrapHeaders['cache-control']==='no-store'&&bootstrapHeaders['referrer-policy']==='no-referrer'&&bootstrapHeaders['content-security-policy'].includes("frame-ancestors 'none'"));
- let owner=(await context.cookies(first.origin)).find(c=>c.name.startsWith('htrsa_owner_'));remember(owner.value);
+ let owner=(await context.cookies(first.origin)).find(c=>c.name.startsWith('probe_owner_'));remember(owner.value);
  check('독립 HttpOnly 세션',owner.httpOnly&&owner.sameSite==='Strict'&&!owner.secure&&owner.value!==first.ticket);
  const metadata=await page.evaluate(async()=>await(await fetch('/api/session')).json());remember(metadata.csrf);
  check('브라우저 저장 없음',Object.values(await storage(page)).every(v=>v===0||v===''));
@@ -59,16 +59,16 @@ async function main(){
  await Promise.all([a.waitForFunction(()=>document.body.dataset.authState!=='connecting'),b.waitForFunction(()=>document.body.dataset.authState!=='connecting')]);
  const states=await Promise.all([a.evaluate(()=>document.body.dataset.authState),b.evaluate(()=>document.body.dataset.authState)]);
  check('동시 탭 정확히 한 번 교환',states.filter(x=>x==='authenticated').length===1&&states.filter(x=>x==='failed').length===1);
- const cookies=await context.cookies();check('인스턴스 별 쿠키 이름',cookies.filter(c=>c.name.startsWith('htrsa_owner_')).length===2);
+ const cookies=await context.cookies();check('인스턴스 별 쿠키 이름',cookies.filter(c=>c.name.startsWith('probe_owner_')).length===2);
  for(const c of cookies)remember(c.value);
- const deny=await context.request.post(second.origin+'/auth/bootstrap',{headers:{Origin:second.origin,'X-H-TRSA-Bootstrap':'1'},data:{ticket:first.ticket}});
+ const deny=await context.request.post(second.origin+'/auth/bootstrap',{headers:{Origin:second.origin,'X-Probe-Bootstrap':'1'},data:{ticket:first.ticket}});
  check('다른 인스턴스 티켓 거부',deny.status()===403);
  relay.frameOrigin=first.origin;const framed=await context.newPage();watch(framed);await framed.goto(relay.origin+'/frame');
  await framed.waitForTimeout(300);check('실제 브라우저 framing 차단',!framed.frames().some(f=>f.url()===first.origin+'/'));
  await stop(first.child);
  const restarted=await start();
  await shared.goto(restarted.origin);await shared.locator('body[data-auth-state="failed"]').waitFor();check('재시작 옛 세션 거부',true);
- const old=await context.request.post(restarted.origin+'/auth/bootstrap',{headers:{Origin:restarted.origin,'X-H-TRSA-Bootstrap':'1'},data:{ticket:first.ticket}});
+ const old=await context.request.post(restarted.origin+'/auth/bootstrap',{headers:{Origin:restarted.origin,'X-Probe-Bootstrap':'1'},data:{ticket:first.ticket}});
  check('재시작 옛 티켓 거부',old.status()===403);await connected(shared,restarted.url);
  const expiry=await start({expired:true}),expiredPage=await context.newPage();watch(expiredPage);await expiredPage.goto(expiry.url);await expiredPage.locator('body[data-auth-state="failed"]').waitFor();
  check('만료 한국어 재실행 안내',(await expiredPage.locator('#auth-status').innerText()).includes('다시 실행'));

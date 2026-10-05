@@ -8,16 +8,16 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from htrsa.control_plane import Connection, ControlError, ModelProfile, PriceRecord, RoutingProfile
-from htrsa.control_runtime import RoutedGateway
-from htrsa.provider_checks import ProbeOutput, check_model
-from htrsa.providers.native import DEFINITIONS, REGISTRY, parse_usage, normalized_error
-from htrsa.providers.normalized import (CAPABILITIES, CapabilityEvidence, CapabilityStatus as CS,
+from probe.control_plane import Connection, ControlError, ModelProfile, PriceRecord, RoutingProfile
+from probe.control_runtime import RoutedGateway
+from probe.provider_checks import ProbeOutput, check_model
+from probe.providers.native import DEFINITIONS, REGISTRY, parse_usage, normalized_error
+from probe.providers.normalized import (CAPABILITIES, CapabilityEvidence, CapabilityStatus as CS,
     GenerationError, GenerationMessage, GenerationRequest, NormalizedTool, NormalizedToolResult,
     ReasoningPolicy as RP, merge_evidence)
-from htrsa.providers.streams import decode_stream
-from htrsa.schemas import utc_now
-from htrsa.workbench import WorkbenchAPI
+from probe.providers.streams import decode_stream
+from probe.schemas import utc_now
+from probe.workbench import WorkbenchAPI
 
 
 IDS = list(DEFINITIONS)
@@ -195,7 +195,7 @@ def test_gateway_paid_settlement_and_replay(app,monkeypatch,identity):
     assert "resolved-id" in app.store.db.execute("SELECT payload FROM control_audit ORDER BY seq DESC LIMIT 1").fetchone()[0]
 
 
-@pytest.mark.parametrize("failure",["timeout","usage","secret","cache-price","truncated"])
+@pytest.mark.parametrize("failure",["timeout","usage","secret","truncated"])
 def test_ambiguous_dispatch_stays_unresolved(app,monkeypatch,failure):
     c,p,r,s=setup_app(app,"openai",monkeypatch)
     calls=[]
@@ -204,7 +204,6 @@ def test_ambiguous_dispatch_stays_unresolved(app,monkeypatch,failure):
         if failure=="timeout": raise httpx.ReadTimeout("비밀은 오류에 기록하지 않음")
         raw=document("responses",secret="secret-provider-canary-123456789" if failure=="secret" else None)
         if failure=="usage": raw.pop("usage")
-        if failure=="cache-price": raw["usage"]["input_tokens_details"]={"cached_tokens":20}
         if failure=="truncated": return httpx.Response(200,content=b'{"partial":')
         return httpx.Response(200,json=raw)
     gateway=RoutedGateway(app.store,app.credentials,"r",s,client_factory=lambda *_:httpx.AsyncClient(transport=httpx.MockTransport(handler)))
@@ -338,12 +337,12 @@ def test_present_nonterminal_status_never_means_completed():
 
 
 def test_release_export_preserves_nonsecret_provider_trace(tmp_path,monkeypatch):
-    from htrsa.demo import run_demo_a
-    from htrsa.database import initialize,to_json
-    from htrsa.control_plane import ControlStore
-    from htrsa.release import export_release, _secret_free
-    from htrsa.service import StateService
-    from htrsa.storage import Workspace,sha256_file
+    from probe.demo import run_demo_a
+    from probe.database import initialize,to_json
+    from probe.control_plane import ControlStore
+    from probe.release import export_release, _secret_free
+    from probe.service import StateService
+    from probe.storage import Workspace,sha256_file
     db_path=tmp_path/"demo.sqlite";workspace=tmp_path/"workspace"
     manifest=run_demo_a(db_path,workspace);rid=manifest["research_id"]
     db=initialize(db_path)
@@ -361,3 +360,48 @@ def test_release_export_preserves_nonsecret_provider_trace(tmp_path,monkeypatch)
     monkeypatch.setenv("GEMINI_API_KEY","gemini-secret-value-canary")
     assert not _secret_free("a.json",b'{"v":"gemini-secret-value-canary"}')
     assert not _secret_free("a.json",b'{"v":"\\u0067emini-secret-value-canary"}')
+
+
+def test_unknown_openai_cached_price_uses_undiscounted_input_and_replays_once(app, monkeypatch):
+    _, _, request, snapshot = setup_app(app, 'openai', monkeypatch)
+    calls = []
+    def handler(req):
+        calls.append(req)
+        raw = document('responses')
+        raw['usage']['input_tokens_details'] = {'cached_tokens': 20}
+        return httpx.Response(200, json=raw)
+    gateway = RoutedGateway(app.store, app.credentials, 'r', snapshot,
+        client_factory=lambda *_: httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    result, _, dispatched = asyncio.run(gateway.generate(request))
+    assert dispatched == 1 and result.usage.cached_input_tokens == 20
+    assert result.provider_metadata['estimated_cost_usd'] == '0.000064'
+    row = app.store.db.execute('SELECT * FROM spend_ledger').fetchone()
+    assert row['status'] == 'SETTLED' and row['settled'] == 64
+    checkpoint = app.store.config('provider_response_checkpoint', row['id'])
+    assert checkpoint['result']['usage']['cached_input_tokens'] == 20
+    assert checkpoint['result']['response_id'] == row['response_id']
+    trace = json.loads(app.store.db.execute("SELECT payload FROM control_audit WHERE kind='NORMALIZED_RESPONSE_SETTLED'").fetchone()[0])
+    assert trace['cost_basis'] == 'UNDISCOUNTED_CACHED_INPUT'
+    _, _, dispatched = asyncio.run(gateway.generate(request))
+    assert dispatched == 0 and len(calls) == 1
+
+
+@pytest.mark.parametrize('fault', ['different-provider', 'unknown-cache-write'])
+def test_unverified_cache_categories_preserve_unresolved_checkpoint(app, monkeypatch, fault):
+    identity = 'deepseek' if fault == 'different-provider' else 'openai'
+    connection, profile, request, snapshot = setup_app(app, identity, monkeypatch)
+    raw = document(REGISTRY.get(identity).protocol(profile))
+    if fault == 'different-provider': raw['usage']['prompt_tokens_details'] = {'cached_tokens': 20}
+    else: raw['usage']['cache_write_tokens'] = 20
+    gateway = RoutedGateway(app.store, app.credentials, 'r', snapshot,
+        client_factory=lambda *_: httpx.AsyncClient(transport=httpx.MockTransport(lambda req: httpx.Response(200, json=raw))))
+    with pytest.raises(ControlError, match='PRICE_CATEGORY_UNKNOWN'):
+        asyncio.run(gateway.generate(request))
+    row = app.store.db.execute('SELECT * FROM spend_ledger').fetchone()
+    assert row['status'] == 'UNRESOLVED'
+    assert app.store.config('provider_response_checkpoint', row['id'])['result']['usage']['input_tokens'] == 40
+    assert not app.store.db.execute('SELECT * FROM control_model_cache').fetchall()
+    before = app.store.ledger()
+    recovered, _, dispatched = asyncio.run(gateway.generate(request))
+    assert dispatched == 0 and recovered.provider_metadata['billing_status'] == 'UNRESOLVED'
+    assert app.store.ledger() == before

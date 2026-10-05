@@ -8,18 +8,18 @@ from types import SimpleNamespace
 
 import pytest
 
-from htrsa.agent_policy import BudgetExceededError, Price, PricingRegistry, UnknownPriceLimits
-from htrsa.agent_runtime import AgentRuntime, RuntimeFailure
-from htrsa.agent_schemas import ManagerDecision
-from htrsa.database import initialize
-from htrsa.mock import MockAnalysisTool, MockExperimentCoordinator, MockManager, MockWorker
-from htrsa.providers.base import ModelProviderError
-from htrsa.providers.fake import FakeProvider
-from htrsa.providers.openai_agents import OpenAIAgentsProvider, normalize_openai_error
-from htrsa.real_tools import StatsTool
-from htrsa.schemas import StagedResult, ToolResult
-from htrsa.service import ContractViolationError, StateService
-from htrsa.storage import Workspace
+from probe.agent_policy import BudgetExceededError, Price, PricingRegistry, UnknownPriceLimits
+from probe.agent_runtime import AgentRuntime, RuntimeFailure
+from probe.agent_schemas import ManagerDecision
+from probe.database import initialize
+from probe.mock import MockAnalysisTool, MockExperimentCoordinator, MockManager, MockWorker
+from probe.providers.base import ModelProviderError
+from probe.providers.fake import FakeProvider
+from probe.providers.openai_agents import OpenAIAgentsProvider, normalize_openai_error
+from probe.real_tools import StatsTool
+from probe.schemas import StagedResult, ToolResult
+from probe.service import ContractViolationError, StateService
+from probe.storage import Workspace
 
 
 CSV = Path(__file__).parent / "fixtures" / "temperature_growth.csv"
@@ -213,18 +213,21 @@ def test_transient_stats_tool_failure_retries_without_manager_recall(tmp_path, m
 
     agent, state, db, _ = runtime(tmp_path, [MANAGER, more_calls, worker_reply])
     prepared = asyncio.run(agent.prepare("Analyze temperature and growth.", CSV))
-    original = StatsTool.run
+    from probe.analysis_process import run_tool
+    original = run_tool
     attempts = 0
 
-    def fail_once(self, request):
+    def fail_once(state, contract, request, expires):
         nonlocal attempts
+        if request.tool_name != 'stats.run':
+            return original(state, contract, request, expires)
         attempts += 1
         if attempts == 1:
             return ToolResult(ok=False, request_id=request.request_id, tool_name=request.tool_name,
                               error="transient tool error")
-        return original(self, request)
+        return original(state, contract, request, expires)
 
-    monkeypatch.setattr(StatsTool, "run", fail_once)
+    monkeypatch.setattr("probe.analysis_process.run_tool", fail_once)
     result = asyncio.run(agent.resume(prepared["research_id"]))
     assert result["verdict"] == "PASS"
     assert attempts == 2

@@ -1,4 +1,4 @@
-"""기존 동작과 검증 경계를 확인하는 회귀 테스트."""
+"""명시적으로 켠 레거시 무료 학술 네트워크 검사이며 현행 AI 검색 검증과 분리한다."""
 from __future__ import annotations
 
 import asyncio
@@ -6,13 +6,13 @@ import os
 
 import pytest
 
-from htrsa.scholarly import CrossrefProvider, OpenAlexProvider, ScholarlyError, SearchRequest
+from probe.scholarly import CrossrefProvider, OpenAlexProvider, ScholarlyError, SearchRequest
 
 
 @pytest.mark.live_search
 def test_openalex_search_and_crossref_doi_lookup():
-    if os.getenv("HTRSA_LIVE_SEARCH") != "1":
-        pytest.skip("set HTRSA_LIVE_SEARCH=1 to enable public scholarly network smoke")
+    if os.getenv("PROBE_LEGACY_LIVE_SEARCH") != "1":
+        pytest.skip("LEGACY 검사에는 PROBE_LEGACY_LIVE_SEARCH=1이 필요합니다. 현행 AI 검색 출시 표식을 만들지 않습니다.")
 
     async def run():
         result = await OpenAlexProvider().search(SearchRequest(

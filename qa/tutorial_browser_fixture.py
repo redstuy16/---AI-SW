@@ -5,10 +5,10 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from htrsa.api import APIResponse
-from htrsa.control_plane import Credentials, ControlError
-from htrsa.resource_policy import preferences
-from htrsa.workbench import WorkbenchAPI, OwnerSession, create_server
+from probe.api import APIResponse
+from probe.control_plane import Credentials, ControlError
+from probe.resource_policy import preferences
+from probe.workbench import WorkbenchAPI, OwnerSession, create_server
 from model_activation_browser_fixture import MemoryStore
 
 

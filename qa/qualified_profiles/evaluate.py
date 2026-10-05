@@ -10,16 +10,16 @@ from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.autonomous_loop import AutonomousResearchLoop
-from htrsa.climate_profile import MEANING, parse_source, independent_comparison
-from htrsa.control_plane import ROLES, ControlError
-from htrsa.final_report import export_final_report
-from htrsa.providers.fake import FakeProvider
-from htrsa.qualified_profiles import conclusion_card
-from htrsa.qualified_workflow import execute_profile, update_source
-from htrsa.qualified_replay import replay
-from htrsa.schemas import StagedResult, utc_now
-from htrsa.workbench import WorkbenchAPI
+from probe.autonomous_loop import AutonomousResearchLoop
+from probe.climate_profile import MEANING, parse_source, independent_comparison
+from probe.control_plane import ROLES, ControlError
+from probe.final_report import export_final_report
+from probe.providers.fake import FakeProvider
+from probe.qualified_profiles import conclusion_card
+from probe.qualified_workflow import execute_profile, update_source
+from probe.qualified_replay import replay
+from probe.schemas import StagedResult, utc_now
+from probe.workbench import WorkbenchAPI
 from test_workbench import configure
 from test_beginner_v4 import revise
 

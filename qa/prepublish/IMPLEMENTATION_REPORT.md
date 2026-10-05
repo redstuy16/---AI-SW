@@ -87,7 +87,7 @@ canary 포함 2개와 clean 2개 export, 총 104파일의 해시 불일치·누�
 
 ## 7. 의존성 보안
 
-pip-audit 2.10.1로 실제 가상환경 84개 의존성의 알려진 취약점 0, exit 0이다. editable htrsa는 취약점 DB 조회에서 제외했다. 알려지지 않은 취약점이 없다는 뜻은 아니다.
+pip-audit 2.10.1로 실제 가상환경 84개 의존성의 알려진 취약점 0, exit 0이다. editable probe는 취약점 DB 조회에서 제외했다. 알려지지 않은 취약점이 없다는 뜻은 아니다.
 
 런타임 의존성은 유지했다. test extra에 pathspec 1.1.1·PyYAML 6.0.3, security extra에 pathspec 1.1.1·pip-audit 2.10.1·Bandit 1.9.4·psutil 7.2.2·PyYAML 6.0.3을 추가했다. 실제 `pip install -e '.[security]'`가 통과했다.
 
@@ -114,7 +114,7 @@ GitHub 실행·fork PR 권한·보안 설정은 실제 미검증이다. 로컬 Y
 ```powershell
 .\.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/hardening-baseline --junitxml build/hardening-baseline.xml
 .\.venv\Scripts\python.exe -X utf8 qa/qa_day1.py --output-dir build/hardening-gates
-.\.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-core
 .\.venv\Scripts\python.exe -X utf8 -m pytest tests/test_hardening.py -q -p no:cacheprovider --basetemp build/hardening-last-search --junitxml build/hardening-last-search.xml
 .\.venv\Scripts\python.exe -X utf8 qa/qa_day1.py --probe crash --root build/hardening-gates-final/fresh-process
 .\.venv\Scripts\python.exe -X utf8 qa/qa_day1.py --probe resume --root build/hardening-gates-final/fresh-process

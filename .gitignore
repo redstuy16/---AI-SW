@@ -10,6 +10,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 *.egg-info/
+# 이전 테스트·임시 빌드와 내부 참고 예시는 로컬에 보존하고 Git에서 제외한다.
 build/
 output/
 .codex-remote-attachments/

@@ -10,10 +10,10 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from htrsa.database import initialize
-from htrsa.final_report import ReportValidationError, build_final_conclusion
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.database import initialize
+from probe.final_report import ReportValidationError, build_final_conclusion
+from probe.service import StateService
+from probe.storage import Workspace
 
 
 def main() -> None:

@@ -74,14 +74,14 @@ F3-P 새 프로세스 복구 **6/6**: AFTER_FAILURE_EVIDENCE는 아직 결정하
 
 | 파일 | 이번 변경 |
 |---|---|
-| `src/htrsa/period_comparison.py` | 타입 있는 선택값·키/순서/의미 공통 함수 |
-| `src/htrsa/climate_profile.py` | CSV 해독·의미·필수 정책·키별 대조·bounded capture·현재성 검사 |
-| `src/htrsa/qualified_workflow.py` | 관측 취득·검색/비밀/원장 경계·소유자 질문 변경·승인/재검증 |
-| `src/htrsa/qualified_profiles.py` | Worker 권한 차단·지연 자료 조회·현재/이전 결론·변경 수치 |
-| `src/htrsa/service.py` | 자료/질문 변경과 의존 무효화의 기존 트랜잭션 통합 |
-| `src/htrsa/agent_runtime.py`, `real_tools.py` | 실제 qualified import의 허용 파일 경계·Skills 호환성·타입 있는 도구 실패 |
-| `src/htrsa/final_report.py`, `qualified_replay.py`, `report_pdf.py` | 두 원본·최근 캡처·승인 계획 export/replay·질문/결과 변경 PDF |
-| `src/htrsa/workbench.py`, `workbench_static/beginner_ux.js` | 기존 인증 API·질문 변경·자료 상세·카드/이력 UI |
+| `src/probe/period_comparison.py` | 타입 있는 선택값·키/순서/의미 공통 함수 |
+| `src/probe/climate_profile.py` | CSV 해독·의미·필수 정책·키별 대조·bounded capture·현재성 검사 |
+| `src/probe/qualified_workflow.py` | 관측 취득·검색/비밀/원장 경계·소유자 질문 변경·승인/재검증 |
+| `src/probe/qualified_profiles.py` | Worker 권한 차단·지연 자료 조회·현재/이전 결론·변경 수치 |
+| `src/probe/service.py` | 자료/질문 변경과 의존 무효화의 기존 트랜잭션 통합 |
+| `src/probe/agent_runtime.py`, `real_tools.py` | 실제 qualified import의 허용 파일 경계·Skills 호환성·타입 있는 도구 실패 |
+| `src/probe/final_report.py`, `qualified_replay.py`, `report_pdf.py` | 두 원본·최근 캡처·승인 계획 export/replay·질문/결과 변경 PDF |
+| `src/probe/workbench.py`, `workbench_static/beginner_ux.js` | 기존 인증 API·질문 변경·자료 상세·카드/이력 UI |
 | `tests/test_cycle12.py` | 32개 요구에 대응하는 매개변수 검사 67개 |
 | `qa/cycle12/` | 실행 코드·고정 천문 자료·규약·실제 결과·보고서 |
 | `qa/prepublish_check.py` | 직접 생성·검토한 합성 키 2개의 고정 SHA만 기존 INFO 분류에 추가 |
@@ -95,7 +95,7 @@ F3-P 새 프로세스 복구 **6/6**: AFTER_FAILURE_EVIDENCE는 아직 결정하
 .\.venv\Scripts\python.exe -B -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/cycle12-baseline-valid --junitxml=build/cycle12/observed_baseline.xml --tb=short
 .\.venv\Scripts\python.exe -B -X utf8 -m pytest tests/test_verified_analysis_skills.py tests/test_cycle12.py tests/test_beginner_v4.py tests/test_real_tools.py -q -p no:cacheprovider --basetemp build/cycle12-final-boundary --junitxml=build/cycle12/final_boundary.xml --tb=short
 .\.venv\Scripts\python.exe -B -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/cycle12-final-compatible-full --junitxml=build/cycle12/final_compatible_full.xml --tb=short
-.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight validate-core
+.\.venv\Scripts\python.exe -B -X utf8 -m probe.preflight validate-core
 .\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/offline_validation.py
 .\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/evaluate_v4.py
 .\.venv\Scripts\python.exe -B -X utf8 qa/cycle12/reference_review.py
@@ -106,7 +106,7 @@ node qa/beginner_v4_browser.cjs
 node qa/research_wizard_browser.cjs
 node qa/ui_unblock_browser.cjs
 node qa/model_activation_browser.cjs
-node --check src/htrsa/workbench_static/beginner_ux.js
+node --check src/probe/workbench_static/beginner_ux.js
 ```
 
 | 실행 | 실제 최종 결과 |
@@ -140,10 +140,10 @@ node --check src/htrsa/workbench_static/beginner_ux.js
 아래 실제 명령은 환경 사전 조건에서 건너뛰었다. 키/manager model 미설정은 검증 프로세스의 CLI 상태이며 사용자의 작업대 API 등록 여부를 대체하지 않는다.
 
 ```powershell
-.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight smoke-api
-.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight validate-search
-.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight validate-docker
-.\.venv\Scripts\python.exe -B -X utf8 -m htrsa.preflight status
+.\.venv\Scripts\python.exe -B -X utf8 -m probe.preflight smoke-api
+.\.venv\Scripts\python.exe -B -X utf8 -m probe.preflight validate-search
+.\.venv\Scripts\python.exe -B -X utf8 -m probe.preflight validate-docker
+.\.venv\Scripts\python.exe -B -X utf8 -m probe.preflight status
 ```
 
 각 결과는 `API_UNCONFIGURED / SEARCH_UNCONFIGURED / DOCKER_UNAVAILABLE`, passed=false·skipped=true다. 실제 모델 성능·비용 개선·경쟁 우위·사용자/교사 사용 효과는 측정하지 않았다. 비교 규약과 선택적 사용 명령은 [PROTOCOL.md](PROTOCOL.md)와 [README.md](README.md)에 있다.

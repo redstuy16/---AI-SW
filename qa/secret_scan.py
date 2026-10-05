@@ -11,9 +11,9 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from htrsa.dashboard import DashboardReadAPI
-from htrsa.database import initialize
-from htrsa.release import export_release_from_paths
+from probe.dashboard import DashboardReadAPI
+from probe.database import initialize
+from probe.release import export_release_from_paths
 
 
 def main() -> None:
@@ -24,7 +24,7 @@ def main() -> None:
     research_id = demo["runs"]["A"][0]["research_id"]
     canary = "sk-qa-canary-0123456789abcde"
     os.environ["OPENAI_API_KEY"] = canary
-    os.environ["HTRSA_MANAGER_MODEL"] = "qa-canary-model"
+    os.environ["PROBE_MANAGER_MODEL"] = "qa-canary-model"
     output = ROOT / "build" / "qa-day1" / f"secret-scan-{uuid4().hex[:12]}"
     exported = export_release_from_paths(database, workspace, research_id, output)
     findings = []

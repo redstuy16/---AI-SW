@@ -3,30 +3,30 @@
   "source_fingerprint": "947125269c0bf8245830fc15da6a7db32aabad61de5718550989d7ceaecc01ce",
   "changed_files": {
     "runtime_new": [
-      "src/htrsa/input_upload.py",
-      "src/htrsa/resource_policy.py",
-      "src/htrsa/search_policy.py"
+      "src/probe/input_upload.py",
+      "src/probe/resource_policy.py",
+      "src/probe/search_policy.py"
     ],
     "runtime_modified": [
-      "src/htrsa/control_plane.py",
-      "src/htrsa/workbench.py",
-      "src/htrsa/control_runtime.py",
-      "src/htrsa/live_api_test.py",
-      "src/htrsa/research_settings.py",
-      "src/htrsa/scholarly.py",
-      "src/htrsa/literature.py",
-      "src/htrsa/release.py",
-      "src/htrsa/product_policy.py",
-      "src/htrsa/dashboard.py",
-      "src/htrsa/runtime.py",
-      "src/htrsa/preflight.py"
+      "src/probe/control_plane.py",
+      "src/probe/workbench.py",
+      "src/probe/control_runtime.py",
+      "src/probe/live_api_test.py",
+      "src/probe/research_settings.py",
+      "src/probe/scholarly.py",
+      "src/probe/literature.py",
+      "src/probe/release.py",
+      "src/probe/product_policy.py",
+      "src/probe/dashboard.py",
+      "src/probe/runtime.py",
+      "src/probe/preflight.py"
     ],
     "frontend_modified": [
-      "src/htrsa/workbench_static/product_ux.js",
-      "src/htrsa/workbench_static/workbench.js",
-      "src/htrsa/workbench_static/live_api_test.js",
-      "src/htrsa/workbench_static/workbench.css",
-      "src/htrsa/workbench_static/bootstrap.js"
+      "src/probe/workbench_static/product_ux.js",
+      "src/probe/workbench_static/workbench.js",
+      "src/probe/workbench_static/live_api_test.js",
+      "src/probe/workbench_static/workbench.css",
+      "src/probe/workbench_static/bootstrap.js"
     ],
     "new_tests_and_qa": [
       "tests/test_hardening.py",
@@ -102,7 +102,7 @@
     "passed": true,
     "passed_count": 788,
     "skipped": false,
-    "command": ".venv/Scripts/python.exe -X utf8 -m htrsa.preflight validate-core",
+    "command": ".venv/Scripts/python.exe -X utf8 -m probe.preflight validate-core",
     "marker": "not live_api and not live_search and not docker_integration and not os_secret_integration",
     "evidence": "build/validation/core.json",
     "scope": "현재 동결 소스에서 독립 재실행"
@@ -353,7 +353,7 @@
       "cli_present": false,
       "daemon_reachable": false,
       "image_present": false,
-      "image": "htrsa-sandbox:3.13",
+      "image": "probe-sandbox:3.13",
       "image_id": null,
       "isolation_probe_passed": false,
       "available": false,

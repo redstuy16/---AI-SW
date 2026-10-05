@@ -9,22 +9,22 @@ from pathlib import Path
 import httpx
 import pytest
 
-from htrsa.context_compiler import ContextCompiler
-from htrsa.database import initialize
-from htrsa.final_report import (ReportValidationError, build_final_conclusion,
+from probe.context_compiler import ContextCompiler
+from probe.database import initialize
+from probe.final_report import (ReportValidationError, build_final_conclusion,
                                 export_final_report, resolve_numeric_placeholders)
-from htrsa.literature import (LiteratureCoordinator, LiteratureConfig,
+from probe.literature import (LiteratureCoordinator, LiteratureConfig,
                               LiteralSentenceReviewer, default_intents, extract_abstract_evidence,
                               screen_source, synthesize_literature)
-from htrsa.literature_runtime import LiteratureResearchRuntime
-from htrsa.providers.fake import FakeProvider
-from htrsa.scholarly import (CrossrefProvider, FakeScholarlyProvider, NormalizedSource,
+from probe.literature_runtime import LiteratureResearchRuntime
+from probe.providers.fake import FakeProvider
+from probe.scholarly import (CrossrefProvider, FakeScholarlyProvider, NormalizedSource,
                              OpenAlexProvider, ScholarlyError, ScholarlyHTTPClient,
                              SearchRequest, normalize_crossref_work,
                              normalize_doi, normalize_openalex_work)
-from htrsa.schemas import ContextPolicy, ResearchContract, new_id
-from htrsa.service import ContractViolationError, StateService
-from htrsa.storage import Workspace
+from probe.schemas import ContextPolicy, ResearchContract, new_id
+from probe.service import ContractViolationError, StateService
+from probe.storage import Workspace
 
 from test_autonomous_loop import CSV, MODELS, fake_replies
 
@@ -447,3 +447,19 @@ def test_literature_context_and_full_report_e2e(tmp_path):
     with pytest.raises(ReportValidationError, match="active research"):
         export_final_report(state, rid)
     db.close()
+
+
+@pytest.mark.parametrize(('question', 'title', 'text'), [
+    ('온도에 따른 고무줄 탄성 변화', 'Energy and Entropy', 'The tension in stretched rubber increases with temperature.'),
+    ('소금 농도가 종자 발아에 미치는 영향', 'Plant physiology', 'Seed germination decreased at higher salt concentration.'),
+    ('철의 부식과 온도 및 습도', 'Materials observations', 'Iron corrosion increased with temperature and humidity.'),
+    ('이미지 압축률에 따른 정보 손실', 'Visual quality', 'Image compression increased information loss.'),
+])
+def test_korean_topic_recognizes_english_core_concepts(question, title, text):
+    source = work(title, text, None)
+    assert screen_source('source', source, question).relevance == 'DIRECT'
+
+
+def test_one_shared_concept_is_not_counted_twice():
+    source = work('Temperature observations', 'Temperature measurements describe distant stars.', None)
+    assert screen_source('source', source, 'Temperature growth').relevance == 'IRRELEVANT'

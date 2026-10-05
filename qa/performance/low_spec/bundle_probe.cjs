@@ -3,7 +3,7 @@
 const fs=require('fs'),path=require('path'),{spawn}=require('child_process');
 const {chromium}=require('../../browser_runtime.cjs');
 const root=process.cwd(),env={...process.env};for(const k of Object.keys(env))if(/API_KEY|TOKEN|SECRET/.test(k))delete env[k];
-const child=spawn(path.join(root,'.venv/Scripts/python.exe'),['-X','utf8','-m','htrsa.workbench','build/flow-opt-fixture/state.sqlite','build/flow-opt-fixture/workspace','--no-browser'],{cwd:root,env,windowsHide:true});
+const child=spawn(path.join(root,'.venv/Scripts/python.exe'),['-X','utf8','-m','probe.workbench','build/flow-opt-fixture/state.sqlite','build/flow-opt-fixture/workspace','--no-browser'],{cwd:root,env,windowsHide:true});
 let browser,buffer='';
 async function main(){const url=await new Promise((resolve,reject)=>{child.stdout.on('data',b=>{buffer+=b;const m=buffer.match(/http:\/\/127\.0\.0\.1:\d+\/#bootstrap=[A-Za-z0-9_-]+/);if(m)resolve(m[0]);});child.on('exit',c=>reject(Error('서버 종료 '+c)));setTimeout(()=>reject(Error('서버 시작 시간 초과')),20000).unref();});
  browser=await chromium.launch({channel:'chrome',headless:true});const context=await browser.newContext(),page=await context.newPage(),client=await context.newCDPSession(page);const response=new Map(),finished=[];let outside=0;

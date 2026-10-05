@@ -1001,7 +1001,7 @@
           "delta": "107373667/12000000"
         }
       },
-      "h_trsa_or_models_or_competitor_run": false,
+      "probe_or_models_or_competitor_run": false,
       "protocol_sha256": "ae9577a176fea5c4b7fd8ba5162504859fd6b3459da07eee1bfe5a9685707e6f"
     },
     "app_or_live_agent_run": false,
@@ -1107,7 +1107,7 @@
       "cli_present": false,
       "daemon_reachable": false,
       "image_present": false,
-      "image": "htrsa-sandbox:3.13",
+      "image": "probe-sandbox:3.13",
       "image_id": null,
       "isolation_probe_passed": false,
       "available": false,
@@ -1163,18 +1163,18 @@
   "actual_paid_calls": 0,
   "live_efficacy": "NOT_VALIDATED",
   "changed_files": [
-    "src/htrsa/period_comparison.py",
-    "src/htrsa/climate_profile.py",
-    "src/htrsa/qualified_workflow.py",
-    "src/htrsa/qualified_profiles.py",
-    "src/htrsa/qualified_replay.py",
-    "src/htrsa/service.py",
-    "src/htrsa/real_tools.py",
-    "src/htrsa/agent_runtime.py",
-    "src/htrsa/workbench.py",
-    "src/htrsa/final_report.py",
-    "src/htrsa/report_pdf.py",
-    "src/htrsa/workbench_static/beginner_ux.js",
+    "src/probe/period_comparison.py",
+    "src/probe/climate_profile.py",
+    "src/probe/qualified_workflow.py",
+    "src/probe/qualified_profiles.py",
+    "src/probe/qualified_replay.py",
+    "src/probe/service.py",
+    "src/probe/real_tools.py",
+    "src/probe/agent_runtime.py",
+    "src/probe/workbench.py",
+    "src/probe/final_report.py",
+    "src/probe/report_pdf.py",
+    "src/probe/workbench_static/beginner_ux.js",
     "tests/test_cycle12.py",
     "qa/prepublish_check.py",
     "qa/cycle12/",
@@ -1290,19 +1290,19 @@
   },
   "external_gates_executed": [
     {
-      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m htrsa.preflight smoke-api",
+      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m probe.preflight smoke-api",
       "passed": false,
       "skipped": true,
       "reason": "API_UNCONFIGURED"
     },
     {
-      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m htrsa.preflight validate-search",
+      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m probe.preflight validate-search",
       "passed": false,
       "skipped": true,
       "reason": "SEARCH_UNCONFIGURED"
     },
     {
-      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m htrsa.preflight validate-docker",
+      "command": ".\\.venv\\Scripts\\python.exe -B -X utf8 -m probe.preflight validate-docker",
       "passed": false,
       "skipped": true,
       "reason": "DOCKER_UNAVAILABLE"

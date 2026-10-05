@@ -9,11 +9,11 @@ import shutil
 from uuid import uuid4
 
 from f3p_eval import ROOT
-from htrsa.dashboard import DashboardReadAPI
-from htrsa.database import initialize, to_json
-from htrsa.release import export_release, ReleaseExportError
-from htrsa.service import StateService
-from htrsa.storage import Workspace, sha256_file
+from probe.dashboard import DashboardReadAPI
+from probe.database import initialize, to_json
+from probe.release import export_release, ReleaseExportError
+from probe.service import StateService
+from probe.storage import Workspace, sha256_file
 
 
 def run(lab_root=None):
@@ -37,9 +37,9 @@ def run(lab_root=None):
         extension = json.loads((output / "research_output/research_slice.json").read_text(encoding="utf-8"))
         assert manifest["research_slice"]["extension_schema_version"] == "1"
         assert extension["claims"] and extension["obligation_history"] and extension["analysis_precommits"]
-        original_env = {key: os.environ.get(key) for key in ("OPENAI_API_KEY", "HTRSA_MANAGER_MODEL")}
+        original_env = {key: os.environ.get(key) for key in ("OPENAI_API_KEY", "PROBE_MANAGER_MODEL")}
         try:
-            os.environ["OPENAI_API_KEY"], os.environ["HTRSA_MANAGER_MODEL"] = canary, "slice-canary-model"
+            os.environ["OPENAI_API_KEY"], os.environ["PROBE_MANAGER_MODEL"] = canary, "slice-canary-model"
             canary_out = root / name / "canary"
             secret_export = export_release(state, rid, canary_out)
             leaks = [str(p.relative_to(canary_out)) for p in canary_out.rglob("*") if p.is_file() and canary.encode() in p.read_bytes()]

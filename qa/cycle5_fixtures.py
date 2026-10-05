@@ -3,13 +3,13 @@ import asyncio
 from pathlib import Path
 
 from f3p_eval import prepare
-from htrsa.cycle5 import GoalScope, GoalWitness, SourceSemanticRecord, TransformationLineage
-from htrsa.database import initialize
-from htrsa.real_schemas import DatasetRecord
-from htrsa.research_slice_schemas import ResearchSliceConfig
-from htrsa.schemas import ResearchContract, utc_now
-from htrsa.service import StateService
-from htrsa.storage import Workspace, sha256_file
+from probe.cycle5 import GoalScope, GoalWitness, SourceSemanticRecord, TransformationLineage
+from probe.database import initialize
+from probe.real_schemas import DatasetRecord
+from probe.research_slice_schemas import ResearchSliceConfig
+from probe.schemas import ResearchContract, utc_now
+from probe.service import StateService
+from probe.storage import Workspace, sha256_file
 
 ON = ResearchSliceConfig(claim_evidence_provenance=True, verifier_dependency_catalog=True)
 GOLD_ROWS = [{"year": "2019", "value": "1.8", "other": "a"},

@@ -12,14 +12,14 @@ from uuid import uuid4
 from cycle5_fixtures import GOLD_ROWS, ON, science_fixture, transform_fixture
 from cycle5_lab import conclusion, save
 from f3p_eval import MODELS
-from htrsa.agent_runtime import AgentRuntime, RuntimeFailure
-from htrsa.cycle5 import SemanticReviewRequired
-from htrsa.database import initialize
-from htrsa.preflight import _source_fingerprint
-from htrsa.providers.fake import FakeProvider
-from htrsa.service import StateConflictError, StateService
-from htrsa.storage import Workspace
-from htrsa.verification_repair import repair_transformation
+from probe.agent_runtime import AgentRuntime, RuntimeFailure
+from probe.cycle5 import SemanticReviewRequired
+from probe.database import initialize
+from probe.preflight import _source_fingerprint
+from probe.providers.fake import FakeProvider
+from probe.service import StateConflictError, StateService
+from probe.storage import Workspace
+from probe.verification_repair import repair_transformation
 
 ROOT = Path(__file__).resolve().parents[1]
 BOUNDARIES = ["TRANSFORM_BEFORE_COMMIT", "TRANSFORM_AFTER_COMMIT", "AFTER_SEMANTIC_REVIEW", "AFTER_SCIENTIFIC_STAGE", "AFTER_SCIENTIFIC_COMMIT", "STALE_BEFORE_COMMIT"]
@@ -117,6 +117,6 @@ if __name__ == "__main__":
     parser.add_argument("--boundary", choices=BOUNDARIES)
     args = parser.parse_args()
     result = run_all() if args.all else probe(args.phase, args.folder, args.boundary)
-    from htrsa.database import to_json
+    from probe.database import to_json
     print(to_json(result))
     if not result.get("all_passed", result.get("passed", False)): raise SystemExit(1)

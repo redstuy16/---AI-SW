@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import pytest
 
-from htrsa.context_compiler import ContextBudgetError, ContextCompiler, ContextConfig
-from htrsa.database import initialize
-from htrsa.research_schemas import HypothesisProposal, HypothesisScore
-from htrsa.schemas import Constraints, ContextPolicy, ContextRef, RefType, ResearchContract, new_id
-from htrsa.service import ContractViolationError, InvalidStateTransitionError, StateService, LoopDetectedError, ActionLimitError
-from htrsa.storage import Workspace
+from probe.context_compiler import ContextBudgetError, ContextCompiler, ContextConfig
+from probe.database import initialize
+from probe.research_schemas import HypothesisProposal, HypothesisScore
+from probe.schemas import Constraints, ContextPolicy, ContextRef, RefType, ResearchContract, new_id
+from probe.service import ContractViolationError, InvalidStateTransitionError, StateService, LoopDetectedError, ActionLimitError
+from probe.storage import Workspace
 
 
 SCORE = HypothesisScore(plausibility=0.7, testability=0.9, data_availability=1,

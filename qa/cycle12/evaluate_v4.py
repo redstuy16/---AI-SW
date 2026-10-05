@@ -8,8 +8,8 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "qa/qualified_profiles")]
 import evaluate as existing
-from htrsa.climate_profile import MEANING, parse_source
-from htrsa.preflight import _source_fingerprint
+from probe.climate_profile import MEANING, parse_source
+from probe.preflight import _source_fingerprint
 
 
 def main():

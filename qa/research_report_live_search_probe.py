@@ -1,21 +1,24 @@
-"""공개 문헌 검색 경로만 실제 Crossref로 확인한다. AI와 과금 요청은 실행하지 않는다."""
+"""명시적으로 켠 LEGACY Crossref 조회만 검사하며 현행 AI 검색 검증으로 인정하지 않는다."""
 import asyncio
 import json
+import os
 from pathlib import Path
 import sys
 from uuid import uuid4
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "tests")]
-from htrsa.workbench import WorkbenchAPI
-from htrsa.scholarly import CrossrefProvider, ScholarlyHTTPClient
-from htrsa.search_policy import run_search
-from htrsa.schemas import utc_now
+from probe.workbench import WorkbenchAPI
+from probe.scholarly import CrossrefProvider, ScholarlyHTTPClient
+from probe.search_policy import run_search
+from probe.schemas import utc_now
 from test_workbench import configure
 from test_research_report_flow import request
 
 
 async def main():
+    if os.environ.get("PROBE_LEGACY_LIVE_SEARCH") != "1":
+        raise SystemExit("LEGACY_LIVE_SEARCH_DISABLED: 레거시 공개 검색에는 PROBE_LEGACY_LIVE_SEARCH=1이 필요합니다.")
     folder = ROOT / "build/research-report/live-search" / uuid4().hex
     api = WorkbenchAPI(folder / "state.sqlite", folder / "workspace", launch=False)
     configure(api)
@@ -51,4 +54,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

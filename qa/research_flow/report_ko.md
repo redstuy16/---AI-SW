@@ -56,7 +56,7 @@ CSS와 SVG를 사용한다. 첫 진입 때만 흐름 스크립트를 불러온�
 | `.venv\Scripts\python.exe -X utf8 qa/f3p_export_probe.py --clean --evaluation-dir build/flow-final-f3p-v3` | clean 52개 파일, hash·참조·secret 이상 0 |
 | `.venv\Scripts\python.exe -X utf8 -m pytest -q -p no:cacheprovider --basetemp build/flow-final-regression-v3 --junitxml build/flow-final-regression-v3.xml` | 845 passed, 5 skipped, 2 deselected / 807.97초; 전역 로컬 한도 추가 전 |
 
-기계 결과는 `qa/performance/low_spec/`와 기존 `qa/results/f3p_*results.json`·`f3p_export_validation.json`, 화면 결과는 `output/playwright/flow/result.json`에 저장했다. F3-P 평가·6개 복구 경계와 31개 흐름 화면 검사는 전역 로컬 한도 수정 이후 다시 실행해 통과했다. CORE 명령 `.venv\Scripts\python.exe -X utf8 -m htrsa.preflight validate-core`는 최종 847 passed, skipped=false였다. 기존 363개 화면 검사는 마지막 로컬 한도 수정 전에 실행했으며 화면 코드는 이후 변경하지 않았다.
+기계 결과는 `qa/performance/low_spec/`와 기존 `qa/results/f3p_*results.json`·`f3p_export_validation.json`, 화면 결과는 `output/playwright/flow/result.json`에 저장했다. F3-P 평가·6개 복구 경계와 31개 흐름 화면 검사는 전역 로컬 한도 수정 이후 다시 실행해 통과했다. CORE 명령 `.venv\Scripts\python.exe -X utf8 -m probe.preflight validate-core`는 최종 847 passed, skipped=false였다. 기존 363개 화면 검사는 마지막 로컬 한도 수정 전에 실행했으며 화면 코드는 이후 변경하지 않았다.
 
 ## 11. 기존 구조와 회귀 수정
 

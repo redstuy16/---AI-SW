@@ -8,8 +8,8 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_verification_repair import prepare_case, corrupt_first_output
-from htrsa.workbench import WorkbenchAPI
-from htrsa.control_plane import Connection, ModelProfile
+from probe.workbench import WorkbenchAPI
+from probe.control_plane import Connection, ModelProfile
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     corrupt_first_output(state)
     asyncio.run(runtime.resume(prepared["research_id"]))
     state.stop_research(prepared["research_id"], "BUDGET_EXHAUSTED")
-    from htrsa.final_report import export_final_report
+    from probe.final_report import export_final_report
     export_final_report(state, prepared["research_id"])
     db.close()
     app = WorkbenchAPI(root / "state.sqlite", root / "workspace", mode="DEMO", launch=False)

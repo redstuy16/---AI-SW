@@ -5,11 +5,11 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "qa"), str(ROOT / "tests")]
 
-from htrsa.api import APIResponse
-from htrsa.resource_policy import save_preferences
-from htrsa.workbench import OwnerSession, create_server
+from probe.api import APIResponse
+from probe.resource_policy import save_preferences
+from probe.workbench import OwnerSession, create_server
 from tutorial_browser_fixture import TutorialAPI, MemoryStore
-from htrsa.control_plane import Credentials
+from probe.control_plane import Credentials
 from test_workbench import CSV, configure, create
 from test_research_cost_display import reserve, settle
 

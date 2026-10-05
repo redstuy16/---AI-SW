@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "qa"))
 import qa_day1 as qa
-from htrsa.preflight import _source_fingerprint, record_qa_validation
+from probe.preflight import _source_fingerprint, record_qa_validation
 
 qa.BUILD = ROOT / "build" / "live-record-final-gates" / uuid4().hex
 qa.QA = qa.BUILD

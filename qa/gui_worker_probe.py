@@ -12,8 +12,8 @@ from uuid import uuid4
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests"))
 from test_autonomous_loop import CSV, fake_replies
-from htrsa.control_plane import Connection, ModelProfile, ROLES
-from htrsa.workbench import WorkbenchAPI
+from probe.control_plane import Connection, ModelProfile, ROLES
+from probe.workbench import WorkbenchAPI
 
 
 def main():
@@ -92,7 +92,7 @@ def main():
         blocked_rid = app.create(request)["research_id"]
         app.store.db.execute("UPDATE control_runs SET status='STARTING' WHERE research_id=?", (blocked_rid,))
         before = len(calls)
-        result = subprocess.run([sys.executable, "-m", "htrsa.workbench", str(app.database), str(app.workspace), "--worker", blocked_rid],
+        result = subprocess.run([sys.executable, "-m", "probe.workbench", str(app.database), str(app.workspace), "--worker", blocked_rid],
             stdin=subprocess.DEVNULL, capture_output=True, timeout=30, cwd=ROOT)
         assert result.returncode == 0
         assert app.store.run(blocked_rid)["status"] == "BUDGET_BLOCKED"

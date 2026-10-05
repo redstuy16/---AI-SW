@@ -10,10 +10,10 @@ import sys
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from htrsa.sandbox import clean_environment
+from probe.sandbox import clean_environment
 
 ROOT = Path(__file__).resolve().parents[2]
-PACKAGE = Path.home() / "Downloads/H_TRSA_Cycle12_Reference_2026-10-03.zip"
+PACKAGE = Path.home() / "Downloads/PROBE_Cycle12_Reference_2026-10-03.zip"
 EXPECTED = "06479024d75ce9eff01399fe61b84acd631ca32a0dd253fc28086c79a9b8341f"
 FROZEN = ROOT / "build/cycle12/reference_frozen"
 

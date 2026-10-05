@@ -1,7 +1,7 @@
 """연구별 비용 표시가 원장·페이지·복구 경계를 유지하는지 검사한다."""
 from decimal import Decimal
 
-from htrsa.workbench import WorkbenchAPI
+from probe.workbench import WorkbenchAPI
 from test_workbench import app, configure, create
 
 

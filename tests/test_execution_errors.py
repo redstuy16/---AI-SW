@@ -11,10 +11,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from htrsa import desktop, preflight
-from htrsa.dashboard import APIResponse
-from htrsa.storage_errors import storage_error_code
-from htrsa.workbench import WorkbenchAPI
+from probe import desktop, preflight
+from probe.dashboard import APIResponse
+from probe.storage_errors import storage_error_code
+from probe.workbench import WorkbenchAPI
 
 
 def sqlite_error(code, message="공개하지 않을 경로와 API 키"):
@@ -94,7 +94,7 @@ def test_api_storage_failure_returns_safe_response(error, expected):
     api = WorkbenchAPI.__new__(WorkbenchAPI)
     def fail():
         raise error
-    api._recover = fail
+    api.research_list = fail
     result = api._request("GET", "/api/control/research")
     assert result.status == 409 and result.body == {"error": expected}
 
@@ -150,6 +150,26 @@ def test_validation_missing_stdout_keeps_gate_failed(tmp_path, monkeypatch):
     result = preflight._pytest_validation("core", "offline", 1)
     marker = json.loads((tmp_path / "validation/core.json").read_text(encoding="utf-8"))
     assert result["passed"] is False and result["passed_count"] == 0 and marker["passed"] is False
+
+
+def test_validation_preserves_only_failed_test_names_without_parameters_or_error_body(tmp_path, monkeypatch):
+    monkeypatch.setattr(preflight, 'ROOT', tmp_path)
+    monkeypatch.setattr(preflight, 'VALIDATION_DIR', tmp_path / 'validation')
+    monkeypatch.setattr(preflight, '_source_fingerprint', lambda: 'offline-source')
+    secret = 'credential-canary-must-never-be-written'
+    stdout = ('F\nFAILED tests/test_real_cycle.py::test_dataset_tamper_after_stage_blocks_commit[' + secret + '] - ' + secret + '\n' +
+        'FAILED tests/test_real_cycle.py::test_dataset_tamper_after_stage_blocks_commit[other-parameter] - failed\n' +
+        'FAILED tests/test_preflight.py::TestGate::test_marker[private query] - ' + secret + '\n' +
+        'FAILED /private/' + secret + ' - failed\n1 failed, 1459 passed\n')
+    monkeypatch.setattr(preflight, '_run', lambda *a, **k: subprocess.CompletedProcess([], 1, stdout, secret))
+    result = preflight._pytest_validation('core', 'offline', 1)
+    marker = json.loads((tmp_path / 'validation/core.json').read_text(encoding='utf-8', errors='strict'))
+    expected = ['tests/test_real_cycle.py::test_dataset_tamper_after_stage_blocks_commit',
+                'tests/test_preflight.py::TestGate::test_marker']
+    assert not result['passed'] and result['passed_count'] == 1459
+    assert result['failed_tests'] == marker['failed_tests'] == expected
+    assert secret not in json.dumps(result) + json.dumps(marker)
+    assert '[' not in ''.join(marker['failed_tests']) and 'private query' not in json.dumps(marker)
 
 
 @pytest.mark.parametrize("boundary", ["build", "marker", "write"])

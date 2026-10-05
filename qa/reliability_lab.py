@@ -12,14 +12,14 @@ from unittest.mock import patch
 from uuid import UUID, uuid4
 
 from f3p_eval import prepare, run_case, CONFIG as F3P_CONFIG, ROOT
-from htrsa.database import to_json
-from htrsa.literature import LiteralSentenceReviewer, extract_abstract_evidence
-from htrsa.reliability import conclusions_from_snapshot, compatible, count, error_correlation
-from htrsa.research_slice import digest
-from htrsa.research_slice_schemas import ResearchSliceConfig, StructuredConclusion
-from htrsa.research_schemas import HypothesisProposal
-from htrsa.scholarly import NormalizedSource, source_from_row
-from htrsa.storage import sha256_file
+from probe.database import to_json
+from probe.literature import LiteralSentenceReviewer, extract_abstract_evidence
+from probe.reliability import conclusions_from_snapshot, compatible, count, error_correlation
+from probe.research_slice import digest
+from probe.research_slice_schemas import ResearchSliceConfig, StructuredConclusion
+from probe.research_schemas import HypothesisProposal
+from probe.scholarly import NormalizedSource, source_from_row
+from probe.storage import sha256_file
 
 MANIFEST = ROOT / "qa/fixtures/reliability_lab_fixtures.json"
 
@@ -39,7 +39,7 @@ def fixed_ids():
     # 쌍 비교마다 ID를 초기화해 계약·계획·데이터를 맞추고 디렉터리는 분리한다.
     
     counter = iter(range(1, 100000))
-    return patch("htrsa.schemas.uuid4", side_effect=lambda: UUID(int=next(counter)))
+    return patch("probe.schemas.uuid4", side_effect=lambda: UUID(int=next(counter)))
 
 
 def source(state, rid, suffix, *, contradiction=False, hypothesis=None):
@@ -203,7 +203,7 @@ def perturbation_case(folder, variant, manifest, *, evidence_change=False):
 
 def evaluate(output_dir=None, *, recovery=True):
     wall, cpu = perf_counter(), process_time()
-    from htrsa.preflight import _source_fingerprint
+    from probe.preflight import _source_fingerprint
     fingerprint = _source_fingerprint()
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8", errors="strict"))
     root = (output_dir or ROOT / "build/reliability-lab") / uuid4().hex
@@ -219,7 +219,7 @@ def evaluate(output_dir=None, *, recovery=True):
         for case in cases:
             with fixed_ids(): row = run_case(case, root / v / case["id"], manifest["seed"], slice_config=policy(v=v))
             row["arm"] = v
-            from htrsa.database import initialize
+            from probe.database import initialize
             audit_db = initialize(root / v / case["id"] / "state.sqlite")
             row["contract_hashes"] = [digest(json.loads(r[0])) for r in audit_db.execute("SELECT contract_json FROM contracts WHERE json_extract(contract_json,'$.assigned_role')='analysis_planner_worker' ORDER BY rowid")]
             row["plan_hashes"] = [digest(json.loads(r[0])) for r in audit_db.execute("SELECT output_json FROM runtime_steps WHERE step_key LIKE 'worker_plan:%' ORDER BY rowid")]

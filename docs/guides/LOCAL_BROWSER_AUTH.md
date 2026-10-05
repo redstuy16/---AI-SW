@@ -3,7 +3,7 @@
 ## 실행
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace
 ```
 
 `127.0.0.1`에 OS 배정 포트로 서버를 열고 기본 브라우저로 연구 목록에 연결한다. 정상 경로에서는 코드 입력이 없다. 고정 포트는 `--port 8766`처럼 지정할 수 있다. 기존 worker·연구·제공사·키 저장·예산·검증·복구·export는 그대로 사용한다.
@@ -20,10 +20,10 @@
 ## 대체 경로
 
 ```powershell
-.\.venv\Scripts\python.exe -m htrsa.workbench build/workbench/state.sqlite build/workbench/workspace --no-browser
+.\.venv\Scripts\python.exe -m probe.workbench build/workbench/state.sqlite build/workbench/workspace --no-browser
 ```
 
-자동 열기 실패나 headless 실행에서는 터미널의 60초짜리 1회용 링크를 클릭한다. 이 명시적 링크 출력은 일반 로그와 구분한다. 만료·재사용 시 원래 티켓을 화면에 표시하지 않고 H-TRSA 재실행을 안내한다. 브라우저에서 새 티켓을 무인 발급하는 API는 없다.
+자동 열기 실패나 headless 실행에서는 터미널의 60초짜리 1회용 링크를 클릭한다. 이 명시적 링크 출력은 일반 로그와 구분한다. 만료·재사용 시 원래 티켓을 화면에 표시하지 않고 Probe 재실행을 안내한다. 브라우저에서 새 티켓을 무인 발급하는 API는 없다.
 
 기존 수동 연결이 필요한 개발 환경만 `--manual-pairing`을 사용한다. 일반 화면은 수동 입력 창을 열지 않는다. 프로세스 재시작은 새 티켓·세션·쿠키 이름을 만든다. 다른 인스턴스의 티켓과 세션은 인증에 사용할 수 없다.
 

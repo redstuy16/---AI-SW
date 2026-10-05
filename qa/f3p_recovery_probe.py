@@ -11,12 +11,12 @@ import sys
 from uuid import uuid4
 
 from f3p_eval import MODELS, ROOT, prepare
-from htrsa.agent_runtime import AgentRuntime
-from htrsa.database import initialize
-from htrsa.providers.fake import FakeProvider
-from htrsa.recovery import FaultInjector, InjectedCrash
-from htrsa.service import StateService
-from htrsa.storage import Workspace
+from probe.agent_runtime import AgentRuntime
+from probe.database import initialize
+from probe.providers.fake import FakeProvider
+from probe.recovery import FaultInjector, InjectedCrash
+from probe.service import StateService
+from probe.storage import Workspace
 
 
 BOUNDARIES = ["AFTER_FAILURE_EVIDENCE", "AFTER_REPAIR_DECISION", "AFTER_REPAIRED_EXECUTION",

@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from htrsa.database import initialize
-from htrsa.mock import MockExperimentCoordinator, MockManager
-from htrsa.real_tools import DataImportTool, DataProfileTool, StatsTool, VisualizationTool, ToolRegistry, ToolNotAllowedError
-from htrsa.schemas import Constraints, ToolRequest, new_id
-from htrsa.service import StateService, DuplicateToolRequestError
-from htrsa.storage import Workspace, sha256_file, DatasetIntegrityError, UnsafeWorkspacePathError
+from probe.database import initialize
+from probe.mock import MockExperimentCoordinator, MockManager
+from probe.real_tools import DataImportTool, DataProfileTool, StatsTool, VisualizationTool, ToolRegistry, ToolNotAllowedError
+from probe.schemas import Constraints, ToolRequest, new_id
+from probe.service import StateService, DuplicateToolRequestError
+from probe.storage import Workspace, sha256_file, DatasetIntegrityError, UnsafeWorkspacePathError
 
 
 CSV = Path(__file__).parent / "fixtures" / "temperature_growth.csv"

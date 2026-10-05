@@ -9,22 +9,22 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "qa"))
 from cycle5_fixtures import GOLD_ROWS, completed_science, science_fixture, transform_fixture
-from htrsa.cycle5 import GoalWitness, SourceSemanticRecord, SemanticReviewRequired
-from htrsa.database import initialize, to_json
-from htrsa.final_report import export_final_report, ReportValidationError
-from htrsa.release import export_release, ReleaseExportError
-from htrsa.reliability import truth_aware_metrics
-from htrsa.service import StateConflictError, StateService
-from htrsa.storage import Workspace
-from htrsa.verification_repair import frozen_plan_matches, repair_transformation
+from probe.cycle5 import GoalWitness, SourceSemanticRecord, SemanticReviewRequired
+from probe.database import initialize, to_json
+from probe.final_report import export_final_report, ReportValidationError
+from probe.release import export_release, ReleaseExportError
+from probe.reliability import truth_aware_metrics
+from probe.service import StateConflictError, StateService
+from probe.storage import Workspace
+from probe.verification_repair import frozen_plan_matches, repair_transformation
 
 
 def test_autonomous_pause_review_resume_uses_existing_cursor(tmp_path):
     from test_autonomous_loop import CSV, MANAGER, MODELS, initial_coordinator, shortlist, worker
     from cycle5_fixtures import ON, semantic
-    from htrsa.autonomous_loop import AutonomousResearchLoop
-    from htrsa.cycle5 import GoalScope
-    from htrsa.providers.fake import FakeProvider
+    from probe.autonomous_loop import AutonomousResearchLoop
+    from probe.cycle5 import GoalScope
+    from probe.providers.fake import FakeProvider
     db = initialize(tmp_path / "state.sqlite")
     state = StateService(db, Workspace(tmp_path / "workspace"))
     rid = state.create_research("Analyze association.")
@@ -221,7 +221,9 @@ def test_report_export_and_semantic_revision_invalidation(tmp_path):
     try:
         state.stop_research(rid, "BUDGET_EXHAUSTED")
         paths = export_final_report(state, rid)
+        assert all(c.support_state == "INCONCLUSIVE" for c in state.research_slice.current(rid))
         report = Path(paths["report"]).read_text(encoding="utf-8")
+        assert "INCONCLUSIVE" in report
         assert "자료 의미와 원질문 범위" in report and "a-units" in report
         exported = export_release(state, rid, tmp_path / "release")
         assert any(f["path"].endswith("research_slice.json") for f in exported["files"])
@@ -261,7 +263,7 @@ def test_tamper_and_stale_history_do_not_reuse_pass(tmp_path, fault):
         elif fault == "semantic_record":
             row = db.execute("SELECT step_key,output_json FROM runtime_steps WHERE research_id=? AND step_key LIKE 'cycle5:source:SM-a:%' ORDER BY rowid DESC LIMIT 1", (rid,)).fetchone()
             value = json.loads(row[1]); value["record"]["unit"] = "degC"
-            from htrsa.research_slice import digest
+            from probe.research_slice import digest
             value["sha256"] = digest(value["record"])
             db.execute("UPDATE runtime_steps SET output_json=? WHERE research_id=? AND step_key=?", (to_json(value), rid, row[0]))
         elif fault == "goal_scope":
@@ -293,7 +295,7 @@ def test_transform_repair_boundaries_fail_closed(tmp_path, fault):
 
 
 def test_scope_is_in_f3p_frozen_fields(tmp_path):
-    from htrsa.agent_schemas import AnalysisPlan
+    from probe.agent_schemas import AnalysisPlan
     db, state, _, prepared, _, _ = completed_science(tmp_path)
     try:
         value = db.execute("SELECT output_json FROM runtime_steps WHERE step_key LIKE 'worker_plan:%'").fetchone()[0]
@@ -304,7 +306,7 @@ def test_scope_is_in_f3p_frozen_fields(tmp_path):
 
 
 def test_owner_api_opt_in_and_cross_research_are_checked(tmp_path):
-    from htrsa.workbench import WorkbenchAPI
+    from probe.workbench import WorkbenchAPI
     db, state, rid, _ = transform_fixture(tmp_path)
     db.close()
     app = WorkbenchAPI(tmp_path / "state.sqlite", tmp_path / "workspace", mode="DEMO", launch=False)

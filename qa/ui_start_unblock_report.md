@@ -141,7 +141,7 @@ Chrome에서 관측한 비밀 없는 모의 전송 요약:
 
 위 4종 **14페이지** 모두 PDF 구조·한글 추출·Unicode font 삽입·현재 상태 버전·출처 링크·artifact hash를 검사했다. 렌더링한 페이지를 직접 검토하여 긴 한국어 질문, 넓은 표, 그림에서 누락 글자·겹침·가로 잘림을 발견하지 않았다.
 
-산출물: `build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/`. 각 PDF의 전체 SHA-256과 페이지 경로는 [결과 JSON](ui_start_unblock_results.json)에 기록했다.
+산출물: `build/ui_start_unblock/pdf_checks/d458a368658b43e78fb5284a53b2713a/`. 각 PDF의 전체 SHA-256과 페이지 경로는 로컬 `ui_start_unblock_results.json`에 기록했다. 개인 PC 경로가 포함된 이 원본은 공개·제출 대상에서 제외한다.
 
 검증된 수치·그림만 사용하고 XML 문자를 escape한다. 보고서 내용 2MiB, PDF 8MiB, 그림 5MiB·16M pixels 한도를 적용한다. 현재 hash·상태를 렌더링 전후 다시 확인한다. 위조·오래된 보고서·비밀 포함은 차단한다.
 

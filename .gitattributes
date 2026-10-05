@@ -1,0 +1,2 @@
+# PDF 뷰어 원본 해시를 유지한다.
+src/probe/workbench_static/pdfjs/** -text

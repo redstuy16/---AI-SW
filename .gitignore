@@ -12,6 +12,8 @@ __pycache__/
 *.egg-info/
 # 이전 테스트·임시 빌드와 내부 참고 예시는 로컬에 보존하고 Git에서 제외한다.
 build/
+# 보고서 뷰어의 고정 정적 자산은 제출본에 포함한다.
+!/src/probe/workbench_static/pdfjs/build/
 output/
 .codex-remote-attachments/
 *.sqlite
@@ -64,6 +66,10 @@ exports/local/
 artifacts/local/
 reports/local/
 screenshots/local/
+
+# 개인 작업 기록과 브라우저 검사 원본
+/docs/history/연구일지.md
+/qa/*_results.json
 
 # 모델 가중치
 *.gguf

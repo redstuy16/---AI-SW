@@ -33,5 +33,5 @@
 - [실행 구조](development/ARCHITECTURE.md)
 - [기능 동결 범위](development/FEATURE_FREEZE.md)
 - [폴더 구성·경로 변경](development/REPOSITORY.md)
-- [연구일지](history/연구일지.md)
+- [개발 기록 안내](history/README.md)
 - [검증 결과 목록](../qa/results/README.md)

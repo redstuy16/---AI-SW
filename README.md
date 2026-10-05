@@ -87,6 +87,6 @@ Python 3.12 이상과 최신 브라우저가 필요합니다. 실제 모델 연�
 - [QA 실행과 결과](qa/README.md)
 - [연구 흐름·저사양 실행](docs/guides/RESEARCH_FLOW.md)
 - [자동 검색·조사 보고서](docs/guides/RESEARCH_REPORTS.md)
-- [연구일지](docs/history/연구일지.md)
+- [개발 기록 안내](docs/history/README.md)
 
 Skills·F3-P·Ridge·Research Slice·Cycle 5는 기본 OFF입니다. 데모 통과와 실제 API·Docker·검색 검증은 각각 별도 기준이며 현재 상태는 앱의 **실행 환경** 또는 `python -m probe.preflight status`에서 확인합니다.

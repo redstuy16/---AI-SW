@@ -22,7 +22,7 @@
 네트워크와 키 조회 없이 실행기를 점검하려면 다음 명령을 사용합니다.
 
 ```powershell
-& '.\.venv\Scripts\python.exe' -B -X utf8 '.\qa\science_live_validation.py' --smoke
+.\.venv\Scripts\python.exe -B -X utf8 qa/science_live_validation.py --smoke
 ```
 
 실제 검증을 명령으로 실행할 때는 `--smoke` 대신 `--live --open-results`를 사용합니다. 모의 검증은 알려진 원리의 작업 한 번, 실제 CSV 계산·민감도 검사·검토·그림, 문헌 미확보 시 중단, 독립 단일 LUNA의 자체 검토와 같은 참고 예시 고정과 유료 호출 없음을 확인합니다. 모의 검증 성공은 실제 API·문헌 검색 품질·유료 모델 속도 검증을 의미하지 않습니다.

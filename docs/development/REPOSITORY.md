@@ -10,7 +10,7 @@ Probe/
 │  ├─ README.md             문서 목록
 │  ├─ guides/               기능별 사용 안내
 │  ├─ development/          구조·CLI·기능 동결
-│  └─ history/              연구일지·경로 변경 기록
+│  └─ history/              공개 기록 안내·로컬 연구일지·경로 변경 기록
 ├─ src/probe/               앱·연구 실행 코드
 ├─ tests/                   회귀 검사와 CSV 입력
 ├─ qa/
@@ -32,6 +32,8 @@ Probe/
 사용법은 `docs/guides/`, 개발 규칙은 `docs/development/`, 날짜별 기록은 `docs/history/`에 둡니다. QA 실행 코드는 `qa/`, 고정 입력은 `qa/fixtures/`, 결과·보고서는 `qa/results/`에 둡니다.
 
 앱 데이터는 기본 `build/workbench/`에 있으므로 `build/` 전체를 임시 파일로 취급하면 안 됩니다. API 키의 기본 저장 위치는 저장소 밖이며 프로젝트 `.env`는 자동으로 읽지 않습니다.
+
+`docs/history/연구일지.md`와 `qa/*_results.json`은 개인 작업 기록으로 로컬에 보관하며 공개·제출 대상에서 제외합니다.
 
 2026-10-02 정리에서는 안내·기록·QA 파일 92개를 이동했습니다. 기존 JSON 원문과 고정 입력의 바이트는 보존했고 Markdown 링크와 QA의 읽기·쓰기 경로를 수정했습니다. 실행 코드·DB 마이그레이션·스키마·데모·기존 연구 데이터 경로와 검증 기준은 유지했습니다.
 

@@ -54,6 +54,8 @@ node qa/hardening_visual_qa.cjs
 
 검사 결과는 기본 `qa/results/`에 저장합니다. `qa_day1.py --output-dir 경로`로 별도 결과 위치를 지정할 수 있습니다. 큰 작업 공간은 `build/`, 화면 캡처는 `output/`에 저장합니다.
 
+루트의 `*_results.json`도 로컬 검사 원본으로 보관하며 Git과 제출용 ZIP에서 제외합니다.
+
 ## 연구 시작·파일·PDF 검사
 
 ```powershell
